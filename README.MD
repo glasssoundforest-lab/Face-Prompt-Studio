@@ -127,3 +127,4 @@ Implement:
 
 ## Resume
 Load this snapshot and continue from Sprint 1.
+update README
