@@ -20,9 +20,9 @@ import json
 import logging
 import logging.handlers
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from config.manager import ConfigManager
@@ -32,14 +32,14 @@ if TYPE_CHECKING:
 # ANSI カラー定義
 # ──────────────────────────────────────────
 
-_RESET  = "\033[0m"
-_BOLD   = "\033[1m"
+_RESET = "\033[0m"
+_BOLD = "\033[1m"
 _COLORS = {
-    "DEBUG":    "\033[36m",   # Cyan
-    "INFO":     "\033[32m",   # Green
-    "WARNING":  "\033[33m",   # Yellow
-    "ERROR":    "\033[31m",   # Red
-    "CRITICAL": "\033[35m",   # Magenta
+    "DEBUG": "\033[36m",  # Cyan
+    "INFO": "\033[32m",  # Green
+    "WARNING": "\033[33m",  # Yellow
+    "ERROR": "\033[31m",  # Red
+    "CRITICAL": "\033[35m",  # Magenta
 }
 
 
@@ -52,6 +52,7 @@ def _supports_color() -> bool:
 # Formatters
 # ──────────────────────────────────────────
 
+
 class ConsoleFormatter(logging.Formatter):
     """
     コンソール用フォーマッタ。
@@ -63,10 +64,10 @@ class ConsoleFormatter(logging.Formatter):
         self._use_color = use_color and _supports_color()
 
     def format(self, record: logging.LogRecord) -> str:
-        ts    = datetime.fromtimestamp(record.created, tz=timezone.utc).strftime("%H:%M:%S")
+        ts = datetime.fromtimestamp(record.created, tz=UTC).strftime("%H:%M:%S")
         level = record.levelname
-        mod   = record.name
-        msg   = record.getMessage()
+        mod = record.name
+        msg = record.getMessage()
 
         if record.exc_info:
             msg += "\n" + self.formatException(record.exc_info)
@@ -88,25 +89,45 @@ class JsonLinesFormatter(logging.Formatter):
     """
 
     def format(self, record: logging.LogRecord) -> str:
-        ts = datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat()
+        ts = datetime.fromtimestamp(record.created, tz=UTC).isoformat()
         payload: dict = {
-            "ts":     ts,
-            "level":  record.levelname,
+            "ts": ts,
+            "level": record.levelname,
             "module": record.name,
-            "msg":    record.getMessage(),
+            "msg": record.getMessage(),
         }
         if record.exc_info:
             payload["exc"] = self.formatException(record.exc_info)
 
         # logging.extra で渡した追加フィールドを含める
         extras = {
-            k: v for k, v in record.__dict__.items()
-            if k not in logging.LogRecord.__dict__ and not k.startswith("_")
-            and k not in (
-                "name", "msg", "args", "levelname", "levelno", "pathname",
-                "filename", "module", "exc_info", "exc_text", "stack_info",
-                "lineno", "funcName", "created", "msecs", "relativeCreated",
-                "thread", "threadName", "processName", "process", "message",
+            k: v
+            for k, v in record.__dict__.items()
+            if k not in logging.LogRecord.__dict__
+            and not k.startswith("_")
+            and k
+            not in (
+                "name",
+                "msg",
+                "args",
+                "levelname",
+                "levelno",
+                "pathname",
+                "filename",
+                "module",
+                "exc_info",
+                "exc_text",
+                "stack_info",
+                "lineno",
+                "funcName",
+                "created",
+                "msecs",
+                "relativeCreated",
+                "thread",
+                "threadName",
+                "processName",
+                "process",
+                "message",
                 "taskName",
             )
         }
@@ -120,6 +141,7 @@ class JsonLinesFormatter(logging.Formatter):
 # FPSLogger
 # ──────────────────────────────────────────
 
+
 class FPSLogger:
     """
     FPS ロギングシステム。
@@ -131,11 +153,11 @@ class FPSLogger:
         logger.info("Config loaded.")
     """
 
-    _instance: Optional["FPSLogger"] = None
+    _instance: FPSLogger | None = None
 
     def __init__(self) -> None:
         self._initialized = False
-        self._log_dir: Optional[Path] = None
+        self._log_dir: Path | None = None
         self._level: int = logging.INFO
         self._root_name = "fps"
 
@@ -143,14 +165,14 @@ class FPSLogger:
 
     def setup(
         self,
-        log_dir:      str | Path = "logs",
-        level:        str        = "INFO",
-        max_bytes:    int        = 10 * 1024 * 1024,   # 10 MB
-        backup_count: int        = 5,
-        use_color:    bool       = True,
-        to_console:   bool       = True,
-        to_file:      bool       = True,
-    ) -> "FPSLogger":
+        log_dir: str | Path = "logs",
+        level: str = "INFO",
+        max_bytes: int = 10 * 1024 * 1024,  # 10 MB
+        backup_count: int = 5,
+        use_color: bool = True,
+        to_console: bool = True,
+        to_file: bool = True,
+    ) -> FPSLogger:
         """
         ロギングシステムを初期化する。
         二重初期化は安全にスキップされる。
@@ -158,7 +180,7 @@ class FPSLogger:
         if self._initialized:
             return self
 
-        self._level   = getattr(logging, level.upper(), logging.INFO)
+        self._level = getattr(logging, level.upper(), logging.INFO)
         self._log_dir = Path(log_dir)
 
         root = logging.getLogger(self._root_name)
@@ -191,16 +213,17 @@ class FPSLogger:
         logging.getLogger("asyncio").setLevel(logging.WARNING)
 
         self._initialized = True
-        root.debug("FPSLogger initialized. level=%s log_dir=%s", level, log_path if to_file else "—")
+        log_dir_str = str(log_path) if to_file else "—"
+        root.debug("FPSLogger initialized. level=%s log_dir=%s", level, log_dir_str)
         return self
 
-    def setup_from_config(self, config: "ConfigManager") -> "FPSLogger":
+    def setup_from_config(self, config: ConfigManager) -> FPSLogger:
         """ConfigManager から設定を読み込んでセットアップする"""
         return self.setup(
-            log_dir      = config.get("logging.dir",          "logs"),
-            level        = config.get("logging.level",        "INFO"),
-            max_bytes    = config.get("logging.max_bytes",    10 * 1024 * 1024),
-            backup_count = config.get("logging.backup_count", 5),
+            log_dir=config.get("logging.dir", "logs"),
+            level=config.get("logging.level", "INFO"),
+            max_bytes=config.get("logging.max_bytes", 10 * 1024 * 1024),
+            backup_count=config.get("logging.backup_count", 5),
         )
 
     # ── Get logger ───────────────────────
@@ -219,7 +242,7 @@ class FPSLogger:
 
     def set_level(self, level: str) -> None:
         """全ハンドラのログレベルを動的に変更する"""
-        lvl  = getattr(logging, level.upper(), logging.INFO)
+        lvl = getattr(logging, level.upper(), logging.INFO)
         root = logging.getLogger(self._root_name)
         root.setLevel(lvl)
         for handler in root.handlers:
@@ -233,7 +256,7 @@ class FPSLogger:
     # ── Singleton ────────────────────────
 
     @classmethod
-    def instance(cls) -> "FPSLogger":
+    def instance(cls) -> FPSLogger:
         """グローバルシングルトンを返す"""
         if cls._instance is None:
             cls._instance = cls()
@@ -250,6 +273,7 @@ class FPSLogger:
 # ──────────────────────────────────────────
 # モジュールレベル便利関数
 # ──────────────────────────────────────────
+
 
 def get_logger(name: str) -> logging.Logger:
     """
