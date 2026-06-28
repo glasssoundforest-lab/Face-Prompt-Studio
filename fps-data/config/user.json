@@ -1,0 +1,11 @@
+{
+  "_comment": "User configuration. Values here override default.json.",
+
+  "pipeline": {
+    "max_tokens": 256
+  },
+
+  "logging": {
+    "level": "DEBUG"
+  }
+}
