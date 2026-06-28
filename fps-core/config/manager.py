@@ -17,11 +17,13 @@ from __future__ import annotations
 import json
 import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 try:
     import yaml
+
     _YAML_AVAILABLE = True
 except ImportError:
     _YAML_AVAILABLE = False
@@ -45,17 +47,17 @@ class ConfigManager:
 
     def __init__(
         self,
-        default_path: Optional[str | Path] = None,
+        default_path: str | Path | None = None,
         *,
         hot_reload_interval: float = 2.0,
     ) -> None:
         self._data: dict[str, Any] = {}
         self._defaults: dict[str, Any] = {}
-        self._user_path: Optional[Path] = None
+        self._user_path: Path | None = None
         self._hot_reload_interval = hot_reload_interval
-        self._hot_reload_thread: Optional[threading.Thread] = None
+        self._hot_reload_thread: threading.Thread | None = None
         self._hot_reload_active = False
-        self._last_mtime: Optional[float] = None
+        self._last_mtime: float | None = None
         self._on_reload_callbacks: list[Callable[[], None]] = []
 
         if default_path is not None:
@@ -159,7 +161,7 @@ class ConfigManager:
             node = node.setdefault(k, {})
         node[keys[-1]] = value
 
-    def save_user(self, path: Optional[str | Path] = None) -> None:
+    def save_user(self, path: str | Path | None = None) -> None:
         """ユーザー設定をファイルに書き出す"""
         target = Path(path) if path else self._user_path
         if target is None:
@@ -178,9 +180,7 @@ class ConfigManager:
 
     def _merge(self) -> None:
         """デフォルト + ユーザー設定をディープマージする"""
-        self._data = _deep_merge(
-            self._defaults, getattr(self, "_user_data", {})
-        )
+        self._data = _deep_merge(self._defaults, getattr(self, "_user_data", {}))
 
     @staticmethod
     def _read_file(path: Path) -> dict[str, Any]:
@@ -206,9 +206,7 @@ class ConfigManager:
     def _write_file(path: Path, data: dict[str, Any]) -> None:
         suffix = path.suffix.lower()
         if suffix == ".json":
-            path.write_text(
-                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
+            path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
         elif suffix in (".yaml", ".yml"):
             if not _YAML_AVAILABLE:
                 raise ConfigError("PyYAML がインストールされていません")
@@ -223,6 +221,7 @@ class ConfigManager:
 # ──────────────────────────────────────────
 # Utility
 # ──────────────────────────────────────────
+
 
 def _deep_merge(base: dict, override: dict) -> dict:
     """
