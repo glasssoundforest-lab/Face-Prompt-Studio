@@ -1,0 +1,50 @@
+{
+  "fps": {
+    "version": "0.2.0-dev",
+    "debug": false
+  },
+  "pipeline": {
+    "stages": [
+      "parser",
+      "normalizer",
+      "duplicate_cleaner",
+      "blacklist",
+      "whitelist",
+      "categorizer",
+      "rule_engine",
+      "weight_engine",
+      "optimizer",
+      "exporter"
+    ],
+    "abort_on_error": false
+  },
+  "dictionary": {
+    "system_dir": "fps-data/dictionaries/system",
+    "user_dir":   "fps-data/dictionaries/user",
+    "encoding":   "utf-8"
+  },
+  "rules": {
+    "dir":     "fps-data/rules",
+    "enabled": true
+  },
+  "cache": {
+    "enabled":  true,
+    "max_size":  256,
+    "ttl":       3600
+  },
+  "backup": {
+    "enabled":   true,
+    "dir":       "backup",
+    "max_count": 10
+  },
+  "logging": {
+    "level":      "INFO",
+    "dir":        "logs",
+    "max_bytes":  10485760,
+    "backup_count": 5
+  },
+  "hot_reload": {
+    "enabled":       false,
+    "interval_sec":  5
+  }
+}

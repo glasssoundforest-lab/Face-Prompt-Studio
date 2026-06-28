@@ -1,4 +1,5 @@
-"""fps-core.config — ConfigManager"""
-from .manager import ConfigManager, ConfigError
+"""fps-core.config — ConfigManager パッケージ"""
 
-__all__ = ["ConfigManager", "ConfigError"]
+from .manager import ConfigManager, ConfigError, ConfigLoadError, ConfigKeyError
+
+__all__ = ["ConfigManager", "ConfigError", "ConfigLoadError", "ConfigKeyError"]
