@@ -226,9 +226,35 @@ def run_smoke_tests(verbose: bool = False) -> SmokeResults:
     except Exception as e:
         _smoke_fail(smoke, label, e, verbose)
 
-    # ── Step 8〜10: 未実装プレースホルダー ────────────────────
+    # ── Step 8: Backup ────────────────────────────────────────
+    label = "Step 8  Backup"
+    try:
+        from backup.manager import BackupManager
+        from backup.models import BackupTarget
+
+        data_root = ROOT / "fps-data"
+        bm = BackupManager(
+            backup_dir  = ROOT / "backup",
+            max_count   = 3,
+            source_dirs = {
+                BackupTarget.RULES:      data_root / "rules",
+                BackupTarget.DICTIONARY: data_root / "dictionaries",
+                BackupTarget.PRESETS:    data_root / "presets",
+            },
+        )
+        bm.setup()
+        result = bm.backup(BackupTarget.RULES)
+        assert result.success is True
+        stats = bm.statistics()
+        if verbose:
+            print(dim(f"    backups={stats['total_backups']}  bytes={stats['total_bytes']}"))
+        _smoke_pass(smoke, label)
+    except Exception as e:
+        _smoke_fail(smoke, label, e, verbose)
+
+    # ── Step 9〜10: 未実装プレースホルダー ────────────────────
     pending = [
-        "Step 8  Backup",
+        "Step 9  Pipeline (10-stage)",
         "Step 9  Pipeline (10-stage)",
         "Step 10 ComfyUI Adapter",
     ]
@@ -455,8 +481,8 @@ def print_summary(
         ("Step 5",  "RuleManager",              "✅ DONE",  "feature/rule-manager"),
         ("Step 6",  "PresetManager",            "✅ DONE",  "feature/preset-manager"),
         ("Step 7",  "Cache",                    "✅ DONE",  "feature/cache"),
-        ("Step 8",  "Backup",                   "🔲 NEXT",   "—"),
-        ("Step 9",  "Pipeline (10-stage)",      "🔲 TODO",   "—"),
+        ("Step 8",  "Backup",                   "✅ DONE",   "feature/backup"),
+        ("Step 9",  "Pipeline (10-stage)",      "🔲 NEXT",   "—"),
         ("Step 10", "ComfyUI Adapter",          "🔲 TODO",   "—"),
     ]
     for step, name, status, branch in steps:
