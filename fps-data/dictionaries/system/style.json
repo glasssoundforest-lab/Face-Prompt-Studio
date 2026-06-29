@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "category": "style",
+  "description": "画風・スタイルタグ",
+  "entries": [
+    {
+      "key": "anime",
+      "resolved": "Style.Anime",
+      "aliases": ["anime style", "animestyle"],
+      "weight": 1.0,
+      "tags": ["style"]
+    },
+    {
+      "key": "realistic",
+      "resolved": "Style.Realistic",
+      "aliases": ["photorealistic", "photo realistic", "real"],
+      "weight": 1.0,
+      "tags": ["style"]
+    },
+    {
+      "key": "fantasy",
+      "resolved": "Style.Fantasy",
+      "aliases": ["fantasy style", "dark fantasy"],
+      "weight": 1.0,
+      "tags": ["style"]
+    },
+    {
+      "key": "illustration",
+      "resolved": "Style.Illustration",
+      "aliases": ["illust", "digital art"],
+      "weight": 1.0,
+      "tags": ["style"]
+    }
+  ]
+}
