@@ -6,35 +6,35 @@
     {
       "key": "long_hair",
       "resolved": "Hair.Long",
-      "aliases": ["long hair"],
+      "aliases": ["hair long"],
       "weight": 1.0,
       "tags": ["length"]
     },
     {
       "key": "short_hair",
       "resolved": "Hair.Short",
-      "aliases": ["short hair"],
+      "aliases": ["hair short"],
       "weight": 1.0,
       "tags": ["length"]
     },
     {
       "key": "blonde_hair",
       "resolved": "Hair.Blonde",
-      "aliases": ["blonde", "blond hair", "yellow hair"],
+      "aliases": ["blond hair", "yellow hair"],
       "weight": 1.0,
       "tags": ["color"]
     },
     {
       "key": "black_hair",
       "resolved": "Hair.Black",
-      "aliases": ["black hair", "dark hair"],
+      "aliases": ["dark hair"],
       "weight": 1.0,
       "tags": ["color"]
     },
     {
       "key": "silver_hair",
       "resolved": "Hair.Silver",
-      "aliases": ["silver hair", "white hair", "grey hair"],
+      "aliases": ["white hair", "grey hair"],
       "weight": 1.0,
       "tags": ["color"]
     },

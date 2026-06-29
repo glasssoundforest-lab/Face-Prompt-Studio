@@ -1,0 +1,47 @@
+{
+  "version": "1.0",
+  "description": "FPS 基本ルールセット",
+  "rules": [
+    {
+      "id": "rule_weight_masterpiece",
+      "description": "masterpiece の重みを 1.5 に強化",
+      "priority": 10,
+      "enabled": true,
+      "conditions": [
+        {"op": "tag", "value": "masterpiece"}
+      ],
+      "action": {"type": "WEIGHT", "value": 1.5}
+    },
+    {
+      "id": "rule_remove_low_quality",
+      "description": "重みが 0.9 未満の quality タグを削除",
+      "priority": 8,
+      "enabled": true,
+      "conditions": [
+        {"op": "category", "value": "quality"},
+        {"op": "weight_lt", "value": 0.9}
+      ],
+      "action": {"type": "REMOVE"}
+    },
+    {
+      "id": "rule_add_highres_on_masterpiece",
+      "description": "masterpiece があれば high_quality も追加",
+      "priority": 5,
+      "enabled": true,
+      "conditions": [
+        {"op": "tag", "value": "masterpiece"}
+      ],
+      "action": {"type": "ADD", "value": "high_quality"}
+    },
+    {
+      "id": "rule_weight_boost_eyes",
+      "description": "eyes カテゴリの重みを 1.1 に統一",
+      "priority": 3,
+      "enabled": true,
+      "conditions": [
+        {"op": "category", "value": "eyes"}
+      ],
+      "action": {"type": "WEIGHT", "value": 1.1}
+    }
+  ]
+}

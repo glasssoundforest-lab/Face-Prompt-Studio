@@ -6,7 +6,7 @@
     {
       "key": "masterpiece",
       "resolved": "Quality.High",
-      "aliases": ["best quality", "best_quality", "high quality"],
+      "aliases": ["best quality"],
       "weight": 1.2,
       "tags": ["positive"]
     },
@@ -27,7 +27,7 @@
     {
       "key": "low_quality",
       "resolved": "Quality.Low",
-      "aliases": ["bad quality", "worst quality"],
+      "aliases": ["worst quality"],
       "weight": 0.8,
       "tags": ["negative"]
     }
