@@ -72,7 +72,7 @@ def load_dict_dir(
     patterns = ["*.json", "*.yaml", "*.yml"]
 
     for pattern in patterns:
-        for p in sorted(directory.glob(pattern)):
+        for p in sorted(directory.rglob(pattern)):
             if p.name.startswith("."):
                 continue
             try:

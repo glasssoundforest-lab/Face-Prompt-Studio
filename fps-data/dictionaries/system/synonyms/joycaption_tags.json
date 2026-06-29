@@ -1,0 +1,650 @@
+{
+  "version": "1.0",
+  "category": "synonyms",
+  "description": "JoyCaption / Florence2 自然言語キャプションからの同義語マッピング",
+  "entries": [
+    {
+      "key": "long_flowing_hair",
+      "resolved": "Hair.Long",
+      "aliases": [
+        "flowing long hair",
+        "long flowing locks"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "short_cropped_hair",
+      "resolved": "Hair.Short",
+      "aliases": [
+        "cropped short hair",
+        "close cropped hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "wavy_locks",
+      "resolved": "Hair.Wavy",
+      "aliases": [
+        "wavy tresses",
+        "wavy waves"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "curly_locks",
+      "resolved": "Hair.Wavy",
+      "aliases": [
+        "curly tresses",
+        "tight curls"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "straight_locks",
+      "resolved": "Hair.Straight",
+      "aliases": [
+        "poker straight hair",
+        "sleek straight hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "hair_tied_up",
+      "resolved": "Hair.Bun",
+      "aliases": [
+        "hair up",
+        "tied up hair",
+        "upswept hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "hair_in_a_ponytail",
+      "resolved": "Hair.Ponytail",
+      "aliases": [
+        "ponytail style",
+        "hair pulled back"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "platinum_hair",
+      "resolved": "Hair.Silver",
+      "aliases": [
+        "platinum blonde",
+        "silver blonde hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "raven_hair",
+      "resolved": "Hair.Black",
+      "aliases": [
+        "raven black hair",
+        "jet black hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "strawberry_blonde",
+      "resolved": "Hair.Blonde",
+      "aliases": [
+        "strawberry blond hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "hair"
+      ]
+    },
+    {
+      "key": "bright_blue_eyes",
+      "resolved": "Eyes.Blue",
+      "aliases": [
+        "vivid blue eyes",
+        "striking blue eyes"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyes"
+      ]
+    },
+    {
+      "key": "deep_brown_eyes",
+      "resolved": "Eyes.Brown",
+      "aliases": [
+        "dark brown eyes",
+        "warm brown eyes"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyes"
+      ]
+    },
+    {
+      "key": "piercing_green_eyes",
+      "resolved": "Eyes.Green",
+      "aliases": [
+        "intense green eyes",
+        "striking green eyes"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyes"
+      ]
+    },
+    {
+      "key": "warm_amber_eyes",
+      "resolved": "Eyes.Golden",
+      "aliases": [
+        "golden amber eyes",
+        "honey colored eyes"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyes"
+      ]
+    },
+    {
+      "key": "wide_expressive_eyes",
+      "resolved": "Eyes.Large",
+      "aliases": [
+        "wide open eyes",
+        "expressive large eyes"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyes"
+      ]
+    },
+    {
+      "key": "soft_smile",
+      "resolved": "Expression.Smile",
+      "aliases": [
+        "gentle smile",
+        "warm smile",
+        "subtle smile"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "expression"
+      ]
+    },
+    {
+      "key": "bright_smile",
+      "resolved": "Expression.Grin",
+      "aliases": [
+        "wide smile",
+        "radiant smile",
+        "broad smile"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "expression"
+      ]
+    },
+    {
+      "key": "slight_smile",
+      "resolved": "Expression.Smirk",
+      "aliases": [
+        "half smile",
+        "faint smile",
+        "barely smiling"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "expression"
+      ]
+    },
+    {
+      "key": "neutral_expression",
+      "resolved": "Expression.Neutral",
+      "aliases": [
+        "no expression",
+        "deadpan expression"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "expression"
+      ]
+    },
+    {
+      "key": "serious_expression",
+      "resolved": "Expression.Serious",
+      "aliases": [
+        "stern look",
+        "solemn expression"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "expression"
+      ]
+    },
+    {
+      "key": "surprised_expression",
+      "resolved": "Expression.Surprised",
+      "aliases": [
+        "shocked expression",
+        "astonished look"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "expression"
+      ]
+    },
+    {
+      "key": "rosy_cheeks",
+      "resolved": "Skin.Blush",
+      "aliases": [
+        "flushed cheeks",
+        "pink cheeks",
+        "reddened cheeks"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "skin"
+      ]
+    },
+    {
+      "key": "pale_complexion",
+      "resolved": "Skin.Pale",
+      "aliases": [
+        "fair complexion",
+        "light complexion"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "skin"
+      ]
+    },
+    {
+      "key": "tanned_complexion",
+      "resolved": "Skin.Tan",
+      "aliases": [
+        "bronzed complexion",
+        "sun kissed skin"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "skin"
+      ]
+    },
+    {
+      "key": "freckled_face",
+      "resolved": "Skin.Freckles",
+      "aliases": [
+        "face with freckles",
+        "light freckles"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "skin"
+      ]
+    },
+    {
+      "key": "full_plump_lips",
+      "resolved": "Mouth.FullLips",
+      "aliases": [
+        "plump full lips",
+        "full voluminous lips"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "mouth"
+      ]
+    },
+    {
+      "key": "thin_pursed_lips",
+      "resolved": "Mouth.ThinLips",
+      "aliases": [
+        "pursed thin lips",
+        "pressed thin lips"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "mouth"
+      ]
+    },
+    {
+      "key": "slightly_parted_lips",
+      "resolved": "Mouth.Parted",
+      "aliases": [
+        "mouth barely open",
+        "lips slightly apart"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "mouth"
+      ]
+    },
+    {
+      "key": "delicate_nose",
+      "resolved": "Nose.Small",
+      "aliases": [
+        "petite nose",
+        "small delicate nose"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "nose"
+      ]
+    },
+    {
+      "key": "straight_nose",
+      "resolved": "Nose.Sharp",
+      "aliases": [
+        "straight elegant nose"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "nose"
+      ]
+    },
+    {
+      "key": "high_cheekbones",
+      "resolved": "FaceShape.HighCheekbones",
+      "aliases": [
+        "prominent cheekbones",
+        "defined cheekbones"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "oval_face_shape",
+      "resolved": "FaceShape.Oval",
+      "aliases": [
+        "oval shaped face",
+        "egg shaped face"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "heart_shaped_face",
+      "resolved": "FaceShape.Heart",
+      "aliases": [
+        "heart face shape",
+        "v shaped face"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "long_lashes",
+      "resolved": "Eyelashes.Long",
+      "aliases": [
+        "lengthy lashes",
+        "long thick lashes"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyelashes"
+      ]
+    },
+    {
+      "key": "thick_lashes",
+      "resolved": "Eyelashes.Thick",
+      "aliases": [
+        "full lashes",
+        "voluminous lashes",
+        "dramatic lashes"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyelashes"
+      ]
+    },
+    {
+      "key": "arched_brows",
+      "resolved": "Eyebrows.Arched",
+      "aliases": [
+        "arched eyebrows",
+        "high arched brows"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyebrows"
+      ]
+    },
+    {
+      "key": "thin_brows",
+      "resolved": "Eyebrows.Thin",
+      "aliases": [
+        "thin eyebrows",
+        "pencil thin brows"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyebrows"
+      ]
+    },
+    {
+      "key": "bold_brows",
+      "resolved": "Eyebrows.Thick",
+      "aliases": [
+        "thick eyebrows",
+        "strong brows",
+        "bushy brows"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "eyebrows"
+      ]
+    },
+    {
+      "key": "red_lipstick",
+      "resolved": "Makeup.RedLipstick",
+      "aliases": [
+        "red lip color",
+        "scarlet lipstick"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "makeup"
+      ]
+    },
+    {
+      "key": "natural_makeup",
+      "resolved": "Makeup.Light",
+      "aliases": [
+        "light makeup",
+        "minimal makeup",
+        "no makeup look"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "makeup"
+      ]
+    },
+    {
+      "key": "dramatic_makeup",
+      "resolved": "Makeup.Heavy",
+      "aliases": [
+        "heavy makeup",
+        "full glam makeup"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "makeup"
+      ]
+    },
+    {
+      "key": "wearing_glasses",
+      "resolved": "Glasses.Normal",
+      "aliases": [
+        "has glasses on",
+        "sporting glasses"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "glasses"
+      ]
+    },
+    {
+      "key": "wearing_sunglasses",
+      "resolved": "Glasses.Sunglasses",
+      "aliases": [
+        "has sunglasses on",
+        "wearing shades"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "glasses"
+      ]
+    },
+    {
+      "key": "pointed_ears",
+      "resolved": "Fantasy.ElfEars",
+      "aliases": [
+        "elf like ears",
+        "pointed elf ears"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "cat_like_ears",
+      "resolved": "Fantasy.CatEars",
+      "aliases": [
+        "feline ears",
+        "catgirl ears"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "demonic_horns",
+      "resolved": "Fantasy.DemonHorns",
+      "aliases": [
+        "devil like horns",
+        "small black horns"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "glowing_pupils",
+      "resolved": "Fantasy.GlowingEyes",
+      "aliases": [
+        "glowing irises",
+        "illuminated eyes"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "feathered_wings",
+      "resolved": "Fantasy.Wings",
+      "aliases": [
+        "large white wings",
+        "angel like wings"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "angelic_halo",
+      "resolved": "Fantasy.Halo",
+      "aliases": [
+        "glowing halo",
+        "holy halo"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "joycaption",
+        "fantasy"
+      ]
+    }
+  ]
+}

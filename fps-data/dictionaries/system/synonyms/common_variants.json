@@ -1,0 +1,357 @@
+{
+  "version": "1.0",
+  "category": "synonyms",
+  "description": "一般的な表記揺れ・略称のうち、既存辞書にない表記の同義語マッピング",
+  "entries": [
+    {
+      "key": "hq",
+      "resolved": "Quality.High",
+      "aliases": [
+        "high q",
+        "hires",
+        "hi res"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "abbreviation",
+        "quality"
+      ]
+    },
+    {
+      "key": "lq",
+      "resolved": "Quality.Low",
+      "aliases": [
+        "low q",
+        "low res",
+        "lo_res"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "abbreviation",
+        "quality"
+      ]
+    },
+    {
+      "key": "realistic_photo",
+      "resolved": "Style.Realistic",
+      "aliases": [
+        "photorealism",
+        "photo realism",
+        "hyperrealistic"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "style"
+      ]
+    },
+    {
+      "key": "longhair",
+      "resolved": "Hair.Long",
+      "aliases": [
+        "hair_long",
+        "lengthy hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "shorthair",
+      "resolved": "Hair.Short",
+      "aliases": [
+        "hair_short"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "pigtail",
+      "resolved": "Hair.Twintails",
+      "aliases": [
+        "two tails",
+        "double ponytail"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "ponytail_hair",
+      "resolved": "Hair.Ponytail",
+      "aliases": [
+        "pony tail",
+        "tied_back"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "hair_bun",
+      "resolved": "Hair.Bun",
+      "aliases": [
+        "bun hairstyle",
+        "hair_in_bun"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "side_pony",
+      "resolved": "Hair.SidePonytail",
+      "aliases": [
+        "side_tail",
+        "sidetail"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "braid",
+      "resolved": "Hair.Braided",
+      "aliases": [
+        "braids",
+        "braided",
+        "plait"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "platinum_hair",
+      "resolved": "Hair.Silver",
+      "aliases": [
+        "platinum blonde"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "raven_hair",
+      "resolved": "Hair.Black",
+      "aliases": [
+        "raven black hair",
+        "jet_black_hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "brunette",
+      "resolved": "Hair.Brown",
+      "aliases": [
+        "chestnut hair"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "hair"
+      ]
+    },
+    {
+      "key": "eye_gold",
+      "resolved": "Eyes.Golden",
+      "aliases": [
+        "gold eye",
+        "eyes_gold"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "eyes"
+      ]
+    },
+    {
+      "key": "smiling",
+      "resolved": "Expression.Smile",
+      "aliases": [
+        "is smiling",
+        "with smile"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "expression"
+      ]
+    },
+    {
+      "key": "laughing",
+      "resolved": "Expression.Laugh",
+      "aliases": [
+        "is laughing",
+        "with laugh"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "expression"
+      ]
+    },
+    {
+      "key": "crying",
+      "resolved": "Expression.Teary",
+      "aliases": [
+        "is crying",
+        "teary"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "expression"
+      ]
+    },
+    {
+      "key": "angry",
+      "resolved": "Expression.Angry",
+      "aliases": [
+        "is angry",
+        "with anger"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "expression"
+      ]
+    },
+    {
+      "key": "blushing",
+      "resolved": "Skin.Blush",
+      "aliases": [
+        "is blushing",
+        "flushed face"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "skin"
+      ]
+    },
+    {
+      "key": "beauty_mark",
+      "resolved": "Skin.Mole",
+      "aliases": [
+        "beauty spot"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "skin"
+      ]
+    },
+    {
+      "key": "dimple",
+      "resolved": "Skin.Dimples",
+      "aliases": [
+        "cheek dimple",
+        "dimpled"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "skin"
+      ]
+    },
+    {
+      "key": "lip_gloss",
+      "resolved": "Mouth.Glossy",
+      "aliases": [
+        "lipgloss",
+        "shiny lips"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "mouth"
+      ]
+    },
+    {
+      "key": "eyeglasses",
+      "resolved": "Glasses.Normal",
+      "aliases": [
+        "eye glasses",
+        "wearing_glasses"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "glasses"
+      ]
+    },
+    {
+      "key": "cat_ear",
+      "resolved": "Fantasy.CatEars",
+      "aliases": [
+        "catear",
+        "neko ear"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "fantasy"
+      ]
+    },
+    {
+      "key": "elf_ear",
+      "resolved": "Fantasy.ElfEars",
+      "aliases": [
+        "elfear",
+        "pointed_ear"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "fantasy"
+      ]
+    },
+    {
+      "key": "bunny_ear",
+      "resolved": "Fantasy.BunnyEars",
+      "aliases": [
+        "bunnyear",
+        "rabbit ear"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "fantasy"
+      ]
+    },
+    {
+      "key": "fox_ear",
+      "resolved": "Fantasy.FoxEars",
+      "aliases": [
+        "foxear",
+        "kitsune ear"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "fantasy"
+      ]
+    },
+    {
+      "key": "demon_horn",
+      "resolved": "Fantasy.DemonHorns",
+      "aliases": [
+        "demonhorn",
+        "devil_horn"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "fantasy"
+      ]
+    },
+    {
+      "key": "angel_wing",
+      "resolved": "Fantasy.Wings",
+      "aliases": [
+        "angelwing",
+        "feather wings"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "fantasy"
+      ]
+    }
+  ]
+}
