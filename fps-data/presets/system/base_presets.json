@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "presets": [
+    {
+      "id": "anime_portrait",
+      "name": "アニメポートレート",
+      "description": "基本的なアニメ風ポートレート",
+      "version": "1.0",
+      "tags": [
+        {"tag": "masterpiece",  "category": "quality", "weight": 1.5},
+        {"tag": "anime",        "category": "style",   "weight": 1.0},
+        {"tag": "blue_eyes",    "category": "eyes",    "weight": 1.0},
+        {"tag": "long_hair",    "category": "hair",    "weight": 1.0}
+      ],
+      "negative_tags": [
+        {"tag": "bad hands",    "category": "negative", "weight": 1.0},
+        {"tag": "low_quality",  "category": "negative", "weight": 1.0}
+      ]
+    },
+    {
+      "id": "realistic_portrait",
+      "name": "リアルポートレート",
+      "description": "フォトリアルなポートレート",
+      "version": "1.0",
+      "tags": [
+        {"tag": "masterpiece",  "category": "quality",  "weight": 1.5},
+        {"tag": "realistic",    "category": "style",    "weight": 1.2},
+        {"tag": "high_quality", "category": "quality",  "weight": 1.1},
+        {"tag": "brown_eyes",   "category": "eyes",     "weight": 1.0}
+      ],
+      "negative_tags": [
+        {"tag": "anime",        "category": "negative", "weight": 1.0},
+        {"tag": "bad hands",    "category": "negative", "weight": 1.0}
+      ]
+    },
+    {
+      "id": "fantasy_character",
+      "name": "ファンタジーキャラクター",
+      "description": "ファンタジー風キャラクター",
+      "version": "1.0",
+      "tags": [
+        {"tag": "masterpiece",  "category": "quality", "weight": 1.5},
+        {"tag": "fantasy",      "category": "style",   "weight": 1.2},
+        {"tag": "silver_hair",  "category": "hair",    "weight": 1.0},
+        {"tag": "golden_eyes",  "category": "eyes",    "weight": 1.0}
+      ],
+      "negative_tags": [
+        {"tag": "bad hands",    "category": "negative", "weight": 1.0},
+        {"tag": "low_quality",  "category": "negative", "weight": 1.0}
+      ]
+    }
+  ]
+}

@@ -184,9 +184,32 @@ def run_smoke_tests(verbose: bool = False) -> SmokeResults:
     except Exception as e:
         _smoke_fail(smoke, label, e, verbose)
 
-    # ── Step 6〜10: 未実装プレースホルダー ────────────────────
+    # ── Step 6: PresetManager ──────────────────────────────────
+    label = "Step 6  PresetManager"
+    try:
+        from preset.manager import PresetManager
+        from preset.models import Preset, PresetSource, PresetTag
+
+        data_root = ROOT / "fps-data" / "presets"
+        pm = PresetManager(
+            system_dir=data_root / "system",
+            user_dir=data_root / "user",
+        )
+        pm.load()
+        stats = pm.statistics()
+        assert stats["total_presets"] > 0
+        preset = pm.get("anime_portrait")
+        assert preset.tag_count > 0
+        applied = pm.apply("anime_portrait")
+        assert len(applied["tags"]) > 0
+        if verbose:
+            print(dim(f"    presets={stats['total_presets']}  tags={preset.tag_count}"))
+        _smoke_pass(smoke, label)
+    except Exception as e:
+        _smoke_fail(smoke, label, e, verbose)
+
+    # ── Step 7〜10: 未実装プレースホルダー ────────────────────
     pending = [
-        "Step 6  PresetManager",
         "Step 7  Cache",
         "Step 8  Backup",
         "Step 9  Pipeline (10-stage)",
@@ -413,11 +436,11 @@ def print_summary(
         ("Step CI", "CI / Dev Environment",     "✅ DONE",  "feature/ci-devenv"),
         ("Step 4",  "DictionaryManager",        "✅ DONE",  "feature/dictionary-manager"),
         ("Step 5",  "RuleManager",              "✅ DONE",  "feature/rule-manager"),
-        ("Step 6",  "PresetManager",            "🔲 NEXT",  "—"),
-        ("Step 7",  "Cache",                    "🔲 TODO",  "—"),
-        ("Step 8",  "Backup",                   "🔲 TODO",  "—"),
-        ("Step 9",  "Pipeline (10-stage)",      "🔲 TODO",  "—"),
-        ("Step 10", "ComfyUI Adapter",          "🔲 TODO",  "—"),
+        ("Step 6",  "PresetManager",            "✅ DONE",  "feature/preset-manager"),
+        ("Step 7",  "Cache",                    "🔲 NEXT",  "—"),
+        ("Step 8",  "Backup",                   "🔲 TODO",   "—"),
+        ("Step 9",  "Pipeline (10-stage)",      "🔲 TODO",   "—"),
+        ("Step 10", "ComfyUI Adapter",          "🔲 TODO",   "—"),
     ]
     for step, name, status, branch in steps:
         s = ok(status) if "DONE" in status else (
