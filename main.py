@@ -252,15 +252,43 @@ def run_smoke_tests(verbose: bool = False) -> SmokeResults:
     except Exception as e:
         _smoke_fail(smoke, label, e, verbose)
 
-    # ── Step 9〜10: 未実装プレースホルダー ────────────────────
-    pending = [
-        "Step 9  Pipeline (10-stage)",
-        "Step 9  Pipeline (10-stage)",
-        "Step 10 ComfyUI Adapter",
-    ]
-    for lbl in pending:
-        smoke[lbl] = ("PENDING", None)
-        print(f"  {dim('----')}  {dim(lbl)}  {dim('(未実装)')}")
+    # ── Step 9: Pipeline ──────────────────────────────────────
+    label = "Step 9  Pipeline (10-stage)"
+    try:
+        from pipeline.manager import PipelineManager
+
+        pm_test = PipelineManager()
+        result  = pm_test.compile("(quality:high), blue_eyes, [bad hands]")
+        assert result.success is True
+        assert result.stage_count == 10
+        assert len(result.tags) >= 1
+        if verbose:
+            print(dim(f"    stages={pm_test.statistics()['run_count']} run  tags={result.tag_count}"))
+        _smoke_pass(smoke, label)
+    except Exception as e:
+        _smoke_fail(smoke, label, e, verbose)
+
+    # ── Step 10: ComfyUI Adapter ───────────────────────────────
+    label = "Step 10 ComfyUI Adapter"
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(ROOT / "fps-adapters"))
+        from comfyui.adapter import ComfyUIAdapter
+        from pipeline.manager import PipelineManager as _PM2
+
+        _pm2     = _PM2()
+        _result2 = _pm2.compile("(quality:high), blue_eyes")
+        adp      = ComfyUIAdapter(api_version="v1")
+        out_v1   = adp.convert(_result2)
+        assert "prompt" in out_v1 and "tags" in out_v1
+        adp_v2  = ComfyUIAdapter(api_version="v2")
+        out_v2  = adp_v2.convert(_result2)
+        assert "nodes" in out_v2
+        if verbose:
+            print(dim(f"    v1 prompt='{out_v1['prompt'][:40]}'"))
+        _smoke_pass(smoke, label)
+    except Exception as e:
+        _smoke_fail(smoke, label, e, verbose)
 
     print()
     return smoke
@@ -482,8 +510,8 @@ def print_summary(
         ("Step 6",  "PresetManager",            "✅ DONE",  "feature/preset-manager"),
         ("Step 7",  "Cache",                    "✅ DONE",  "feature/cache"),
         ("Step 8",  "Backup",                   "✅ DONE",   "feature/backup"),
-        ("Step 9",  "Pipeline (10-stage)",      "🔲 NEXT",   "—"),
-        ("Step 10", "ComfyUI Adapter",          "🔲 TODO",   "—"),
+        ("Step 9",  "Pipeline (10-stage)",      "✅ DONE",   "feature/pipeline-adapter"),
+        ("Step 10", "ComfyUI Adapter",          "✅ DONE",   "feature/pipeline-adapter"),
     ]
     for step, name, status, branch in steps:
         s = ok(status) if "DONE" in status else (
