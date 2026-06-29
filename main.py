@@ -208,9 +208,26 @@ def run_smoke_tests(verbose: bool = False) -> SmokeResults:
     except Exception as e:
         _smoke_fail(smoke, label, e, verbose)
 
-    # ── Step 7〜10: 未実装プレースホルダー ────────────────────
+    # ── Step 7: Cache ──────────────────────────────────────────
+    label = "Step 7  Cache"
+    try:
+        from cache.manager import CacheManager
+        cm = CacheManager(max_size=128, default_ttl=3600)
+        cm.set("lookup", "masterpiece", {"resolved": "Quality.High"})
+        result = cm.get("lookup", "masterpiece")
+        assert result == {"resolved": "Quality.High"}
+        cm.set_lookup("blue_eyes", {"resolved": "Eyes.Blue"})
+        assert cm.get_lookup("blue_eyes") is not None
+        stats = cm.statistics()
+        assert stats["hits"] >= 1
+        if verbose:
+            print(dim(f"    size={stats['total_size']}  hit_rate={stats['hit_rate']:.0%}"))
+        _smoke_pass(smoke, label)
+    except Exception as e:
+        _smoke_fail(smoke, label, e, verbose)
+
+    # ── Step 8〜10: 未実装プレースホルダー ────────────────────
     pending = [
-        "Step 7  Cache",
         "Step 8  Backup",
         "Step 9  Pipeline (10-stage)",
         "Step 10 ComfyUI Adapter",
@@ -437,8 +454,8 @@ def print_summary(
         ("Step 4",  "DictionaryManager",        "✅ DONE",  "feature/dictionary-manager"),
         ("Step 5",  "RuleManager",              "✅ DONE",  "feature/rule-manager"),
         ("Step 6",  "PresetManager",            "✅ DONE",  "feature/preset-manager"),
-        ("Step 7",  "Cache",                    "🔲 NEXT",  "—"),
-        ("Step 8",  "Backup",                   "🔲 TODO",   "—"),
+        ("Step 7",  "Cache",                    "✅ DONE",  "feature/cache"),
+        ("Step 8",  "Backup",                   "🔲 NEXT",   "—"),
         ("Step 9",  "Pipeline (10-stage)",      "🔲 TODO",   "—"),
         ("Step 10", "ComfyUI Adapter",          "🔲 TODO",   "—"),
     ]
