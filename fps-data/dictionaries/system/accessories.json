@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "category": "accessories",
+  "description": "アクセサリー・装飾品タグ（顔特化）",
+  "entries": [
+    {"key": "hair_ribbon",    "resolved": "Accessories.HairRibbon", "aliases": ["ribbon in hair", "bow in hair"],        "weight": 1.0, "tags": ["hair"]},
+    {"key": "hair_clip",      "resolved": "Accessories.HairClip",   "aliases": ["barrette", "hair pin", "hair accessory"],"weight": 1.0, "tags": ["hair"]},
+    {"key": "hair_bow",       "resolved": "Accessories.HairBow",    "aliases": ["bow hair accessory"],                   "weight": 1.0, "tags": ["hair"]},
+    {"key": "hairband",       "resolved": "Accessories.Hairband",   "aliases": ["headband", "alice band"],               "weight": 1.0, "tags": ["hair"]},
+    {"key": "flower_in_hair", "resolved": "Accessories.FlowerHair", "aliases": ["floral hair accessory"],               "weight": 1.0, "tags": ["hair"]},
+    {"key": "crown",          "resolved": "Accessories.Crown",      "aliases": ["tiara", "diadem"],                      "weight": 1.0, "tags": ["head"]},
+    {"key": "hat",            "resolved": "Accessories.Hat",        "aliases": ["cap", "headwear"],                      "weight": 1.0, "tags": ["head"]},
+    {"key": "earrings",       "resolved": "Accessories.Earrings",   "aliases": ["ear jewelry", "ear stud"],              "weight": 1.0, "tags": ["jewelry"]},
+    {"key": "necklace",       "resolved": "Accessories.Necklace",   "aliases": ["neck jewelry", "pendant"],              "weight": 1.0, "tags": ["jewelry"]},
+    {"key": "choker",         "resolved": "Accessories.Choker",     "aliases": ["neck choker", "collar"],                "weight": 1.0, "tags": ["jewelry"]},
+    {"key": "mask",           "resolved": "Accessories.Mask",       "aliases": ["face mask", "masquerade mask"],         "weight": 1.0, "tags": ["face"]},
+    {"key": "eye_patch",      "resolved": "Accessories.EyePatch",   "aliases": ["eyepatch", "pirate eye patch"],         "weight": 1.0, "tags": ["face"]}
+  ]
+}

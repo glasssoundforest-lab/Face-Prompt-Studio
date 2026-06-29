@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "category": "eyebrows",
+  "description": "眉毛の形状・特徴タグ（顔特化）",
+  "entries": [
+    {"key": "thick_eyebrows",  "resolved": "Eyebrows.Thick",    "aliases": ["bold eyebrows", "bushy eyebrows"],  "weight": 1.0, "tags": ["shape"]},
+    {"key": "thin_eyebrows",   "resolved": "Eyebrows.Thin",     "aliases": ["slender eyebrows", "fine eyebrows"],"weight": 1.0, "tags": ["shape"]},
+    {"key": "arched_eyebrows", "resolved": "Eyebrows.Arched",   "aliases": ["curved eyebrows", "high arch brows"],"weight": 1.0, "tags": ["shape"]},
+    {"key": "straight_eyebrows","resolved": "Eyebrows.Straight","aliases": ["flat eyebrows"],                    "weight": 1.0, "tags": ["shape"]},
+    {"key": "furrowed_eyebrows","resolved": "Eyebrows.Furrowed","aliases": ["knitted brows", "frowning brows"],  "weight": 1.0, "tags": ["expression"]},
+    {"key": "raised_eyebrows",  "resolved": "Eyebrows.Raised",  "aliases": ["lifted eyebrows", "surprised brows"],"weight": 1.0, "tags": ["expression"]},
+    {"key": "blonde_eyebrows",  "resolved": "Eyebrows.Blonde",  "aliases": ["light eyebrows"],                  "weight": 1.0, "tags": ["color"]},
+    {"key": "dark_eyebrows",    "resolved": "Eyebrows.Dark",    "aliases": ["black eyebrows", "dark brows"],    "weight": 1.0, "tags": ["color"]}
+  ]
+}

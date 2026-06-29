@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "category": "makeup",
+  "description": "メイクアップ・化粧タグ（顔特化）",
+  "entries": [
+    {"key": "lipstick",       "resolved": "Makeup.Lipstick",    "aliases": ["lip color", "lip makeup"],              "weight": 1.0, "tags": ["lip"]},
+    {"key": "red_lipstick",   "resolved": "Makeup.RedLipstick", "aliases": ["red lip color"],                        "weight": 1.0, "tags": ["lip"]},
+    {"key": "eyeshadow",      "resolved": "Makeup.Eyeshadow",   "aliases": ["eye shadow", "eye makeup"],             "weight": 1.0, "tags": ["eye"]},
+    {"key": "eyeliner",       "resolved": "Makeup.Eyeliner",    "aliases": ["eye liner", "kohl liner"],              "weight": 1.0, "tags": ["eye"]},
+    {"key": "mascara",        "resolved": "Makeup.Mascara",     "aliases": ["lash makeup"],                          "weight": 1.0, "tags": ["eye"]},
+    {"key": "blush_makeup",   "resolved": "Makeup.Blush",       "aliases": ["rouge", "cheek makeup", "blush on"],    "weight": 1.0, "tags": ["cheek"]},
+    {"key": "heavy_makeup",   "resolved": "Makeup.Heavy",       "aliases": ["full makeup", "stage makeup", "gyaru makeup"],"weight": 1.0, "tags": ["intensity"]},
+    {"key": "light_makeup",   "resolved": "Makeup.Light",       "aliases": ["natural makeup", "subtle makeup", "no makeup look"],"weight": 1.0, "tags": ["intensity"]},
+    {"key": "gothic_makeup",  "resolved": "Makeup.Gothic",      "aliases": ["dark makeup", "black makeup"],          "weight": 1.0, "tags": ["style"]},
+    {"key": "tears_of_mascara","resolved":"Makeup.RunningMascara","aliases": ["smeared mascara", "crying makeup"],   "weight": 1.0, "tags": ["state"]}
+  ]
+}

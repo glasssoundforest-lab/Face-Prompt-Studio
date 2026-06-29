@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "category": "blacklist",
+  "description": "顔プロンプト処理時に除外すべきデフォルトタグ（ポーズ・背景・カメラ等）",
+  "entries": [
+    {"key": "standing",       "resolved": "Remove.Pose",     "aliases": ["standing up"],           "weight": 1.0, "tags": ["pose"]},
+    {"key": "sitting",        "resolved": "Remove.Pose",     "aliases": ["seated", "sit down"],    "weight": 1.0, "tags": ["pose"]},
+    {"key": "kneeling",       "resolved": "Remove.Pose",     "aliases": ["on knees"],              "weight": 1.0, "tags": ["pose"]},
+    {"key": "lying_down",     "resolved": "Remove.Pose",     "aliases": ["lying", "prone"],        "weight": 1.0, "tags": ["pose"]},
+    {"key": "looking_at_viewer","resolved":"Remove.Gesture", "aliases": ["eye contact"],           "weight": 1.0, "tags": ["gesture"]},
+    {"key": "arms_crossed",   "resolved": "Remove.Gesture",  "aliases": ["crossed arms"],          "weight": 1.0, "tags": ["gesture"]},
+    {"key": "v_sign",         "resolved": "Remove.Gesture",  "aliases": ["peace sign", "victory sign"], "weight": 1.0, "tags": ["gesture"]},
+    {"key": "simple_background","resolved":"Remove.Background","aliases": ["plain background"],    "weight": 1.0, "tags": ["background"]},
+    {"key": "white_background","resolved": "Remove.Background","aliases": ["white bg"],            "weight": 1.0, "tags": ["background"]},
+    {"key": "outdoor",        "resolved": "Remove.Environment","aliases": ["outside", "outdoors"], "weight": 1.0, "tags": ["environment"]},
+    {"key": "indoor",         "resolved": "Remove.Environment","aliases": ["inside", "interior"],  "weight": 1.0, "tags": ["environment"]},
+    {"key": "close_up",       "resolved": "Remove.Camera",   "aliases": ["closeup", "close shot"],"weight": 1.0, "tags": ["camera"]},
+    {"key": "portrait",       "resolved": "Remove.Camera",   "aliases": ["portrait shot"],        "weight": 1.0, "tags": ["camera"]},
+    {"key": "full_body",      "resolved": "Remove.Camera",   "aliases": ["full shot", "full figure"], "weight": 1.0, "tags": ["camera"]},
+    {"key": "upper_body",     "resolved": "Remove.Camera",   "aliases": ["half body", "bust shot"],"weight": 1.0, "tags": ["camera"]},
+    {"key": "sword",          "resolved": "Remove.Weapon",   "aliases": ["katana", "blade"],      "weight": 1.0, "tags": ["weapon"]},
+    {"key": "gun",            "resolved": "Remove.Weapon",   "aliases": ["pistol", "rifle"],      "weight": 1.0, "tags": ["weapon"]},
+    {"key": "sunlight",       "resolved": "Remove.Lighting", "aliases": ["sunbeam", "sun rays"],  "weight": 1.0, "tags": ["lighting"]},
+    {"key": "night",          "resolved": "Remove.Lighting", "aliases": ["nighttime", "dark night"],"weight": 1.0, "tags": ["lighting"]}
+  ]
+}

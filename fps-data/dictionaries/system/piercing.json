@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "category": "piercing",
+  "description": "ピアス・ボディピアスタグ（顔特化）",
+  "entries": [
+    {"key": "ear_piercing",    "resolved": "Piercing.Ear",     "aliases": ["earring piercing", "lobe piercing"],   "weight": 1.0, "tags": ["location"]},
+    {"key": "nose_piercing",   "resolved": "Piercing.Nose",    "aliases": ["nose ring", "nostril piercing"],       "weight": 1.0, "tags": ["location"]},
+    {"key": "lip_piercing",    "resolved": "Piercing.Lip",     "aliases": ["lip ring", "labret"],                  "weight": 1.0, "tags": ["location"]},
+    {"key": "eyebrow_piercing","resolved": "Piercing.Eyebrow", "aliases": ["brow piercing"],                       "weight": 1.0, "tags": ["location"]},
+    {"key": "multiple_piercings","resolved":"Piercing.Multiple","aliases": ["many piercings"],                     "weight": 1.0, "tags": ["quantity"]}
+  ]
+}

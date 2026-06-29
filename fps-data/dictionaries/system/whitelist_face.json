@@ -1,0 +1,160 @@
+{
+  "version": "1.0",
+  "category": "whitelist",
+  "description": "顔プロンプト処理時に保持すべきカテゴリ一覧（ホワイトリストモード用）",
+  "entries": [
+    {
+      "key": "wl_quality",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_eyes",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_eyebrows",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_eyelashes",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_face_shape",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_nose",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_mouth",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_teeth",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_skin",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_expression",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_accessories",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_glasses",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_piercing",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_makeup",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_fantasy_parts",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_hair",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    },
+    {
+      "key": "wl_style",
+      "resolved": "Whitelist.Category",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "category"
+      ]
+    }
+  ]
+}

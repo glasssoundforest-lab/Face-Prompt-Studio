@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "category": "teeth",
+  "description": "歯の特徴タグ（顔特化）",
+  "entries": [
+    {"key": "white_teeth",  "resolved": "Teeth.White",  "aliases": ["bright teeth", "pearly whites"],  "weight": 1.0, "tags": ["color"]},
+    {"key": "sharp_teeth",  "resolved": "Teeth.Sharp",  "aliases": ["fangs", "pointed teeth"],          "weight": 1.0, "tags": ["shape"]},
+    {"key": "showing_teeth","resolved": "Teeth.Showing","aliases": ["teeth visible", "open smile"],     "weight": 1.0, "tags": ["state"]},
+    {"key": "vampire_teeth","resolved": "Teeth.Vampire","aliases": ["vampire fangs", "blood fangs"],    "weight": 1.0, "tags": ["fantasy"]},
+    {"key": "gap_teeth",    "resolved": "Teeth.Gap",    "aliases": ["tooth gap", "gapped smile"],       "weight": 1.0, "tags": ["shape"]}
+  ]
+}

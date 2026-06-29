@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "category": "mouth",
+  "description": "口・唇の形状・特徴タグ（顔特化）",
+  "entries": [
+    {"key": "full_lips",     "resolved": "Mouth.FullLips",    "aliases": ["plump lips", "thick lips"],          "weight": 1.0, "tags": ["shape"]},
+    {"key": "thin_lips",     "resolved": "Mouth.ThinLips",    "aliases": ["slim lips", "light lips"],           "weight": 1.0, "tags": ["shape"]},
+    {"key": "pouty_lips",    "resolved": "Mouth.Pouty",       "aliases": ["pout", "duck lips"],                 "weight": 1.0, "tags": ["shape"]},
+    {"key": "cupid_bow_lips","resolved": "Mouth.CupidBow",    "aliases": ["heart shaped lips"],                 "weight": 1.0, "tags": ["shape"]},
+    {"key": "parted_lips",   "resolved": "Mouth.Parted",      "aliases": ["slightly open mouth", "open lips"],  "weight": 1.0, "tags": ["state"]},
+    {"key": "closed_mouth",  "resolved": "Mouth.Closed",      "aliases": ["lips closed", "mouth shut"],         "weight": 1.0, "tags": ["state"]},
+    {"key": "open_mouth",    "resolved": "Mouth.Open",        "aliases": ["mouth open", "speaking"],            "weight": 1.0, "tags": ["state"]},
+    {"key": "red_lips",      "resolved": "Mouth.Red",         "aliases": ["ruby lips", "scarlet lips"],         "weight": 1.0, "tags": ["color"]},
+    {"key": "glossy_lips",   "resolved": "Mouth.Glossy",      "aliases": ["shiny lips", "lip gloss"],           "weight": 1.0, "tags": ["detail"]},
+    {"key": "tongue_out",    "resolved": "Mouth.TongueOut",   "aliases": ["sticking out tongue"],               "weight": 1.0, "tags": ["state"]}
+  ]
+}

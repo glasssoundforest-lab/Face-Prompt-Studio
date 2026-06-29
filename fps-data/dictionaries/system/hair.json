@@ -1,49 +1,27 @@
 {
   "version": "1.0",
   "category": "hair",
-  "description": "髪の色・長さ・スタイルタグ",
+  "description": "髪の色・長さ・スタイルタグ（顔特化）",
   "entries": [
-    {
-      "key": "long_hair",
-      "resolved": "Hair.Long",
-      "aliases": ["hair long"],
-      "weight": 1.0,
-      "tags": ["length"]
-    },
-    {
-      "key": "short_hair",
-      "resolved": "Hair.Short",
-      "aliases": ["hair short"],
-      "weight": 1.0,
-      "tags": ["length"]
-    },
-    {
-      "key": "blonde_hair",
-      "resolved": "Hair.Blonde",
-      "aliases": ["blond hair", "yellow hair"],
-      "weight": 1.0,
-      "tags": ["color"]
-    },
-    {
-      "key": "black_hair",
-      "resolved": "Hair.Black",
-      "aliases": ["dark hair"],
-      "weight": 1.0,
-      "tags": ["color"]
-    },
-    {
-      "key": "silver_hair",
-      "resolved": "Hair.Silver",
-      "aliases": ["white hair", "grey hair"],
-      "weight": 1.0,
-      "tags": ["color"]
-    },
-    {
-      "key": "twintails",
-      "resolved": "Hair.Twintails",
-      "aliases": ["twin tails", "pigtails"],
-      "weight": 1.0,
-      "tags": ["style"]
-    }
+    {"key": "long_hair",     "resolved": "Hair.Long",     "aliases": ["hair long"],              "weight": 1.0, "tags": ["length"]},
+    {"key": "short_hair",    "resolved": "Hair.Short",    "aliases": ["hair short"],             "weight": 1.0, "tags": ["length"]},
+    {"key": "medium_hair",   "resolved": "Hair.Medium",   "aliases": ["shoulder length hair"],   "weight": 1.0, "tags": ["length"]},
+    {"key": "very_long_hair","resolved": "Hair.VeryLong", "aliases": ["floor length hair"],      "weight": 1.0, "tags": ["length"]},
+    {"key": "blonde_hair",   "resolved": "Hair.Blonde",   "aliases": ["blond hair", "yellow hair", "golden hair"], "weight": 1.0, "tags": ["color"]},
+    {"key": "black_hair",    "resolved": "Hair.Black",    "aliases": ["dark hair"],              "weight": 1.0, "tags": ["color"]},
+    {"key": "silver_hair",   "resolved": "Hair.Silver",   "aliases": ["white hair", "grey hair"],"weight": 1.0, "tags": ["color"]},
+    {"key": "brown_hair",    "resolved": "Hair.Brown",    "aliases": ["chestnut hair", "dark brown hair"], "weight": 1.0, "tags": ["color"]},
+    {"key": "red_hair",      "resolved": "Hair.Red",      "aliases": ["auburn hair", "crimson hair"], "weight": 1.0, "tags": ["color"]},
+    {"key": "pink_hair",     "resolved": "Hair.Pink",     "aliases": ["rose hair", "sakura hair"], "weight": 1.0, "tags": ["color"]},
+    {"key": "purple_hair",   "resolved": "Hair.Purple",   "aliases": ["violet hair", "lavender hair"], "weight": 1.0, "tags": ["color"]},
+    {"key": "blue_hair",     "resolved": "Hair.Blue",     "aliases": ["cyan hair", "azure hair"], "weight": 1.0, "tags": ["color"]},
+    {"key": "green_hair",    "resolved": "Hair.Green",    "aliases": ["emerald hair"],           "weight": 1.0, "tags": ["color"]},
+    {"key": "twintails",     "resolved": "Hair.Twintails","aliases": ["twin tails", "pigtails"], "weight": 1.0, "tags": ["style"]},
+    {"key": "ponytail",      "resolved": "Hair.Ponytail", "aliases": ["tied hair", "high ponytail"], "weight": 1.0, "tags": ["style"]},
+    {"key": "braided_hair",  "resolved": "Hair.Braided",  "aliases": ["braid", "plaited hair"], "weight": 1.0, "tags": ["style"]},
+    {"key": "wavy_hair",     "resolved": "Hair.Wavy",     "aliases": ["curly hair", "loose curls"], "weight": 1.0, "tags": ["style"]},
+    {"key": "straight_hair", "resolved": "Hair.Straight", "aliases": ["smooth hair"],           "weight": 1.0, "tags": ["style"]},
+    {"key": "side_ponytail", "resolved": "Hair.SidePonytail", "aliases": ["side tail"],         "weight": 1.0, "tags": ["style"]},
+    {"key": "hair_bun",      "resolved": "Hair.Bun",      "aliases": ["updo", "chignon"],       "weight": 1.0, "tags": ["style"]}
   ]
 }

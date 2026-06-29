@@ -1,42 +1,22 @@
 {
   "version": "1.0",
   "category": "eyes",
-  "description": "目の色・形状タグ",
+  "description": "目の色・形状・特徴タグ（顔特化）",
   "entries": [
-    {
-      "key": "blue_eyes",
-      "resolved": "Eyes.Blue",
-      "aliases": ["blue eye", "eyes blue"],
-      "weight": 1.0,
-      "tags": ["color"]
-    },
-    {
-      "key": "green_eyes",
-      "resolved": "Eyes.Green",
-      "aliases": ["green eye", "eyes green"],
-      "weight": 1.0,
-      "tags": ["color"]
-    },
-    {
-      "key": "brown_eyes",
-      "resolved": "Eyes.Brown",
-      "aliases": ["brown eye", "eyes brown"],
-      "weight": 1.0,
-      "tags": ["color"]
-    },
-    {
-      "key": "red_eyes",
-      "resolved": "Eyes.Red",
-      "aliases": ["red eye", "eyes red", "crimson eyes"],
-      "weight": 1.0,
-      "tags": ["color"]
-    },
-    {
-      "key": "golden_eyes",
-      "resolved": "Eyes.Golden",
-      "aliases": ["gold eyes", "amber eyes"],
-      "weight": 1.0,
-      "tags": ["color"]
-    }
+    {"key": "blue_eyes",        "resolved": "Eyes.Blue",        "aliases": ["blue eye", "sapphire eyes"],        "weight": 1.0, "tags": ["color"]},
+    {"key": "green_eyes",       "resolved": "Eyes.Green",       "aliases": ["green eye", "emerald eyes"],        "weight": 1.0, "tags": ["color"]},
+    {"key": "brown_eyes",       "resolved": "Eyes.Brown",       "aliases": ["hazel eyes", "dark eyes"],          "weight": 1.0, "tags": ["color"]},
+    {"key": "red_eyes",         "resolved": "Eyes.Red",         "aliases": ["crimson eyes", "ruby eyes"],        "weight": 1.0, "tags": ["color"]},
+    {"key": "golden_eyes",      "resolved": "Eyes.Golden",      "aliases": ["amber eyes", "yellow eyes"],        "weight": 1.0, "tags": ["color"]},
+    {"key": "purple_eyes",      "resolved": "Eyes.Purple",      "aliases": ["violet eyes", "amethyst eyes"],     "weight": 1.0, "tags": ["color"]},
+    {"key": "silver_eyes",      "resolved": "Eyes.Silver",      "aliases": ["grey eyes", "gray eyes"],           "weight": 1.0, "tags": ["color"]},
+    {"key": "black_eyes",       "resolved": "Eyes.Black",       "aliases": ["onyx eyes"],                        "weight": 1.0, "tags": ["color"]},
+    {"key": "heterochromia",    "resolved": "Eyes.Heterochromia","aliases": ["odd eyes", "different colored eyes"],"weight": 1.0, "tags": ["special"]},
+    {"key": "large_eyes",       "resolved": "Eyes.Large",       "aliases": ["big eyes", "wide eyes"],            "weight": 1.0, "tags": ["shape"]},
+    {"key": "narrow_eyes",      "resolved": "Eyes.Narrow",      "aliases": ["slit eyes", "squinting"],           "weight": 1.0, "tags": ["shape"]},
+    {"key": "sparkling_eyes",   "resolved": "Eyes.Sparkling",   "aliases": ["shining eyes", "starry eyes"],      "weight": 1.0, "tags": ["effect"]},
+    {"key": "teary_eyes",       "resolved": "Eyes.Teary",       "aliases": ["watery eyes", "glossy eyes"],       "weight": 1.0, "tags": ["effect"]},
+    {"key": "half_closed_eyes", "resolved": "Eyes.HalfClosed",  "aliases": ["sleepy eyes", "droopy eyes"],       "weight": 1.0, "tags": ["shape"]},
+    {"key": "upturned_eyes",    "resolved": "Eyes.Upturned",    "aliases": ["cat eye shape"],                    "weight": 1.0, "tags": ["shape"]}
   ]
 }

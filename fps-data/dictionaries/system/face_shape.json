@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "category": "face_shape",
+  "description": "顔の形・輪郭タグ（顔特化）",
+  "entries": [
+    {"key": "oval_face",      "resolved": "FaceShape.Oval",      "aliases": ["egg shaped face"],                   "weight": 1.0, "tags": ["shape"]},
+    {"key": "round_face",     "resolved": "FaceShape.Round",     "aliases": ["circular face", "chubby face"],      "weight": 1.0, "tags": ["shape"]},
+    {"key": "square_face",    "resolved": "FaceShape.Square",    "aliases": ["angular face", "strong jawline"],    "weight": 1.0, "tags": ["shape"]},
+    {"key": "heart_face",     "resolved": "FaceShape.Heart",     "aliases": ["v shaped face", "pointed chin"],     "weight": 1.0, "tags": ["shape"]},
+    {"key": "long_face",      "resolved": "FaceShape.Long",      "aliases": ["narrow face", "oblong face"],        "weight": 1.0, "tags": ["shape"]},
+    {"key": "sharp_features", "resolved": "FaceShape.Sharp",     "aliases": ["defined features", "chiseled face"], "weight": 1.0, "tags": ["detail"]},
+    {"key": "soft_features",  "resolved": "FaceShape.Soft",      "aliases": ["gentle features", "smooth face"],    "weight": 1.0, "tags": ["detail"]},
+    {"key": "small_face",     "resolved": "FaceShape.Small",     "aliases": ["petite face", "delicate face"],      "weight": 1.0, "tags": ["size"]},
+    {"key": "high_cheekbones","resolved": "FaceShape.HighCheekbones","aliases": ["prominent cheekbones"],          "weight": 1.0, "tags": ["detail"]}
+  ]
+}

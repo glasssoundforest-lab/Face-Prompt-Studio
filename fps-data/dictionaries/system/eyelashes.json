@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "category": "eyelashes",
+  "description": "まつ毛の特徴タグ（顔特化）",
+  "entries": [
+    {"key": "long_eyelashes",   "resolved": "Eyelashes.Long",   "aliases": ["long lashes", "lengthy lashes"],     "weight": 1.0, "tags": ["length"]},
+    {"key": "thick_eyelashes",  "resolved": "Eyelashes.Thick",  "aliases": ["full lashes", "voluminous lashes"],  "weight": 1.0, "tags": ["density"]},
+    {"key": "curled_eyelashes", "resolved": "Eyelashes.Curled", "aliases": ["curly lashes", "upward lashes"],     "weight": 1.0, "tags": ["shape"]},
+    {"key": "false_eyelashes",  "resolved": "Eyelashes.False",  "aliases": ["fake lashes", "artificial lashes"],  "weight": 1.0, "tags": ["type"]},
+    {"key": "sparse_eyelashes", "resolved": "Eyelashes.Sparse", "aliases": ["thin lashes", "short lashes"],       "weight": 1.0, "tags": ["density"]}
+  ]
+}

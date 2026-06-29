@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "category": "glasses",
+  "description": "眼鏡・コンタクトタグ（顔特化）",
+  "entries": [
+    {"key": "glasses",           "resolved": "Glasses.Normal",    "aliases": ["eyeglasses", "spectacles"],              "weight": 1.0, "tags": ["type"]},
+    {"key": "round_glasses",     "resolved": "Glasses.Round",     "aliases": ["circular glasses", "circle glasses"],    "weight": 1.0, "tags": ["shape"]},
+    {"key": "square_glasses",    "resolved": "Glasses.Square",    "aliases": ["rectangular glasses"],                   "weight": 1.0, "tags": ["shape"]},
+    {"key": "sunglasses",        "resolved": "Glasses.Sunglasses","aliases": ["shades", "dark glasses"],                "weight": 1.0, "tags": ["type"]},
+    {"key": "half_rim_glasses",  "resolved": "Glasses.HalfRim",  "aliases": ["half frame glasses"],                    "weight": 1.0, "tags": ["type"]},
+    {"key": "monocle",           "resolved": "Glasses.Monocle",  "aliases": ["single lens"],                           "weight": 1.0, "tags": ["type"]},
+    {"key": "glasses_removed",   "resolved": "Glasses.Removed",  "aliases": ["taking off glasses"],                    "weight": 1.0, "tags": ["state"]},
+    {"key": "colored_contacts",  "resolved": "Glasses.ColoredContacts","aliases": ["contact lenses", "colored lens"],  "weight": 1.0, "tags": ["type"]}
+  ]
+}

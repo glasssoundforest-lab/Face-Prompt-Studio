@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "category": "nose",
+  "description": "鼻の形状・特徴タグ（顔特化）",
+  "entries": [
+    {"key": "small_nose",    "resolved": "Nose.Small",    "aliases": ["button nose", "petite nose"],      "weight": 1.0, "tags": ["size"]},
+    {"key": "sharp_nose",    "resolved": "Nose.Sharp",    "aliases": ["pointed nose", "straight nose"],   "weight": 1.0, "tags": ["shape"]},
+    {"key": "upturned_nose", "resolved": "Nose.Upturned", "aliases": ["ski jump nose", "pug nose"],       "weight": 1.0, "tags": ["shape"]},
+    {"key": "wide_nose",     "resolved": "Nose.Wide",     "aliases": ["broad nose", "flat nose"],         "weight": 1.0, "tags": ["shape"]},
+    {"key": "aquiline_nose", "resolved": "Nose.Aquiline", "aliases": ["roman nose", "hooked nose"],       "weight": 1.0, "tags": ["shape"]},
+    {"key": "freckled_nose", "resolved": "Nose.Freckled", "aliases": ["freckles on nose"],                "weight": 1.0, "tags": ["detail"]}
+  ]
+}

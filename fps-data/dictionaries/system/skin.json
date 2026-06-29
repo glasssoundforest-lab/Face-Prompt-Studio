@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "category": "skin",
+  "description": "肌の色・質感・特徴タグ（顔特化）",
+  "entries": [
+    {"key": "fair_skin",   "resolved": "Skin.Fair",    "aliases": ["light skin", "porcelain skin"],           "weight": 1.0, "tags": ["tone"]},
+    {"key": "tan_skin",    "resolved": "Skin.Tan",     "aliases": ["bronze skin", "tanned skin"],             "weight": 1.0, "tags": ["tone"]},
+    {"key": "dark_skin",   "resolved": "Skin.Dark",    "aliases": ["brown skin", "deep skin"],                "weight": 1.0, "tags": ["tone"]},
+    {"key": "olive_skin",  "resolved": "Skin.Olive",   "aliases": ["mediterranean skin"],                     "weight": 1.0, "tags": ["tone"]},
+    {"key": "pale_skin",   "resolved": "Skin.Pale",    "aliases": ["very pale skin", "ghost white skin"],     "weight": 1.0, "tags": ["tone"]},
+    {"key": "freckles",    "resolved": "Skin.Freckles","aliases": ["face freckles", "freckled skin"],         "weight": 1.0, "tags": ["detail"]},
+    {"key": "smooth_skin", "resolved": "Skin.Smooth",  "aliases": ["flawless skin", "perfect skin"],          "weight": 1.0, "tags": ["texture"]},
+    {"key": "blush",       "resolved": "Skin.Blush",   "aliases": ["rosy cheeks", "pink cheeks", "flushed"], "weight": 1.0, "tags": ["detail"]},
+    {"key": "mole",        "resolved": "Skin.Mole",    "aliases": ["beauty mark", "facial mole"],             "weight": 1.0, "tags": ["detail"]},
+    {"key": "scar",        "resolved": "Skin.Scar",    "aliases": ["facial scar", "face scar"],               "weight": 1.0, "tags": ["detail"]},
+    {"key": "dimples",     "resolved": "Skin.Dimples", "aliases": ["cheek dimples", "dimpled cheeks"],        "weight": 1.0, "tags": ["detail"]},
+    {"key": "sweat",       "resolved": "Skin.Sweat",   "aliases": ["sweating", "perspiring", "sweat drops"], "weight": 1.0, "tags": ["state"]}
+  ]
+}

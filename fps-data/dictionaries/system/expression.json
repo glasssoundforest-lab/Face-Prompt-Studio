@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "category": "expression",
+  "description": "顔の表情タグ（顔特化）",
+  "entries": [
+    {"key": "smile",          "resolved": "Expression.Smile",       "aliases": ["smiling", "happy face"],                  "weight": 1.0, "tags": ["positive"]},
+    {"key": "grin",           "resolved": "Expression.Grin",        "aliases": ["big smile", "wide smile", "ear to ear grin"],"weight": 1.0, "tags": ["positive"]},
+    {"key": "laugh",          "resolved": "Expression.Laugh",       "aliases": ["laughing", "laughs"],                     "weight": 1.0, "tags": ["positive"]},
+    {"key": "blush_expression","resolved": "Expression.Blush",      "aliases": ["embarrassed", "shy expression"],          "weight": 1.0, "tags": ["emotion"]},
+    {"key": "sad_expression", "resolved": "Expression.Sad",         "aliases": ["sad face", "sorrowful", "crying face"],   "weight": 1.0, "tags": ["negative"]},
+    {"key": "angry_expression","resolved": "Expression.Angry",      "aliases": ["angry face", "rage", "furious"],          "weight": 1.0, "tags": ["negative"]},
+    {"key": "surprised",      "resolved": "Expression.Surprised",   "aliases": ["shocked", "astonished", "wide eyed"],     "weight": 1.0, "tags": ["emotion"]},
+    {"key": "neutral_face",   "resolved": "Expression.Neutral",     "aliases": ["expressionless", "blank face"],           "weight": 1.0, "tags": ["neutral"]},
+    {"key": "serious_face",   "resolved": "Expression.Serious",     "aliases": ["stern face", "stoic", "solemn"],          "weight": 1.0, "tags": ["neutral"]},
+    {"key": "wink",           "resolved": "Expression.Wink",        "aliases": ["one eye wink", "winking"],                "weight": 1.0, "tags": ["action"]},
+    {"key": "pout",           "resolved": "Expression.Pout",        "aliases": ["pouty face", "sulking"],                  "weight": 1.0, "tags": ["emotion"]},
+    {"key": "smirk",          "resolved": "Expression.Smirk",       "aliases": ["half smile", "knowing smile"],            "weight": 1.0, "tags": ["neutral"]},
+    {"key": "teary_expression","resolved": "Expression.Teary",      "aliases": ["about to cry", "teary eyed face"],        "weight": 1.0, "tags": ["emotion"]},
+    {"key": "sleeping_face",  "resolved": "Expression.Sleeping",    "aliases": ["asleep", "drowsy face"],                  "weight": 1.0, "tags": ["state"]},
+    {"key": "ahegao",         "resolved": "Expression.Ahegao",      "aliases": [],                                         "weight": 1.0, "tags": ["special"]}
+  ]
+}

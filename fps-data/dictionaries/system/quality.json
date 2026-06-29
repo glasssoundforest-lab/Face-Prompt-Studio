@@ -3,33 +3,9 @@
   "category": "quality",
   "description": "画質・品質タグ",
   "entries": [
-    {
-      "key": "masterpiece",
-      "resolved": "Quality.High",
-      "aliases": ["best quality"],
-      "weight": 1.2,
-      "tags": ["positive"]
-    },
-    {
-      "key": "high_quality",
-      "resolved": "Quality.High",
-      "aliases": ["highres", "high_res"],
-      "weight": 1.1,
-      "tags": ["positive"]
-    },
-    {
-      "key": "medium_quality",
-      "resolved": "Quality.Medium",
-      "aliases": ["normal quality"],
-      "weight": 1.0,
-      "tags": ["neutral"]
-    },
-    {
-      "key": "low_quality",
-      "resolved": "Quality.Low",
-      "aliases": ["worst quality"],
-      "weight": 0.8,
-      "tags": ["negative"]
-    }
+    {"key": "masterpiece",   "resolved": "Quality.High",    "aliases": ["best quality"],       "weight": 1.2, "tags": ["positive"]},
+    {"key": "high_quality",  "resolved": "Quality.High",    "aliases": ["highres", "high_res"],"weight": 1.1, "tags": ["positive"]},
+    {"key": "medium_quality","resolved": "Quality.Medium",  "aliases": ["normal quality"],     "weight": 1.0, "tags": ["neutral"]},
+    {"key": "low_quality",   "resolved": "Quality.Low",     "aliases": ["worst quality"],      "weight": 0.8, "tags": ["negative"]}
   ]
 }

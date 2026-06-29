@@ -3,22 +3,11 @@ fps-adapters/comfyui/nodes/face_prompt_cleaner.py
 ノード: 🎭 Face Prompt Cleaner
 
 機能:
-  - テキストプロンプトをクリーニング（重複除去・ブラックリスト・正規化）
-  - カテゴリ別のオン/オフスイッチ
+  - テキストプロンプトのクリーニング（重複除去・ブラックリスト・正規化）
+  - 顔特化 15 カテゴリのオン/オフスイッチ
   - カテゴリ別の重み調整
   - ネガティブプロンプトのパススルー
-
-入力:
-  prompt          STRING  クリーニング対象プロンプト
-  negative        STRING  ネガティブプロンプト（パススルー）
-  keep_quality    BOOLEAN quality タグを保持するか
-  keep_eyes       BOOLEAN eyes タグを保持するか
-  keep_hair       BOOLEAN hair タグを保持するか
-  keep_style      BOOLEAN style タグを保持するか
-  weight_quality  FLOAT   quality カテゴリの重みスケール
-  weight_eyes     FLOAT   eyes カテゴリの重みスケール
-  weight_hair     FLOAT   hair カテゴリの重みスケール
-  blacklist_extra STRING  追加ブラックリスト（カンマ区切り）
+  - デバッグ情報出力
 
 出力:
   cleaned_prompt  STRING  クリーニング後プロンプト
@@ -33,113 +22,95 @@ from typing import Any
 
 from .node_base import FPSNodeBase, _get_pipeline_manager
 
+# 顔特化 15 カテゴリ
+FACE_CATEGORIES = [
+    "quality", "eyes", "eyebrows", "eyelashes", "face_shape",
+    "nose", "mouth", "teeth", "skin", "expression",
+    "accessories", "glasses", "piercing", "makeup", "fantasy_parts",
+    "hair", "style",
+]
+
 
 class FacePromptCleanerNode(FPSNodeBase):
-    """Face Prompt Cleaner ノード"""
+    """Face Prompt Cleaner ノード（15カテゴリ対応）"""
 
-    CATEGORY = "FacePromptStudio"
+    CATEGORY     = "FacePromptStudio"
     RETURN_TYPES = ("STRING", "STRING", "INT", "STRING")
     RETURN_NAMES = ("cleaned_prompt", "negative", "tag_count", "debug_text")
-    FUNCTION = "clean"
+    FUNCTION     = "clean"
 
     @classmethod
     def INPUT_TYPES(cls) -> dict[str, Any]:
+        # カテゴリスイッチを動的に生成
+        cat_switches: dict[str, Any] = {}
+        for cat in FACE_CATEGORIES:
+            cat_switches[f"keep_{cat}"] = ("BOOLEAN", {"default": True})
+
+        # 重み調整（主要カテゴリのみ）
+        weight_inputs: dict[str, Any] = {}
+        for cat in ["quality", "eyes", "hair", "expression", "skin", "makeup"]:
+            weight_inputs[f"weight_{cat}"] = ("FLOAT", {
+                "default": 1.0, "min": 0.0, "max": 3.0, "step": 0.05,
+            })
+
         return {
             "required": {
-                "prompt": (
-                    "STRING",
-                    {
-                        "multiline": True,
-                        "default": "",
-                        "placeholder": "入力プロンプト（DSL 形式または通常テキスト）",
-                    },
-                ),
+                "prompt": ("STRING", {
+                    "multiline": True,
+                    "default":   "",
+                    "placeholder": "入力プロンプト（DSL または通常テキスト）",
+                }),
             },
             "optional": {
-                "negative": (
-                    "STRING",
-                    {
-                        "multiline": True,
-                        "default": "",
-                        "placeholder": "ネガティブプロンプト（パススルー）",
-                    },
-                ),
-                # ── カテゴリスイッチ ──────────────────────────
-                "keep_quality": ("BOOLEAN", {"default": True}),
-                "keep_eyes": ("BOOLEAN", {"default": True}),
-                "keep_hair": ("BOOLEAN", {"default": True}),
-                "keep_style": ("BOOLEAN", {"default": True}),
-                # ── カテゴリ重みスケール ──────────────────────
-                "weight_quality": (
-                    "FLOAT",
-                    {
-                        "default": 1.0,
-                        "min": 0.0,
-                        "max": 3.0,
-                        "step": 0.05,
-                    },
-                ),
-                "weight_eyes": (
-                    "FLOAT",
-                    {
-                        "default": 1.0,
-                        "min": 0.0,
-                        "max": 3.0,
-                        "step": 0.05,
-                    },
-                ),
-                "weight_hair": (
-                    "FLOAT",
-                    {
-                        "default": 1.0,
-                        "min": 0.0,
-                        "max": 3.0,
-                        "step": 0.05,
-                    },
-                ),
-                "weight_style": (
-                    "FLOAT",
-                    {
-                        "default": 1.0,
-                        "min": 0.0,
-                        "max": 3.0,
-                        "step": 0.05,
-                    },
-                ),
-                # ── 追加設定 ─────────────────────────────────
-                "blacklist_extra": (
-                    "STRING",
-                    {
-                        "default": "",
-                        "placeholder": "追加ブラックリスト（カンマ区切り）",
-                    },
-                ),
-                "max_weight": (
-                    "FLOAT",
-                    {
-                        "default": 2.0,
-                        "min": 0.5,
-                        "max": 3.0,
-                        "step": 0.1,
-                    },
-                ),
+                "negative": ("STRING", {
+                    "multiline": True,
+                    "default":   "",
+                    "placeholder": "ネガティブプロンプト（パススルー）",
+                }),
+                **cat_switches,
+                **weight_inputs,
+                "blacklist_extra": ("STRING", {
+                    "default":     "",
+                    "placeholder": "追加ブラックリスト（カンマ区切り）",
+                }),
+                "max_weight": ("FLOAT", {
+                    "default": 2.0, "min": 0.5, "max": 3.0, "step": 0.1,
+                }),
             },
         }
 
     def clean(
         self,
-        prompt: str,
-        negative: str = "",
-        keep_quality: bool = True,
-        keep_eyes: bool = True,
-        keep_hair: bool = True,
-        keep_style: bool = True,
-        weight_quality: float = 1.0,
-        weight_eyes: float = 1.0,
-        weight_hair: float = 1.0,
-        weight_style: float = 1.0,
-        blacklist_extra: str = "",
-        max_weight: float = 2.0,
+        prompt:           str,
+        negative:         str   = "",
+        # カテゴリスイッチ（全15カテゴリ + hair + style）
+        keep_quality:     bool  = True,
+        keep_eyes:        bool  = True,
+        keep_eyebrows:    bool  = True,
+        keep_eyelashes:   bool  = True,
+        keep_face_shape:  bool  = True,
+        keep_nose:        bool  = True,
+        keep_mouth:       bool  = True,
+        keep_teeth:       bool  = True,
+        keep_skin:        bool  = True,
+        keep_expression:  bool  = True,
+        keep_accessories: bool  = True,
+        keep_glasses:     bool  = True,
+        keep_piercing:    bool  = True,
+        keep_makeup:      bool  = True,
+        keep_fantasy_parts: bool = True,
+        keep_hair:        bool  = True,
+        keep_style:       bool  = True,
+        # カテゴリ別重みスケール
+        weight_quality:   float = 1.0,
+        weight_eyes:      float = 1.0,
+        weight_hair:      float = 1.0,
+        weight_expression: float = 1.0,
+        weight_skin:      float = 1.0,
+        weight_makeup:    float = 1.0,
+        # その他
+        blacklist_extra:  str   = "",
+        max_weight:       float = 2.0,
     ) -> tuple[str, str, int, str]:
         """
         プロンプトをクリーニングして返す。
@@ -147,20 +118,50 @@ class FacePromptCleanerNode(FPSNodeBase):
         Returns:
             (cleaned_prompt, negative, tag_count, debug_text)
         """
-        # ── ブラックリスト構築 ─────────────────────────────
-        blacklist: set[str] = set()
+        # ── カテゴリスイッチマップ ────────────────────────────
+        category_switches = {
+            "quality":      keep_quality,
+            "eyes":         keep_eyes,
+            "eyebrows":     keep_eyebrows,
+            "eyelashes":    keep_eyelashes,
+            "face_shape":   keep_face_shape,
+            "nose":         keep_nose,
+            "mouth":        keep_mouth,
+            "teeth":        keep_teeth,
+            "skin":         keep_skin,
+            "expression":   keep_expression,
+            "accessories":  keep_accessories,
+            "glasses":      keep_glasses,
+            "piercing":     keep_piercing,
+            "makeup":       keep_makeup,
+            "fantasy_parts":keep_fantasy_parts,
+            "hair":         keep_hair,
+            "style":        keep_style,
+        }
 
-        # カテゴリスイッチ OFF のカテゴリをブラックリスト化（後段 categorizer 後に除去）
-        # ここでは Pipeline の blacklist stage に渡す追加タグを処理する
+        # ── カテゴリ重みスケールマップ ────────────────────────
+        category_weights = {
+            "quality":    weight_quality,
+            "eyes":       weight_eyes,
+            "hair":       weight_hair,
+            "expression": weight_expression,
+            "skin":       weight_skin,
+            "makeup":     weight_makeup,
+        }
+
+        # ── 追加ブラックリスト構築 ────────────────────────────
+        blacklist: set[str] = set()
         if blacklist_extra.strip():
             blacklist.update(
-                t.strip().lower().replace(" ", "_") for t in blacklist_extra.split(",") if t.strip()
+                t.strip().lower().replace(" ", "_")
+                for t in blacklist_extra.split(",")
+                if t.strip()
             )
 
-        # ── パイプライン実行 ───────────────────────────────
+        # ── パイプライン実行 ──────────────────────────────────
         pm = _get_pipeline_manager(
-            blacklist=blacklist or None,
-            max_weight=max_weight,
+            blacklist  = blacklist or None,
+            max_weight = max_weight,
         )
 
         if pm is None:
@@ -169,32 +170,19 @@ class FacePromptCleanerNode(FPSNodeBase):
 
         result = pm.compile(prompt)
 
-        # ── カテゴリスイッチ・重みスケール適用 ────────────
-        category_switches = {
-            "quality": keep_quality,
-            "eyes": keep_eyes,
-            "hair": keep_hair,
-            "style": keep_style,
-        }
-        category_weights = {
-            "quality": weight_quality,
-            "eyes": weight_eyes,
-            "hair": weight_hair,
-            "style": weight_style,
-        }
-
+        # ── カテゴリスイッチ・重みスケール適用 ────────────────
         filtered_tags = []
+        skipped_tags  = []
         for tag in result.tags:
             cat = tag.category.lower() if tag.category else ""
-            # カテゴリスイッチ OFF なら除外
             if cat in category_switches and not category_switches[cat]:
+                skipped_tags.append(tag)
                 continue
-            # 重みスケール適用
             if cat in category_weights:
                 tag.weight = round(tag.weight * category_weights[cat], 3)
             filtered_tags.append(tag)
 
-        # ── 出力プロンプト生成 ─────────────────────────────
+        # ── 出力プロンプト生成 ────────────────────────────────
         parts: list[str] = []
         for t in filtered_tags:
             resolved = t.meta.get("resolved") or t.tag
@@ -204,35 +192,41 @@ class FacePromptCleanerNode(FPSNodeBase):
                 parts.append(resolved)
 
         cleaned_prompt = ", ".join(parts)
-        tag_count = len(filtered_tags)
+        tag_count      = len(filtered_tags)
 
-        # ── デバッグ情報 ──────────────────────────────────
+        # ── デバッグ情報 ──────────────────────────────────────
         debug_lines = [
             "=== Face Prompt Cleaner Debug ===",
-            f"Input tags  : {len(result.tags) + len(result.negative_tags)}",
-            f"Output tags : {tag_count}",
-            f"Negative    : {len(result.negative_tags)}",
+            f"Input    : {prompt[:60]}{'...' if len(prompt)>60 else ''}",
+            f"Output   : {cleaned_prompt[:60]}{'...' if len(cleaned_prompt)>60 else ''}",
+            f"Tags In  : {len(result.tags) + len(result.negative_tags)}",
+            f"Tags Out : {tag_count}",
+            f"Skipped  : {len(skipped_tags)} (category switch OFF)",
+            f"Negative : {len(result.negative_tags)}",
             "",
             "--- Stage Results ---",
         ]
         for sr in result.stage_results:
-            status = sr.status.upper() if hasattr(sr.status, "upper") else str(sr.status)
+            status = str(sr.status).upper().replace("STAGESTATUS.", "")
             debug_lines.append(
-                f"  {sr.stage:<20} {status:<8} " f"{sr.tags_in:>3} → {sr.tags_out:>3} tags"
+                f"  {sr.stage:<22} {status:<8} {sr.tags_in:>3} → {sr.tags_out:>3}"
             )
 
-        debug_lines += [
-            "",
-            "--- Output Tags ---",
-        ]
+        debug_lines += ["", "--- Output Tags ---"]
         for t in filtered_tags:
             resolved = t.meta.get("resolved") or t.tag
-            debug_lines.append(f"  [{t.category:<12}] {resolved} (weight={t.weight:.2f})")
+            debug_lines.append(
+                f"  [{t.category or 'unknown':<14}] {resolved}  (w={t.weight:.2f})"
+            )
+
+        if skipped_tags:
+            debug_lines += ["", "--- Skipped Tags (category OFF) ---"]
+            for t in skipped_tags:
+                debug_lines.append(f"  [{t.category:<14}] {t.tag}")
 
         if result.errors:
             debug_lines += ["", "--- Errors ---"]
             debug_lines.extend(f"  {e}" for e in result.errors)
 
         debug_text = "\n".join(debug_lines)
-
         return cleaned_prompt, negative, tag_count, debug_text

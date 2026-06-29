@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "category": "fantasy_parts",
+  "description": "ファンタジー・非人間的顔パーツタグ（顔特化）",
+  "entries": [
+    {"key": "elf_ears",      "resolved": "Fantasy.ElfEars",    "aliases": ["pointy ears", "pointed ears", "long ears"],"weight": 1.0, "tags": ["ears"]},
+    {"key": "demon_horns",   "resolved": "Fantasy.DemonHorns", "aliases": ["devil horns", "small horns"],              "weight": 1.0, "tags": ["horns"]},
+    {"key": "dragon_horns",  "resolved": "Fantasy.DragonHorns","aliases": ["large horns", "curved horns"],             "weight": 1.0, "tags": ["horns"]},
+    {"key": "animal_ears",   "resolved": "Fantasy.AnimalEars", "aliases": ["kemono ears", "beast ears"],               "weight": 1.0, "tags": ["ears"]},
+    {"key": "cat_ears",      "resolved": "Fantasy.CatEars",    "aliases": ["neko ears", "kitty ears"],                 "weight": 1.0, "tags": ["ears"]},
+    {"key": "fox_ears",      "resolved": "Fantasy.FoxEars",    "aliases": ["kitsune ears"],                            "weight": 1.0, "tags": ["ears"]},
+    {"key": "bunny_ears",    "resolved": "Fantasy.BunnyEars",  "aliases": ["rabbit ears", "usagi ears"],               "weight": 1.0, "tags": ["ears"]},
+    {"key": "scales",        "resolved": "Fantasy.Scales",     "aliases": ["dragon scales", "reptile scales"],         "weight": 1.0, "tags": ["skin"]},
+    {"key": "glowing_eyes",  "resolved": "Fantasy.GlowingEyes","aliases": ["emissive eyes", "luminous eyes"],          "weight": 1.0, "tags": ["eyes"]},
+    {"key": "slit_pupils",   "resolved": "Fantasy.SlitPupils", "aliases": ["cat pupils", "reptile eyes"],              "weight": 1.0, "tags": ["eyes"]},
+    {"key": "third_eye",     "resolved": "Fantasy.ThirdEye",   "aliases": ["forehead eye", "extra eye"],               "weight": 1.0, "tags": ["special"]},
+    {"key": "wings",         "resolved": "Fantasy.Wings",      "aliases": ["angel wings", "demon wings", "feathered wings"],"weight": 1.0, "tags": ["body"]},
+    {"key": "halo",          "resolved": "Fantasy.Halo",       "aliases": ["angel halo", "holy ring"],                 "weight": 1.0, "tags": ["head"]},
+    {"key": "tail",          "resolved": "Fantasy.Tail",       "aliases": ["animal tail", "fox tail", "cat tail"],     "weight": 1.0, "tags": ["body"]}
+  ]
+}
