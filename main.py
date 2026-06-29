@@ -290,6 +290,26 @@ def run_smoke_tests(verbose: bool = False) -> SmokeResults:
     except Exception as e:
         _smoke_fail(smoke, label, e, verbose)
 
+    # ── ComfyUI Nodes ─────────────────────────────────────
+    label = "ComfyUI Nodes"
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(ROOT / "fps-adapters"))
+        from comfyui import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+        from comfyui.nodes.face_prompt_cleaner import FacePromptCleanerNode
+
+        assert len(NODE_CLASS_MAPPINGS) == 3
+        node   = FacePromptCleanerNode()
+        result = node.clean(prompt="masterpiece, blue_eyes")
+        assert len(result) == 4
+        cleaned, neg, count, debug = result
+        assert isinstance(cleaned, str)
+        if verbose:
+            print(dim(f"    nodes={len(NODE_CLASS_MAPPINGS)}  tags={count}"))
+        _smoke_pass(smoke, label)
+    except Exception as e:
+        _smoke_fail(smoke, label, e, verbose)
+
     print()
     return smoke
 
