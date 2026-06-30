@@ -61,11 +61,13 @@ class PipelineManager:
     def __init__(
         self,
         abort_on_error: bool = False,
+        event_bus: Any = None,
         **stage_kwargs: Any,
     ) -> None:
         self._abort_on_error = abort_on_error
         self._context: dict[str, Any] = {}
         self._lock = threading.RLock()
+        self._event_bus = event_bus
 
         # デフォルトステージ構成
         self._stages: list[BaseStage] = [
@@ -102,17 +104,25 @@ class PipelineManager:
             ctx = dict(self._context)
             ctx["input"] = prompt
 
+            self._emit("pipeline.before_compile", {"prompt": prompt})
+
             tags: list[TagEntry] = []
             stage_results: list[StageResult] = []
             errors: list[str] = []
 
             for stage in self._stages:
+                self._emit("stage.before_run", {"stage": stage.name})
                 tags, sr = stage.run(tags, ctx)
                 stage_results.append(sr)
+                self._emit(
+                    "stage.after_run",
+                    {"stage": stage.name, "status": str(sr.status), "tags_out": sr.tags_out},
+                )
 
                 if sr.status == StageStatus.ERROR:
                     errors.append(f"[{sr.stage}] {sr.error}")
                     self._error_count += 1
+                    self._emit("stage.error", {"stage": stage.name, "error": sr.error})
                     if self._abort_on_error:
                         break
 
@@ -139,6 +149,12 @@ class PipelineManager:
                 result.prompt[:40],
                 result.negative[:40],
             )
+            self._emit(
+                "pipeline.after_compile",
+                {"prompt": prompt, "success": result.success, "tag_count": result.tag_count},
+            )
+            if not result.success:
+                self._emit("pipeline.error", {"prompt": prompt, "errors": errors})
             return result
 
     # ══════════════════════════════════════════════════════════════
@@ -163,6 +179,11 @@ class PipelineManager:
     def get_context(self, key: str, default: Any = None) -> Any:
         with self._lock:
             return self._context.get(key, default)
+
+    def set_event_bus(self, event_bus: Any) -> PipelineManager:
+        """EventBus を設定する（後付け可能）"""
+        self._event_bus = event_bus
+        return self
 
     # ══════════════════════════════════════════════════════════════
     # Stage Control
@@ -207,6 +228,14 @@ class PipelineManager:
     # ══════════════════════════════════════════════════════════════
     # Private
     # ══════════════════════════════════════════════════════════════
+
+    def _emit(self, event_type: str, data: dict[str, Any]) -> None:
+        """イベントバスが設定されていればイベントを発火する（未設定なら何もしない）"""
+        if self._event_bus is not None:
+            try:
+                self._event_bus.emit(event_type, data, source="PipelineManager")
+            except Exception as e:
+                logger.error("Event emit failed for '%s': %s", event_type, e)
 
     def _set_stage_enabled(self, name: str, enabled: bool) -> bool:
         stage = self.get_stage(name)
