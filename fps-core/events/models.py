@@ -15,6 +15,7 @@ class EventType(StrEnum):
     PIPELINE_BEFORE_COMPILE = "pipeline.before_compile"
     PIPELINE_AFTER_COMPILE = "pipeline.after_compile"
     PIPELINE_ERROR = "pipeline.error"
+    PIPELINE_CACHE_HIT = "pipeline.cache_hit"
 
     # ステージ単位
     STAGE_BEFORE_RUN = "stage.before_run"

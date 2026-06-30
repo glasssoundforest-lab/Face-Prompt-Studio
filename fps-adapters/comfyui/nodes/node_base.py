@@ -27,6 +27,22 @@ _dictionary_manager = None
 _rule_manager = None
 _pipeline_manager = None
 _category_weight_table = None
+_cache_manager = None
+
+
+def _get_cache_manager():
+    """CacheManager をシングルトンで返す"""
+    global _cache_manager
+    if _cache_manager is None:
+        try:
+            from cache.manager import CacheManager
+
+            _cache_manager = CacheManager(max_size=256, default_ttl=3600)
+            logger.info("CacheManager initialized for ComfyUI nodes.")
+        except Exception as e:
+            logger.warning("CacheManager init failed: %s", e)
+            _cache_manager = None
+    return _cache_manager
 
 
 def _get_category_weight_table():
@@ -91,7 +107,8 @@ def _get_pipeline_manager(
     try:
         from pipeline.manager import PipelineManager
 
-        pm = PipelineManager()
+        cache = _get_cache_manager()
+        pm = PipelineManager(cache_manager=cache)
         ctx: dict[str, Any] = {"max_weight": max_weight}
 
         dm = _get_dictionary_manager()
