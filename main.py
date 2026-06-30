@@ -353,7 +353,7 @@ def run_unit_tests(
             f"--cov={CORE}",
             "--cov-report=term-missing",
             "--cov-report=html:fps-tools/coverage",
-            "--cov-fail-under=50",
+            "--cov-fail-under=85",
         ]
 
     start   = time.perf_counter()
