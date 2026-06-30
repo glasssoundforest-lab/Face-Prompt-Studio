@@ -6,19 +6,28 @@ ComfyUI はこのファイルを読み込んで NODE_CLASS_MAPPINGS / NODE_DISPL
 """
 
 from .nodes.debug_output import FacePromptDebugNode
+from .nodes.face_prompt_category_filter import FacePromptCategoryFilterNode
 from .nodes.face_prompt_cleaner import FacePromptCleanerNode
 from .nodes.face_prompt_compiler import FacePromptCompilerNode
+from .nodes.face_prompt_preset import FacePromptPresetNode
+from .nodes.face_prompt_rule_editor import FacePromptRuleEditorNode
 
 NODE_CLASS_MAPPINGS = {
     "FacePromptCleaner": FacePromptCleanerNode,
     "FacePromptCompiler": FacePromptCompilerNode,
     "FacePromptDebug": FacePromptDebugNode,
+    "FacePromptPreset": FacePromptPresetNode,
+    "FacePromptRuleEditor": FacePromptRuleEditorNode,
+    "FacePromptCategoryFilter": FacePromptCategoryFilterNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptCleaner": "🎭 Face Prompt Cleaner",
     "FacePromptCompiler": "🎭 Face Prompt Compiler",
     "FacePromptDebug": "🎭 Face Prompt Debug",
+    "FacePromptPreset": "🎭 Face Prompt Preset",
+    "FacePromptRuleEditor": "🎭 Face Prompt Rule Editor",
+    "FacePromptCategoryFilter": "🎭 Face Prompt Category Filter",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

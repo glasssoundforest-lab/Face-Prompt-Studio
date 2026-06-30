@@ -38,7 +38,7 @@ class TestNodeClassMappings:
 
     def test_mappings_count(self):
         from comfyui import NODE_CLASS_MAPPINGS
-        assert len(NODE_CLASS_MAPPINGS) == 3
+        assert len(NODE_CLASS_MAPPINGS) == 6
 
 
 # ══════════════════════════════════════════════════════════════════
