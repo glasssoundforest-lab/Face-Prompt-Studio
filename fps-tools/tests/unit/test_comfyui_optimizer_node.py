@@ -37,10 +37,10 @@ class TestOptimizerNodeRegistration:
 
         assert "🎭" in NODE_DISPLAY_NAME_MAPPINGS["FacePromptOptimizer"]
 
-    def test_total_node_count_is_seven(self):
+    def test_total_node_count_is_eight(self):
         from comfyui import NODE_CLASS_MAPPINGS
 
-        assert len(NODE_CLASS_MAPPINGS) == 7
+        assert len(NODE_CLASS_MAPPINGS) == 8
 
 
 # ══════════════════════════════════════════════════════════════════
