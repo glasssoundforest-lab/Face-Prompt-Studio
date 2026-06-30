@@ -5,20 +5,20 @@ ComfyUI カスタムノード エントリポイント
 ComfyUI はこのファイルを読み込んで NODE_CLASS_MAPPINGS / NODE_DISPLAY_NAME_MAPPINGS を取得する。
 """
 
+from .nodes.debug_output import FacePromptDebugNode
 from .nodes.face_prompt_cleaner import FacePromptCleanerNode
 from .nodes.face_prompt_compiler import FacePromptCompilerNode
-from .nodes.debug_output import FacePromptDebugNode
 
 NODE_CLASS_MAPPINGS = {
-    "FacePromptCleaner":  FacePromptCleanerNode,
+    "FacePromptCleaner": FacePromptCleanerNode,
     "FacePromptCompiler": FacePromptCompilerNode,
-    "FacePromptDebug":    FacePromptDebugNode,
+    "FacePromptDebug": FacePromptDebugNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "FacePromptCleaner":  "🎭 Face Prompt Cleaner",
+    "FacePromptCleaner": "🎭 Face Prompt Cleaner",
     "FacePromptCompiler": "🎭 Face Prompt Compiler",
-    "FacePromptDebug":    "🎭 Face Prompt Debug",
+    "FacePromptDebug": "🎭 Face Prompt Debug",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

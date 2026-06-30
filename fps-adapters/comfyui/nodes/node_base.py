@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 # fps-core / fps-adapters をパスに追加
-_ROOT = Path(__file__).parents[4]
+_ROOT = Path(__file__).parents[3]
 _CORE = _ROOT / "fps-core"
 
 for _p in (str(_CORE), str(_ROOT)):
@@ -26,6 +26,23 @@ logger = logging.getLogger(__name__)
 _dictionary_manager = None
 _rule_manager = None
 _pipeline_manager = None
+_category_weight_table = None
+
+
+def _get_category_weight_table():
+    """CategoryWeightTable をシングルトンで返す"""
+    global _category_weight_table
+    if _category_weight_table is None:
+        try:
+            from pipeline.category_weights import CategoryWeightTable
+
+            path = _ROOT / "fps-data" / "rules" / "category_weights.json"
+            _category_weight_table = CategoryWeightTable.load(path)
+            logger.info("CategoryWeightTable initialized.")
+        except Exception as e:
+            logger.warning("CategoryWeightTable init failed: %s", e)
+            _category_weight_table = None
+    return _category_weight_table
 
 
 def _get_dictionary_manager():
@@ -68,6 +85,7 @@ def _get_pipeline_manager(
     blacklist: set[str] | None = None,
     whitelist: set[str] | None = None,
     max_weight: float = 3.0,
+    weight_preset: str | None = None,
 ):
     """PipelineManager を毎回新規生成して返す（コンテキスト依存のため）"""
     try:
@@ -83,6 +101,12 @@ def _get_pipeline_manager(
         rm = _get_rule_manager()
         if rm:
             ctx["rule_manager"] = rm
+
+        table = _get_category_weight_table()
+        if table:
+            ctx["category_weight_table"] = table
+        if weight_preset:
+            ctx["weight_preset"] = weight_preset
 
         if blacklist:
             ctx["blacklist"] = blacklist

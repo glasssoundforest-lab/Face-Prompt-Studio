@@ -418,6 +418,7 @@ def run_typecheck(verbose: bool = False) -> QualityResult:
         str(CORE / "rules" / "manager.py"),
         str(CORE / "rules" / "evaluator.py"),
         str(CORE / "rules" / "engine.py"),
+        str(CORE / "pipeline" / "category_weights.py"),
     ]
     args = [sys.executable, "-m", "mypy", *targets,
             "--ignore-missing-imports", "--no-error-summary"]

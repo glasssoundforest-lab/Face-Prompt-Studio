@@ -1,0 +1,52 @@
+{
+  "version": "1.0",
+  "description": "顔特化カテゴリ別デフォルト重みテーブル。Pipeline の WeightEngine / Rule Engine から参照される。",
+  "category_weights": {
+    "quality":       1.3,
+    "eyes":          1.1,
+    "eyebrows":      1.0,
+    "eyelashes":     1.0,
+    "face_shape":    1.0,
+    "nose":          1.0,
+    "mouth":         1.0,
+    "teeth":         0.9,
+    "skin":          1.0,
+    "expression":    1.1,
+    "accessories":   0.9,
+    "glasses":       0.9,
+    "piercing":      0.8,
+    "makeup":        0.9,
+    "fantasy_parts": 1.0,
+    "hair":          1.1,
+    "style":         1.0
+  },
+  "presets": {
+    "balanced": {
+      "description": "全カテゴリを均等に近いバランスで処理",
+      "multiplier":  1.0
+    },
+    "quality_focused": {
+      "description": "画質・品質タグを最優先",
+      "overrides": {
+        "quality": 1.6,
+        "eyes":    1.0,
+        "hair":    1.0
+      }
+    },
+    "expression_focused": {
+      "description": "表情・感情表現を重視",
+      "overrides": {
+        "expression": 1.4,
+        "eyes":       1.2,
+        "mouth":      1.1
+      }
+    },
+    "fantasy_focused": {
+      "description": "ファンタジー・非人間パーツを強調",
+      "overrides": {
+        "fantasy_parts": 1.5,
+        "eyes":          1.2
+      }
+    }
+  }
+}

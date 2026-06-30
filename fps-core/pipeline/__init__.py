@@ -1,5 +1,6 @@
 """fps-core.pipeline — PipelineManager パッケージ"""
 
+from .category_weights import CategoryWeightTable
 from .manager import PipelineManager
 from .models import PipelineResult, StageResult, StageStatus, TagEntry
 from .stages import (
@@ -18,6 +19,7 @@ from .stages import (
 
 __all__ = [
     "PipelineManager",
+    "CategoryWeightTable",
     "PipelineResult",
     "StageResult",
     "StageStatus",

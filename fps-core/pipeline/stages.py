@@ -317,13 +317,25 @@ class RuleEngineStage(BaseStage):
 
 
 class WeightEngineStage(BaseStage):
-    """Stage 8: 重みを正規化する（0〜3.0 にクランプ）"""
+    """
+    Stage 8: 重みを正規化する。
+
+    処理順序:
+      1. context["category_weight_table"] があればカテゴリ別重み倍率を適用
+      2. 0.01〜max_weight の範囲にクランプ
+    """
 
     name = "weight_engine"
 
     def process(self, tags: list[TagEntry], context: dict[str, Any]) -> list[TagEntry]:
         max_weight = float(context.get("max_weight", 3.0))
+        table = context.get("category_weight_table")
+        preset = context.get("weight_preset")
+
         for t in tags:
+            if table is not None and t.category:
+                scale = table.get_weight(t.category, preset=preset)
+                t.weight = round(t.weight * scale, 3)
             t.weight = max(0.01, min(t.weight, max_weight))
         return tags
 
