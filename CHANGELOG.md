@@ -7,11 +7,68 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ## [Unreleased]
 
-### Planned (Milestone 3 以降)
-- Prompt Optimizer（品質スコアリング・矛盾検出）
+### Planned (Milestone 4 以降)
 - A1111 / NovelAI アダプター
 - Plugin System / Event System
 - GUI Studio（Web UI）
+
+---
+
+## [0.7.0] — 2026-06-30
+
+Phase 3 Prompt Optimizer 完了。プロンプトの品質を定量評価し、
+矛盾・冗長性を自動検出、改善提案を行う最適化エンジンを実装。
+変換履歴の記録・比較機能も追加。
+
+### Added — Semantic Optimizer
+
+- **fps-core/optimizer/** パッケージ新設
+  - `conflict_detector.py` — 9つの排他グループ定義（eyes_color /
+    hair_color / hair_length / skin_tone / face_shape / mouth_state /
+    quality_level / makeup_intensity 等）に基づく矛盾検出
+    （例: `blue_eyes` + `brown_eyes` の同時指定を検出）
+  - `redundancy_detector.py` — 意味的重複グループ検出（smile_family /
+    lips_full / hair_tied 等）、完全重複タグの保険的検出
+  - `quality_scorer.py` — coverage_score（重要カテゴリ網羅度）/
+    balance_score（重み分散）/ redundancy_score（矛盾冗長性）の
+    加重平均による overall_score 算出
+  - `recommender.py` — 検出結果から自然言語の改善提案を生成、
+    不足カテゴリへのタグ候補提案（辞書連携対応）
+  - `manager.py` — `OptimizerManager`: `analyze()` /
+    `analyze_pipeline_result()` / `suggest_tags()`
+
+### Added — Prompt History & Comparison
+
+- **fps-core/history/** パッケージ新設
+  - `history_manager.py` — `HistoryManager`: JSON Lines形式での
+    永続化、記録/検索/お気に入り/ラベル管理、`max_entries` 超過時の
+    自動削除（お気に入りは保護）
+  - `diff_viewer.py` — プロンプト文字列・履歴エントリ間の差分計算、
+    人間可読なテキストレポート整形
+
+### Added — ComfyUI Nodes（2種追加、合計8ノード）
+
+- **🎭 Face Prompt Optimizer** — 品質スコア・矛盾・冗長性・改善提案を
+  レポート出力。`overall_score` / `has_conflicts` も個別出力として提供
+- **🎭 Face Prompt History** — プロンプト変換結果の記録、直近10件の
+  履歴一覧・統計表示、直近2件の自動差分比較
+
+### Fixed
+
+- **重大バグ（3件目）**: `RuleEngineStage` が `TagEntry` 再構築時に
+  `meta`（`resolved` 情報を含む）を引き継いでおらず、`rule_manager` が
+  `context` に存在する限り（= ComfyUI ノード経由では常に）辞書解決
+  情報が失われていた。Optimizer の矛盾検出が機能しないことから発覚し、
+  既存タグの `meta` を `meta_by_tag` マップで復元するよう修正
+  （ルールで新規追加されたタグは meta 空のままが正しい挙動）。
+  回帰テストを追加。
+
+### Testing
+
+- ユニットテスト 553件（前回497件から56件増、optimizer 40件・
+  history 44件・対応ノードテスト27件含む）
+- 互換性テスト 225件
+- 合計 778 tests PASSED / Coverage 91%（閾値85%維持）
 
 ---
 
@@ -195,6 +252,7 @@ DSL構文サポート: `(category:value)`、`(category:value:weight)`、
 
 ---
 
-[Unreleased]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/releases/tag/v0.5.0

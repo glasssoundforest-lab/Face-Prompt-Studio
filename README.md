@@ -9,9 +9,9 @@ ComfyUI はアダプターの一つに過ぎない、ロングタームで拡張
 
 ## ステータス
 
-**v0.6.0** — Phase 2 Face Prompt Cleaner 強化完了
+**v0.7.0** — Phase 3 Prompt Optimizer 完了
 
-- 438 unit tests / 203 compat tests — 全て PASS（合計641件）
+- 553 unit tests / 225 compat tests — 全て PASS（合計778件）
 - Coverage 90%（閾値 85%）
 - Ruff / Black / mypy 全クリア
 
@@ -21,10 +21,12 @@ ComfyUI はアダプターの一つに過ぎない、ロングタームで拡張
   makeup / fantasy_parts / age / ethnicity など）
 - **同義語対応** — WD14 / JoyCaption / Florence2 / Qwen2-VL / InternVL /
   MiniCPM-V 主要キャプションモデルの出力タグを自動正規化
+- **品質最適化** — 矛盾検出・冗長性検出・品質スコアリング・改善提案
+- **変換履歴** — プロンプト変換結果の記録・検索・差分比較
 - **10ステージパイプライン** — Parser → Normalizer → Blacklist →
   Categorizer → RuleEngine → Optimizer → Exporter
 - **JSON駆動ルールエンジン** — Python修正不要でタグの追加/削除/重み変更
-- **ComfyUI ノード6種** — Cleaner / Compiler / Debug / Preset / RuleEditor / CategoryFilter
+- **ComfyUI ノード8種** — Cleaner / Compiler / Debug / Preset / RuleEditor / CategoryFilter / Optimizer / History
 - **Clean Architecture** — core はアダプター依存ゼロ、拡張容易
 
 ## リポジトリ構造
@@ -39,9 +41,11 @@ fps/
 │   ├── preset/        PresetManager
 │   ├── cache/         CacheManager
 │   ├── backup/        BackupManager
-│   └── pipeline/      PipelineManager（10ステージ）
+│   ├── pipeline/      PipelineManager（10ステージ）
+│   ├── optimizer/     OptimizerManager（品質スコア・矛盾検出）
+│   └── history/       HistoryManager（変換履歴・差分比較）
 ├── fps-adapters/      アダプター（core から独立）
-│   └── comfyui/       ComfyUI Adapter + カスタムノード6種
+│   └── comfyui/       ComfyUI Adapter + カスタムノード8種
 ├── fps-data/          辞書・ルール・プリセットデータ
 │   └── dictionaries/system/
 │       ├── (17 顔特化カテゴリ).json
@@ -114,6 +118,8 @@ ComfyUI/custom_nodes/Face-Prompt-Studio/   ← このリポジトリを clone
 - **Face Prompt Preset** — プリセット選択・複数マージ
 - **Face Prompt Rule Editor** — ルール確認・テスト・一時無効化
 - **Face Prompt Category Filter** — カテゴリベースのタグ抽出/除外
+- **Face Prompt Optimizer** — 品質スコア・矛盾検出・改善提案
+- **Face Prompt History** — 変換履歴記録・差分比較
 
 ## DSL 構文
 
@@ -138,7 +144,7 @@ word                       プレーンタグ（辞書解決） 例: masterpiece
 |---|---|---|
 | 1 | Foundation | ✅ 完了（v0.5.0） |
 | 2 | Face Prompt Cleaner 強化 | ✅ 完了（v0.6.0） |
-| 3 | Prompt Optimizer | 計画中 |
+| 3 | Prompt Optimizer | ✅ 完了（v0.7.0） |
 | 4 | AI Adapter Layer | 計画中 |
 | 5 | GUI Studio | 計画中 |
 
