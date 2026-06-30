@@ -176,6 +176,21 @@ class TestValidate:
         assert body["errors"] == {}
 
 
+class TestWebUI:
+    def test_root_serves_html(self, client: TestClient):
+        r = client.get("/")
+        assert r.status_code == 200
+        assert "text/html" in r.headers.get("content-type", "")
+
+    def test_root_contains_fps_title(self, client: TestClient):
+        r = client.get("/")
+        assert "FPS" in r.text
+
+    def test_static_index_accessible(self, client: TestClient):
+        r = client.get("/static/index.html")
+        assert r.status_code == 200
+
+
 class TestResponseSchemas:
     def test_compile_response_has_all_fields(self, client: TestClient):
         r = client.post("/compile", params={"prompt": "masterpiece"})

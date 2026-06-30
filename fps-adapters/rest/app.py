@@ -62,6 +62,18 @@ if _FASTAPI_AVAILABLE:
         version="0.9.0",
     )
 
+    # Web UI のスタティックファイルを配信（オプション）
+    _GUI_DIR = _ROOT / "fps-gui" / "web"
+    if _GUI_DIR.exists():
+        from fastapi.responses import FileResponse
+        from fastapi.staticfiles import StaticFiles
+
+        app.mount("/static", StaticFiles(directory=str(_GUI_DIR)), name="static")
+
+        @app.get("/", include_in_schema=False)
+        def serve_ui() -> FileResponse:
+            return FileResponse(str(_GUI_DIR / "index.html"))
+
     _ctx: CliContext | None = None
 
     def get_context() -> CliContext:
