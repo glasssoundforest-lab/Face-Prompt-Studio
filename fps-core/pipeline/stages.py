@@ -295,7 +295,10 @@ class RuleEngineStage(BaseStage):
             return tags
 
         tag_dicts = [t.to_dict() for t in tags if not t.negative]
-        applied, _ = rm.apply(tag_dicts)
+        applied, rule_results = rm.apply(tag_dicts)
+
+        # 適用結果を context に記録（デバッグ用）
+        context["applied_rule_results"] = rule_results
 
         # 結果を TagEntry に戻す
         neg_tags = [t for t in tags if t.negative]

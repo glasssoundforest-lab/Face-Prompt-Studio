@@ -128,6 +128,9 @@ class PipelineManager:
                 negative_tags=neg,
                 stage_results=stage_results,
                 errors=errors,
+                meta={
+                    "applied_rules": ctx.get("applied_rule_results", []),
+                },
             )
 
             logger.debug(

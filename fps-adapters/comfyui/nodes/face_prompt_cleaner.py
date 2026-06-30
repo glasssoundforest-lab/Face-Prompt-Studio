@@ -254,6 +254,46 @@ class FacePromptCleanerNode(FPSNodeBase):
             status = str(sr.status).upper().replace("STAGESTATUS.", "")
             debug_lines.append(f"  {sr.stage:<22} {status:<8} {sr.tags_in:>3} → {sr.tags_out:>3}")
 
+        # ── タグ変換前後比較（パーサー直後 vs 最終出力） ──────
+        debug_lines += ["", "--- Tag Diff (parsed → final) ---"]
+        # rule_engine 適用前の集合を rule 結果から逆算するのは複雑なため、
+        # 「カテゴリスイッチ前」(= result.tags + skipped_tags) を基準に
+        # ADD/REMOVE はルール適用結果として別枠で明示する
+        before_names = {t.tag for t in result.tags} | {t.tag for t in skipped_tags}
+        after_names = {t.tag for t in filtered_tags}
+        category_removed = sorted(before_names - after_names)
+        category_kept = sorted(before_names & after_names)
+        rule_added = sorted(
+            {ar.target_tag for ar in result.meta.get("applied_rules", []) if ar.action == "ADD"}
+        )
+        if rule_added:
+            debug_lines.append(f"  + added by rules : {', '.join(rule_added)}")
+        if category_removed:
+            debug_lines.append(f"  - removed (category OFF) : {', '.join(category_removed)}")
+        debug_lines.append(f"  = passed through  : {len(category_kept)} tags")
+
+        # ── カテゴリ別集計表 ──────────────────────────────────
+        debug_lines += ["", "--- Category Summary ---"]
+        cat_counts: dict[str, int] = {}
+        cat_weight_sum: dict[str, float] = {}
+        for t in filtered_tags:
+            c = t.category or "uncategorized"
+            cat_counts[c] = cat_counts.get(c, 0) + 1
+            cat_weight_sum[c] = cat_weight_sum.get(c, 0.0) + t.weight
+        for c in sorted(cat_counts.keys()):
+            count = cat_counts[c]
+            avg_w = cat_weight_sum[c] / count
+            debug_lines.append(f"  {c:<14} count={count:<3} avg_weight={avg_w:.2f}")
+
+        # ── 適用ルール一覧 ────────────────────────────────────
+        applied_rules = result.meta.get("applied_rules", [])
+        if applied_rules:
+            debug_lines += ["", "--- Applied Rules ---"]
+            for ar in applied_rules:
+                debug_lines.append(f"  [{ar.rule_id}] {ar.action} → {ar.target_tag}  ({ar.detail})")
+        else:
+            debug_lines += ["", "--- Applied Rules ---", "  (no rules applied)"]
+
         debug_lines += ["", "--- Output Tags ---"]
         for t in filtered_tags:
             resolved = t.meta.get("resolved") or t.tag

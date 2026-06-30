@@ -415,6 +415,34 @@ class TestPipelineManager:
         assert result.success is True
         assert result.tags[0].weight == 1.5
 
+    def test_compile_records_applied_rules_in_meta(self):
+        from unittest.mock import MagicMock
+        from rules.models import ActionType, ApplyResult
+
+        rm = MagicMock()
+        apply_result = ApplyResult(
+            rule_id="test_rule",
+            action=ActionType.WEIGHT,
+            target_tag="masterpiece",
+            applied=True,
+            detail="weight 1.0 -> 1.5",
+        )
+        rm.apply.return_value = (
+            [{"tag": "masterpiece", "category": "quality", "weight": 1.5}],
+            [apply_result],
+        )
+        pm = PipelineManager()
+        pm.set_context(rule_manager=rm)
+        result = pm.compile("masterpiece")
+        assert "applied_rules" in result.meta
+        assert len(result.meta["applied_rules"]) == 1
+        assert result.meta["applied_rules"][0].rule_id == "test_rule"
+
+    def test_compile_empty_applied_rules_without_rule_manager(self):
+        pm = PipelineManager()
+        result = pm.compile("masterpiece")
+        assert result.meta.get("applied_rules", []) == []
+
     def test_repr(self, pm: PipelineManager):
         assert "PipelineManager" in repr(pm)
 

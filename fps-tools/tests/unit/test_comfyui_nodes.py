@@ -128,6 +128,42 @@ class TestFacePromptCleanerNode:
         _, _, _, debug = node.clean(prompt="masterpiece")
         assert "Stage Results" in debug or "stage" in debug.lower()
 
+    def test_clean_debug_contains_tag_diff(self):
+        node = FacePromptCleanerNode()
+        _, _, _, debug = node.clean(prompt="masterpiece")
+        assert "Tag Diff" in debug
+
+    def test_clean_debug_shows_rule_additions(self):
+        node = FacePromptCleanerNode()
+        _, _, _, debug = node.clean(prompt="masterpiece")
+        # base_rules.json の rule_add_highres_on_masterpiece が発火するはず
+        assert "added by rules" in debug
+        assert "high_quality" in debug
+
+    def test_clean_debug_shows_category_removal(self):
+        node = FacePromptCleanerNode()
+        _, _, _, debug = node.clean(prompt="masterpiece, elf_ears", keep_fantasy_parts=False)
+        assert "removed (category OFF)" in debug
+        assert "elf_ears" in debug
+
+    def test_clean_debug_contains_category_summary(self):
+        node = FacePromptCleanerNode()
+        _, _, _, debug = node.clean(prompt="masterpiece, blue_eyes")
+        assert "Category Summary" in debug
+        assert "avg_weight" in debug
+
+    def test_clean_debug_contains_applied_rules_section(self):
+        node = FacePromptCleanerNode()
+        _, _, _, debug = node.clean(prompt="masterpiece")
+        assert "Applied Rules" in debug
+        assert "rule_weight_masterpiece" in debug
+
+    def test_clean_debug_no_rules_message(self):
+        node = FacePromptCleanerNode()
+        # ルールに一致しないタグのみの場合
+        _, _, _, debug = node.clean(prompt="nonexistent_tag_xyz")
+        assert "Applied Rules" in debug
+
     def test_is_changed_returns_nan(self):
         import math
         result = FacePromptCleanerNode.IS_CHANGED()
