@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "category": "ethnicity",
+  "description": "民族・地域特有の顔特徴タグ（顔特化、ステレオタイプではなく中立的な記述語彙として運用）",
+  "entries": [
+    {"key": "east_asian_features",    "resolved": "Ethnicity.EastAsian",   "aliases": ["east asian appearance"],       "weight": 1.0, "tags": ["region"]},
+    {"key": "south_asian_features",   "resolved": "Ethnicity.SouthAsian",  "aliases": ["south asian appearance"],      "weight": 1.0, "tags": ["region"]},
+    {"key": "southeast_asian_features","resolved": "Ethnicity.SoutheastAsian","aliases": ["southeast asian appearance"],"weight": 1.0, "tags": ["region"]},
+    {"key": "european_features",      "resolved": "Ethnicity.European",    "aliases": ["european appearance"],         "weight": 1.0, "tags": ["region"]},
+    {"key": "nordic_features",        "resolved": "Ethnicity.Nordic",      "aliases": ["scandinavian appearance"],     "weight": 1.0, "tags": ["region"]},
+    {"key": "mediterranean_features", "resolved": "Ethnicity.Mediterranean","aliases": ["mediterranean appearance"],   "weight": 1.0, "tags": ["region"]},
+    {"key": "african_features",       "resolved": "Ethnicity.African",     "aliases": ["african appearance"],         "weight": 1.0, "tags": ["region"]},
+    {"key": "middle_eastern_features","resolved": "Ethnicity.MiddleEastern","aliases": ["middle eastern appearance"],  "weight": 1.0, "tags": ["region"]},
+    {"key": "latin_american_features","resolved": "Ethnicity.LatinAmerican","aliases": ["latina appearance", "latino appearance"],"weight": 1.0, "tags": ["region"]},
+    {"key": "mixed_heritage",         "resolved": "Ethnicity.Mixed",       "aliases": ["multiracial features", "mixed race appearance"],"weight": 1.0, "tags": ["region"]},
+    {"key": "indigenous_features",    "resolved": "Ethnicity.Indigenous",  "aliases": ["native appearance"],          "weight": 1.0, "tags": ["region"]},
+    {"key": "pacific_islander_features","resolved": "Ethnicity.PacificIslander","aliases": ["polynesian appearance"], "weight": 1.0, "tags": ["region"]}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "category": "age",
+  "description": "年齢表現タグ（顔特化）",
+  "entries": [
+    {"key": "child",          "resolved": "Age.Child",       "aliases": ["young child", "kid"],                "weight": 1.0, "tags": ["age_group"]},
+    {"key": "teenager",       "resolved": "Age.Teen",        "aliases": ["teen", "adolescent"],                "weight": 1.0, "tags": ["age_group"]},
+    {"key": "young_adult",    "resolved": "Age.YoungAdult",  "aliases": ["youthful adult", "twenties"],        "weight": 1.0, "tags": ["age_group"]},
+    {"key": "mature_adult",   "resolved": "Age.Mature",      "aliases": ["mature woman", "mature man"],        "weight": 1.0, "tags": ["age_group"]},
+    {"key": "middle_aged",    "resolved": "Age.MiddleAged",  "aliases": ["middle age", "forties"],             "weight": 1.0, "tags": ["age_group"]},
+    {"key": "elderly",        "resolved": "Age.Elderly",     "aliases": ["old age", "senior", "aged"],         "weight": 1.0, "tags": ["age_group"]},
+    {"key": "baby_face",      "resolved": "Age.BabyFace",    "aliases": ["youthful face", "childlike face"],   "weight": 1.0, "tags": ["appearance"]},
+    {"key": "wrinkles",       "resolved": "Age.Wrinkles",    "aliases": ["fine lines", "aged skin texture"],   "weight": 1.0, "tags": ["appearance"]},
+    {"key": "laugh_lines",    "resolved": "Age.LaughLines",  "aliases": ["smile lines", "crow's feet"],        "weight": 1.0, "tags": ["appearance"]},
+    {"key": "youthful_glow",  "resolved": "Age.YouthfulGlow","aliases": ["fresh faced", "dewy youthful skin"], "weight": 1.0, "tags": ["appearance"]},
+    {"key": "grey_hair_age",  "resolved": "Age.GreyHair",    "aliases": ["graying hair", "salt and pepper hair"],"weight": 1.0, "tags": ["appearance"]},
+    {"key": "ageless",        "resolved": "Age.Ageless",     "aliases": ["timeless appearance", "age indeterminate"],"weight": 1.0, "tags": ["appearance"]}
+  ]
+}

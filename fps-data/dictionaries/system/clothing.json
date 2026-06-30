@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "category": "clothing",
+  "description": "顔周り・首元の服装タグ（顔プロンプト文脈での襟・ネックライン中心）",
+  "entries": [
+    {"key": "high_collar",       "resolved": "Clothing.HighCollar",  "aliases": ["turtleneck collar", "stand collar"],   "weight": 1.0, "tags": ["collar"]},
+    {"key": "open_collar",       "resolved": "Clothing.OpenCollar",  "aliases": ["unbuttoned collar", "loose collar"],   "weight": 1.0, "tags": ["collar"]},
+    {"key": "v_neckline",        "resolved": "Clothing.VNeck",       "aliases": ["v-neck", "v shaped neckline"],         "weight": 1.0, "tags": ["neckline"]},
+    {"key": "off_shoulder",      "resolved": "Clothing.OffShoulder", "aliases": ["bare shoulder", "exposed shoulder"],   "weight": 1.0, "tags": ["neckline"]},
+    {"key": "scarf",             "resolved": "Clothing.Scarf",       "aliases": ["neck scarf", "muffler"],               "weight": 1.0, "tags": ["accessory"]},
+    {"key": "hoodie_up",         "resolved": "Clothing.HoodUp",      "aliases": ["hood up", "hooded"],                   "weight": 1.0, "tags": ["headwear"]},
+    {"key": "veil",              "resolved": "Clothing.Veil",        "aliases": ["bridal veil", "face veil"],            "weight": 1.0, "tags": ["headwear"]},
+    {"key": "headscarf",         "resolved": "Clothing.Headscarf",   "aliases": ["hijab", "head covering"],              "weight": 1.0, "tags": ["headwear"]},
+    {"key": "collared_shirt",    "resolved": "Clothing.CollaredShirt","aliases": ["button up collar", "dress shirt collar"],"weight": 1.0, "tags": ["collar"]},
+    {"key": "necktie",           "resolved": "Clothing.Necktie",     "aliases": ["tie", "neck tie"],                     "weight": 1.0, "tags": ["accessory"]}
+  ]
+}

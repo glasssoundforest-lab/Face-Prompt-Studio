@@ -86,7 +86,7 @@ class TestRealDataIntegrity:
 
     def test_dictionary_has_minimum_keys(self, dictionary_manager: DictionaryManager):
         stats = dictionary_manager.statistics()
-        assert stats["total_keys"] >= 1000, "辞書キー数が想定を下回っています"
+        assert stats["total_keys"] >= 1100, "辞書キー数が想定を下回っています"
 
     def test_dictionary_has_face_categories(self, dictionary_manager: DictionaryManager):
         categories = set(dictionary_manager.categories())

@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "category": "body",
+  "description": "体型・体格タグ（顔プロンプト文脈での首・肩周りを中心とした記述）",
+  "entries": [
+    {"key": "slender_neck",     "resolved": "Body.SlenderNeck",  "aliases": ["slim neck", "graceful neck"],          "weight": 1.0, "tags": ["neck"]},
+    {"key": "long_neck",        "resolved": "Body.LongNeck",     "aliases": ["elongated neck"],                       "weight": 1.0, "tags": ["neck"]},
+    {"key": "broad_shoulders",  "resolved": "Body.BroadShoulders","aliases": ["wide shoulders", "strong shoulders"],  "weight": 1.0, "tags": ["shoulders"]},
+    {"key": "narrow_shoulders", "resolved": "Body.NarrowShoulders","aliases": ["slim shoulders", "petite shoulders"], "weight": 1.0, "tags": ["shoulders"]},
+    {"key": "petite_build",     "resolved": "Body.Petite",       "aliases": ["small build", "delicate frame"],       "weight": 1.0, "tags": ["build"]},
+    {"key": "athletic_build",   "resolved": "Body.Athletic",     "aliases": ["toned build", "fit physique"],         "weight": 1.0, "tags": ["build"]},
+    {"key": "curvy_build",      "resolved": "Body.Curvy",        "aliases": ["voluptuous figure"],                   "weight": 1.0, "tags": ["build"]},
+    {"key": "slim_build",       "resolved": "Body.Slim",         "aliases": ["lean build", "slender figure"],        "weight": 1.0, "tags": ["build"]},
+    {"key": "tall_stature",     "resolved": "Body.Tall",         "aliases": ["tall figure", "statuesque"],           "weight": 1.0, "tags": ["height"]},
+    {"key": "short_stature",    "resolved": "Body.Short",        "aliases": ["petite height", "small stature"],      "weight": 1.0, "tags": ["height"]}
+  ]
+}
