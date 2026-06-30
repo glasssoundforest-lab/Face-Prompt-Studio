@@ -9,6 +9,7 @@ from .nodes.debug_output import FacePromptDebugNode
 from .nodes.face_prompt_category_filter import FacePromptCategoryFilterNode
 from .nodes.face_prompt_cleaner import FacePromptCleanerNode
 from .nodes.face_prompt_compiler import FacePromptCompilerNode
+from .nodes.face_prompt_optimizer import FacePromptOptimizerNode
 from .nodes.face_prompt_preset import FacePromptPresetNode
 from .nodes.face_prompt_rule_editor import FacePromptRuleEditorNode
 
@@ -19,6 +20,7 @@ NODE_CLASS_MAPPINGS = {
     "FacePromptPreset": FacePromptPresetNode,
     "FacePromptRuleEditor": FacePromptRuleEditorNode,
     "FacePromptCategoryFilter": FacePromptCategoryFilterNode,
+    "FacePromptOptimizer": FacePromptOptimizerNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -28,6 +30,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptPreset": "🎭 Face Prompt Preset",
     "FacePromptRuleEditor": "🎭 Face Prompt Rule Editor",
     "FacePromptCategoryFilter": "🎭 Face Prompt Category Filter",
+    "FacePromptOptimizer": "🎭 Face Prompt Optimizer",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

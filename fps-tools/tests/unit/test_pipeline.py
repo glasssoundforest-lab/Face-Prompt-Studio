@@ -268,6 +268,38 @@ class TestRuleEngineStage:
         out, _ = stage.run(tags, {"rule_manager": rm})
         assert out[0].weight == 1.5
 
+    def test_meta_preserved_for_existing_tags(self):
+        """既存タグの meta（resolved等）がルール適用後も保持されること"""
+        from unittest.mock import MagicMock
+        rm = MagicMock()
+        rm.apply.return_value = (
+            [{"tag": "masterpiece", "category": "quality", "weight": 1.5}],
+            [],
+        )
+        stage = RuleEngineStage()
+        tag = make_tag("masterpiece", "quality", 1.0)
+        tag.meta["resolved"] = "Quality.High"
+        out, _ = stage.run([tag], {"rule_manager": rm})
+        assert out[0].meta.get("resolved") == "Quality.High"
+
+    def test_meta_empty_for_newly_added_tags(self):
+        """ルールで新規追加されたタグは meta が空であること（元情報がないため）"""
+        from unittest.mock import MagicMock
+        rm = MagicMock()
+        rm.apply.return_value = (
+            [
+                {"tag": "masterpiece", "category": "quality", "weight": 1.0},
+                {"tag": "high_quality", "category": "auto", "weight": 1.0},
+            ],
+            [],
+        )
+        stage = RuleEngineStage()
+        tag = make_tag("masterpiece", "quality", 1.0)
+        tag.meta["resolved"] = "Quality.High"
+        out, _ = stage.run([tag], {"rule_manager": rm})
+        added = next(t for t in out if t.tag == "high_quality")
+        assert added.meta == {}
+
 
 # ══════════════════════════════════════════════════════════════════
 # Stage 8: WeightEngine

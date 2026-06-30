@@ -294,13 +294,18 @@ class RuleEngineStage(BaseStage):
         if not rm:
             return tags
 
+        # tag -> 元の TagEntry の meta を保持（ルール適用後に復元するため）
+        meta_by_tag: dict[str, dict[str, Any]] = {
+            t.tag: dict(t.meta) for t in tags if not t.negative
+        }
+
         tag_dicts = [t.to_dict() for t in tags if not t.negative]
         applied, rule_results = rm.apply(tag_dicts)
 
         # 適用結果を context に記録（デバッグ用）
         context["applied_rule_results"] = rule_results
 
-        # 結果を TagEntry に戻す
+        # 結果を TagEntry に戻す（既存タグは meta を復元、新規追加タグは空 meta）
         neg_tags = [t for t in tags if t.negative]
         result = [
             TagEntry(
@@ -308,6 +313,7 @@ class RuleEngineStage(BaseStage):
                 category=d.get("category", ""),
                 weight=d.get("weight", 1.0),
                 negative=False,
+                meta=meta_by_tag.get(d["tag"], {}),
             )
             for d in applied
         ]
