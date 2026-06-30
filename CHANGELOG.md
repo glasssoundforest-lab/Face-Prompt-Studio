@@ -7,10 +7,62 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ## [Unreleased]
 
-### Planned (Milestone 4 以降)
-- A1111 / NovelAI アダプター
-- Plugin System / Event System
+### Planned (Milestone 5 以降)
 - GUI Studio（Web UI）
+- Knowledge Browser
+- Prompt History Timeline
+
+---
+
+## [0.8.0] — 2026-06-30
+
+Phase 4 AI Adapter Layer 完了。出力アダプター・拡張機構・入力前処理を
+整備し、エコシステムとしての拡張性を確立。
+
+### Added — Output Adapters
+
+- **fps-adapters/a1111/** — `A1111Adapter`（AUTOMATIC1111 WebUI）
+  - `(tag:weight)` 明示記法での出力
+  - `to_api_payload()`: `/sdapi/v1/txt2img` 互換ペイロード生成
+- **fps-adapters/novelai/** — `NovelAIAdapter`（NovelAI）
+  - 2つの重み記法モード: 明示記法 / `{}/[]` ネスト記法（自動近似計算）
+  - `to_api_payload()`: generate-image API 互換ペイロード生成
+
+### Added — Plugin System
+
+- **fps-core/plugins/** パッケージ新設
+  - `BasePlugin` / `StagePlugin` / `AdapterPlugin` /
+    `DictionarySourcePlugin` 基底クラス
+  - `PluginRegistry`: 依存関係解決（トポロジカルソート、循環依存検出）
+  - `loader.py`: 外部 `.py` ファイル・ディレクトリからの動的ロード
+  - `PluginManager.apply_to_pipeline()`: `StagePlugin` を
+    `PipelineManager` に実行時統合（E2E動作確認済み）
+
+### Added — Event System
+
+- **fps-core/events/** パッケージ新設
+  - `EventBus`: 優先度順実行、ワイルドカード購読、例外耐性、履歴記録
+  - 14種類の `EventType`（pipeline.*/stage.*/dictionary.*/rule.*/plugin.*）
+  - 組み込みハンドラー: `StatsCollectorHandler` / `StageTimingHandler`
+  - `PipelineManager` に `event_bus` 引数統合
+    （`pipeline.before_compile` 〜 `stage.error` まで自動発火）
+
+### Added — Input Model Adapters
+
+- **fps-adapters/input/** パッケージ新設
+  - `BaseInputAdapter`: 全アダプター共通基底（stopword除去・重複排除）
+  - `WD14Adapter`: confidence フィルタリング、rating タグ自動除外、
+    カンマ/改行/信頼度付き形式に対応
+  - `JoyCaptionAdapter`: 自然言語キャプションを文・節分割し、
+    主語・be動詞・冠詞を除去してタグ化
+  - `Florence2Adapter`: `<TASK_TOKEN>` 除去 + JoyCaptionAdapter 継承
+
+### Testing
+
+- ユニットテスト 708件（前回553件から155件増:
+  a1111/novelai 30件、plugins 47件、events 39件、input adapters 39件）
+- 互換性テスト 225件
+- 合計 933 tests PASSED / Coverage 92%（閾値85%維持）
 
 ---
 
@@ -252,7 +304,8 @@ DSL構文サポート: `(category:value)`、`(category:value:weight)`、
 
 ---
 
-[Unreleased]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/releases/tag/v0.5.0

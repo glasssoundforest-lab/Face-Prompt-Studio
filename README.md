@@ -9,9 +9,9 @@ ComfyUI はアダプターの一つに過ぎない、ロングタームで拡張
 
 ## ステータス
 
-**v0.7.0** — Phase 3 Prompt Optimizer 完了
+**v0.8.0** — Phase 4 AI Adapter Layer 完了
 
-- 553 unit tests / 225 compat tests — 全て PASS（合計778件）
+- 708 unit tests / 225 compat tests — 全て PASS（合計933件）
 - Coverage 90%（閾値 85%）
 - Ruff / Black / mypy 全クリア
 
@@ -41,11 +41,16 @@ fps/
 │   ├── preset/        PresetManager
 │   ├── cache/         CacheManager
 │   ├── backup/        BackupManager
-│   ├── pipeline/      PipelineManager（10ステージ）
+│   ├── pipeline/      PipelineManager（10ステージ・イベント発火対応）
 │   ├── optimizer/     OptimizerManager（品質スコア・矛盾検出）
-│   └── history/       HistoryManager（変換履歴・差分比較）
+│   ├── history/       HistoryManager（変換履歴・差分比較）
+│   ├── plugins/       PluginManager（動的プラグインロード）
+│   └── events/        EventBus（パイプラインフック）
 ├── fps-adapters/      アダプター（core から独立）
-│   └── comfyui/       ComfyUI Adapter + カスタムノード8種
+│   ├── comfyui/       ComfyUI Adapter + カスタムノード8種
+│   ├── a1111/         AUTOMATIC1111 WebUI Adapter
+│   ├── novelai/       NovelAI Adapter
+│   └── input/         入力モデル前処理（WD14/JoyCaption/Florence2）
 ├── fps-data/          辞書・ルール・プリセットデータ
 │   └── dictionaries/system/
 │       ├── (17 顔特化カテゴリ).json
@@ -145,7 +150,7 @@ word                       プレーンタグ（辞書解決） 例: masterpiece
 | 1 | Foundation | ✅ 完了（v0.5.0） |
 | 2 | Face Prompt Cleaner 強化 | ✅ 完了（v0.6.0） |
 | 3 | Prompt Optimizer | ✅ 完了（v0.7.0） |
-| 4 | AI Adapter Layer | 計画中 |
+| 4 | AI Adapter Layer | ✅ 完了（v0.8.0） |
 | 5 | GUI Studio | 計画中 |
 
 ## コーディング規約
