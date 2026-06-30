@@ -40,7 +40,7 @@ class TestOptimizerNodeRegistration:
     def test_total_node_count_is_eight(self):
         from comfyui import NODE_CLASS_MAPPINGS
 
-        assert len(NODE_CLASS_MAPPINGS) == 8
+        assert len(NODE_CLASS_MAPPINGS) == 9
 
 
 # ══════════════════════════════════════════════════════════════════

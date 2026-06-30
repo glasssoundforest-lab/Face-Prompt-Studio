@@ -6,6 +6,7 @@ ComfyUI はこのファイルを読み込んで NODE_CLASS_MAPPINGS / NODE_DISPL
 """
 
 from .nodes.debug_output import FacePromptDebugNode
+from .nodes.face_prompt_backup import FacePromptBackupNode
 from .nodes.face_prompt_category_filter import FacePromptCategoryFilterNode
 from .nodes.face_prompt_cleaner import FacePromptCleanerNode
 from .nodes.face_prompt_compiler import FacePromptCompilerNode
@@ -23,6 +24,7 @@ NODE_CLASS_MAPPINGS = {
     "FacePromptCategoryFilter": FacePromptCategoryFilterNode,
     "FacePromptOptimizer": FacePromptOptimizerNode,
     "FacePromptHistory": FacePromptHistoryNode,
+    "FacePromptBackup": FacePromptBackupNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -34,6 +36,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptCategoryFilter": "🎭 Face Prompt Category Filter",
     "FacePromptOptimizer": "🎭 Face Prompt Optimizer",
     "FacePromptHistory": "🎭 Face Prompt History",
+    "FacePromptBackup": "🎭 Face Prompt Backup",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

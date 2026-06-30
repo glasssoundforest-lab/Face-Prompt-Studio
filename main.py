@@ -300,7 +300,7 @@ def run_smoke_tests(verbose: bool = False) -> SmokeResults:
         from comfyui import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
         from comfyui.nodes.face_prompt_cleaner import FacePromptCleanerNode
 
-        assert len(NODE_CLASS_MAPPINGS) == 8
+        assert len(NODE_CLASS_MAPPINGS) == 9
         node   = FacePromptCleanerNode()
         result = node.clean(prompt="masterpiece, blue_eyes")
         assert len(result) == 4

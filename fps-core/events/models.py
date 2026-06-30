@@ -26,9 +26,22 @@ class EventType(StrEnum):
     DICTIONARY_LOADED = "dictionary.loaded"
     DICTIONARY_RELOADED = "dictionary.reloaded"
     DICTIONARY_LOOKUP_MISS = "dictionary.lookup_miss"
+    DICTIONARY_BEFORE_SAVE = "dictionary.before_save"
+    DICTIONARY_AFTER_SAVE = "dictionary.after_save"
 
     # ルール
     RULE_APPLIED = "rule.applied"
+    RULE_BEFORE_SAVE = "rule.before_save"
+    RULE_AFTER_SAVE = "rule.after_save"
+
+    # プリセット
+    PRESET_BEFORE_SAVE = "preset.before_save"
+    PRESET_AFTER_SAVE = "preset.after_save"
+
+    # バックアップ
+    BACKUP_CREATED = "backup.created"
+    BACKUP_RESTORED = "backup.restored"
+    BACKUP_FAILED = "backup.failed"
 
     # プラグイン
     PLUGIN_REGISTERED = "plugin.registered"
