@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "category": "synonyms",
+  "description": "Qwen2-VL 構造化記述出力の同義語マッピング",
+  "entries": [
+    {"key": "eye_color_blue",          "resolved": "Eyes.Blue",         "aliases": ["eyes:blue", "eye_colour_blue"],                  "weight": 1.0, "tags": ["qwen2vl", "eyes"]},
+    {"key": "eye_color_brown",         "resolved": "Eyes.Brown",        "aliases": ["eyes:brown", "eye_colour_brown"],                "weight": 1.0, "tags": ["qwen2vl", "eyes"]},
+    {"key": "eye_color_green",         "resolved": "Eyes.Green",        "aliases": ["eyes:green", "eye_colour_green"],                "weight": 1.0, "tags": ["qwen2vl", "eyes"]},
+    {"key": "eye_shape_round",         "resolved": "Eyes.Large",        "aliases": ["round eye shape", "eyes:round"],                 "weight": 1.0, "tags": ["qwen2vl", "eyes"]},
+    {"key": "hair_color_black",        "resolved": "Hair.Black",        "aliases": ["hair:black", "hair_colour_black"],               "weight": 1.0, "tags": ["qwen2vl", "hair"]},
+    {"key": "hair_color_brown",        "resolved": "Hair.Brown",        "aliases": ["hair:brown", "hair_colour_brown"],               "weight": 1.0, "tags": ["qwen2vl", "hair"]},
+    {"key": "hair_color_blonde",       "resolved": "Hair.Blonde",       "aliases": ["hair:blonde", "hair_colour_blonde"],             "weight": 1.0, "tags": ["qwen2vl", "hair"]},
+    {"key": "hair_length_long",        "resolved": "Hair.Long",         "aliases": ["hair:long", "length:long"],                      "weight": 1.0, "tags": ["qwen2vl", "hair"]},
+    {"key": "hair_length_short",       "resolved": "Hair.Short",        "aliases": ["hair:short", "length:short"],                    "weight": 1.0, "tags": ["qwen2vl", "hair"]},
+    {"key": "hair_style_ponytail",     "resolved": "Hair.Ponytail",     "aliases": ["style:ponytail", "hair_style:ponytail"],         "weight": 1.0, "tags": ["qwen2vl", "hair"]},
+    {"key": "facial_expression_smile", "resolved": "Expression.Smile",  "aliases": ["expression:smile", "emotion:happy"],             "weight": 1.0, "tags": ["qwen2vl", "expression"]},
+    {"key": "facial_expression_neutral","resolved": "Expression.Neutral","aliases": ["expression:neutral", "emotion:neutral"],        "weight": 1.0, "tags": ["qwen2vl", "expression"]},
+    {"key": "skin_tone_fair",          "resolved": "Skin.Fair",         "aliases": ["skin:fair", "complexion:fair"],                  "weight": 1.0, "tags": ["qwen2vl", "skin"]},
+    {"key": "skin_tone_tan",           "resolved": "Skin.Tan",          "aliases": ["skin:tan", "complexion:tan"],                    "weight": 1.0, "tags": ["qwen2vl", "skin"]},
+    {"key": "skin_tone_dark",          "resolved": "Skin.Dark",         "aliases": ["skin:dark", "complexion:dark"],                  "weight": 1.0, "tags": ["qwen2vl", "skin"]},
+    {"key": "accessory_glasses",       "resolved": "Glasses.Normal",    "aliases": ["wears:glasses", "accessory:glasses"],            "weight": 1.0, "tags": ["qwen2vl", "glasses"]},
+    {"key": "accessory_earrings",      "resolved": "Accessories.Earrings","aliases": ["wears:earrings", "accessory:earrings"],        "weight": 1.0, "tags": ["qwen2vl", "accessories"]},
+    {"key": "makeup_style_natural",    "resolved": "Makeup.Light",      "aliases": ["makeup:natural", "makeup_type:light"],           "weight": 1.0, "tags": ["qwen2vl", "makeup"]},
+    {"key": "makeup_style_heavy",      "resolved": "Makeup.Heavy",      "aliases": ["makeup:heavy", "makeup_type:bold"],              "weight": 1.0, "tags": ["qwen2vl", "makeup"]},
+    {"key": "face_shape_oval",         "resolved": "FaceShape.Oval",    "aliases": ["face:oval", "shape:oval"],                       "weight": 1.0, "tags": ["qwen2vl", "face_shape"]},
+    {"key": "face_shape_round",        "resolved": "FaceShape.Round",   "aliases": ["face:round", "shape:round"],                     "weight": 1.0, "tags": ["qwen2vl", "face_shape"]}
+  ]
+}

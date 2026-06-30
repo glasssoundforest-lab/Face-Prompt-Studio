@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "category": "synonyms",
+  "description": "InternVL 詳細記述出力の同義語マッピング",
+  "entries": [
+    {"key": "striking_eye_color",        "resolved": "Eyes.Blue",       "aliases": ["remarkable eye color", "eye-catching eyes"],          "weight": 1.0, "tags": ["internvl", "eyes"]},
+    {"key": "expressive_eyes",           "resolved": "Eyes.Large",      "aliases": ["very expressive eyes", "emotive eyes"],               "weight": 1.0, "tags": ["internvl", "eyes"]},
+    {"key": "gentle_gaze",               "resolved": "Eyes.HalfClosed", "aliases": ["soft gaze", "tender gaze"],                           "weight": 1.0, "tags": ["internvl", "eyes"]},
+    {"key": "sharp_gaze",                "resolved": "Eyes.Upturned",   "aliases": ["intense gaze", "piercing gaze"],                       "weight": 1.0, "tags": ["internvl", "eyes"]},
+    {"key": "well_groomed_hair",         "resolved": "Hair.Straight",   "aliases": ["neatly styled hair", "well kept hair"],               "weight": 1.0, "tags": ["internvl", "hair"]},
+    {"key": "natural_hair_texture",      "resolved": "Hair.Wavy",       "aliases": ["natural waves", "organic hair texture"],              "weight": 1.0, "tags": ["internvl", "hair"]},
+    {"key": "elaborate_hairstyle",       "resolved": "Hair.Bun",        "aliases": ["intricate hairstyle", "ornate hair arrangement"],     "weight": 1.0, "tags": ["internvl", "hair"]},
+    {"key": "subtle_smile",              "resolved": "Expression.Smirk","aliases": ["faint smile", "barely noticeable smile"],             "weight": 1.0, "tags": ["internvl", "expression"]},
+    {"key": "composed_expression",       "resolved": "Expression.Serious","aliases": ["collected expression", "poised look"],              "weight": 1.0, "tags": ["internvl", "expression"]},
+    {"key": "animated_expression",       "resolved": "Expression.Surprised","aliases": ["lively expression", "vivacious look"],            "weight": 1.0, "tags": ["internvl", "expression"]},
+    {"key": "even_skin_tone",            "resolved": "Skin.Smooth",     "aliases": ["uniform skin tone", "consistent complexion"],         "weight": 1.0, "tags": ["internvl", "skin"]},
+    {"key": "natural_blush",             "resolved": "Skin.Blush",      "aliases": ["subtle natural blush", "soft pink flush"],            "weight": 1.0, "tags": ["internvl", "skin"]},
+    {"key": "well_shaped_brows",         "resolved": "Eyebrows.Arched", "aliases": ["nicely shaped eyebrows", "groomed brows"],            "weight": 1.0, "tags": ["internvl", "eyebrows"]},
+    {"key": "balanced_facial_proportions","resolved": "FaceShape.Oval", "aliases": ["harmonious facial features", "proportionate face"],   "weight": 1.0, "tags": ["internvl", "face_shape"]},
+    {"key": "angular_jawline",           "resolved": "FaceShape.Sharp", "aliases": ["defined jawline", "strong angular jaw"],              "weight": 1.0, "tags": ["internvl", "face_shape"]},
+    {"key": "modest_makeup",             "resolved": "Makeup.Light",    "aliases": ["minimal cosmetics", "understated cosmetics"],         "weight": 1.0, "tags": ["internvl", "makeup"]},
+    {"key": "vivid_lip_color",           "resolved": "Makeup.RedLipstick","aliases": ["bold lip color", "striking lip shade"],             "weight": 1.0, "tags": ["internvl", "makeup"]},
+    {"key": "rim_glasses",               "resolved": "Glasses.Normal",  "aliases": ["framed glasses", "rimmed eyewear"],                   "weight": 1.0, "tags": ["internvl", "glasses"]},
+    {"key": "fantasy_ear_shape",         "resolved": "Fantasy.ElfEars", "aliases": ["non-human ear shape", "stylized pointed ears"],       "weight": 1.0, "tags": ["internvl", "fantasy"]}
+  ]
+}

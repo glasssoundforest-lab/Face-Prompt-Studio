@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "category": "synonyms",
+  "description": "MiniCPM-V 簡潔記述出力の同義語マッピング",
+  "entries": [
+    {"key": "blue_iris",            "resolved": "Eyes.Blue",         "aliases": ["blue colored iris", "azure iris"],               "weight": 1.0, "tags": ["minicpm", "eyes"]},
+    {"key": "brown_iris",           "resolved": "Eyes.Brown",        "aliases": ["brown colored iris", "dark iris"],               "weight": 1.0, "tags": ["minicpm", "eyes"]},
+    {"key": "large_pupils",         "resolved": "Eyes.Large",        "aliases": ["wide pupils", "dilated looking eyes"],           "weight": 1.0, "tags": ["minicpm", "eyes"]},
+    {"key": "dark_long_hair",       "resolved": "Hair.Black",        "aliases": ["long dark hair", "long black tresses"],          "weight": 1.0, "tags": ["minicpm", "hair"]},
+    {"key": "light_short_hair",     "resolved": "Hair.Short",        "aliases": ["short light colored hair"],                      "weight": 1.0, "tags": ["minicpm", "hair"]},
+    {"key": "curly_textured_hair",  "resolved": "Hair.Wavy",         "aliases": ["textured curly hair", "kinky curly hair"],       "weight": 1.0, "tags": ["minicpm", "hair"]},
+    {"key": "happy_face",           "resolved": "Expression.Smile",  "aliases": ["cheerful face", "content face"],                 "weight": 1.0, "tags": ["minicpm", "expression"]},
+    {"key": "calm_face",            "resolved": "Expression.Neutral","aliases": ["relaxed face", "peaceful face"],                 "weight": 1.0, "tags": ["minicpm", "expression"]},
+    {"key": "light_skin_tone",      "resolved": "Skin.Fair",         "aliases": ["pale skin tone", "light colored skin"],          "weight": 1.0, "tags": ["minicpm", "skin"]},
+    {"key": "medium_skin_tone",     "resolved": "Skin.Tan",          "aliases": ["medium toned skin", "olive skin tone"],          "weight": 1.0, "tags": ["minicpm", "skin"]},
+    {"key": "dark_skin_tone",       "resolved": "Skin.Dark",         "aliases": ["deep skin tone", "rich dark skin"],              "weight": 1.0, "tags": ["minicpm", "skin"]},
+    {"key": "thin_lips",            "resolved": "Mouth.ThinLips",    "aliases": ["narrow lips"],                                   "weight": 1.0, "tags": ["minicpm", "mouth"]},
+    {"key": "thick_lips",           "resolved": "Mouth.FullLips",    "aliases": ["full thick lips"],                               "weight": 1.0, "tags": ["minicpm", "mouth"]},
+    {"key": "small_round_face",     "resolved": "FaceShape.Round",   "aliases": ["small rounded face"],                            "weight": 1.0, "tags": ["minicpm", "face_shape"]},
+    {"key": "long_narrow_face",     "resolved": "FaceShape.Long",    "aliases": ["elongated narrow face"],                         "weight": 1.0, "tags": ["minicpm", "face_shape"]},
+    {"key": "wearing_eyewear",      "resolved": "Glasses.Normal",    "aliases": ["has eyewear on", "with glasses"],                "weight": 1.0, "tags": ["minicpm", "glasses"]},
+    {"key": "light_cosmetics",      "resolved": "Makeup.Light",      "aliases": ["minimal cosmetics applied"],                     "weight": 1.0, "tags": ["minicpm", "makeup"]},
+    {"key": "pointed_ear_shape",    "resolved": "Fantasy.ElfEars",   "aliases": ["non-round ear shape"],                           "weight": 1.0, "tags": ["minicpm", "fantasy"]}
+  ]
+}

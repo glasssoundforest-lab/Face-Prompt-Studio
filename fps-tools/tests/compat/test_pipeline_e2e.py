@@ -86,7 +86,7 @@ class TestRealDataIntegrity:
 
     def test_dictionary_has_minimum_keys(self, dictionary_manager: DictionaryManager):
         stats = dictionary_manager.statistics()
-        assert stats["total_keys"] >= 700, "辞書キー数が想定を下回っています"
+        assert stats["total_keys"] >= 1000, "辞書キー数が想定を下回っています"
 
     def test_dictionary_has_face_categories(self, dictionary_manager: DictionaryManager):
         categories = set(dictionary_manager.categories())
@@ -388,3 +388,35 @@ class TestE2EModelTagCoverage:
     def test_joycaption_tags_resolve(self, dictionary_manager: DictionaryManager, tag: str):
         r = dictionary_manager.lookup(tag)
         assert r.found, f"JoyCaptionタグ '{tag}' が解決できません"
+
+    @pytest.mark.parametrize("tag", [
+        "captivating_blue_eyes", "cascading_hair", "radiant_smile",
+        "flawless_complexion", "fluttering_lashes", "elven_pointed_ears",
+    ])
+    def test_florence2_tags_resolve(self, dictionary_manager: DictionaryManager, tag: str):
+        r = dictionary_manager.lookup(tag)
+        assert r.found, f"Florence2タグ '{tag}' が解決できません"
+
+    @pytest.mark.parametrize("tag", [
+        "eye_color_blue", "hair_color_blonde", "facial_expression_smile",
+        "skin_tone_fair", "accessory_glasses", "face_shape_oval",
+    ])
+    def test_qwen2vl_tags_resolve(self, dictionary_manager: DictionaryManager, tag: str):
+        r = dictionary_manager.lookup(tag)
+        assert r.found, f"Qwen2-VLタグ '{tag}' が解決できません"
+
+    @pytest.mark.parametrize("tag", [
+        "striking_eye_color", "well_groomed_hair", "subtle_smile",
+        "even_skin_tone", "well_shaped_brows", "vivid_lip_color",
+    ])
+    def test_internvl_tags_resolve(self, dictionary_manager: DictionaryManager, tag: str):
+        r = dictionary_manager.lookup(tag)
+        assert r.found, f"InternVLタグ '{tag}' が解決できません"
+
+    @pytest.mark.parametrize("tag", [
+        "blue_iris", "dark_long_hair", "happy_face",
+        "light_skin_tone", "thick_lips", "wearing_eyewear",
+    ])
+    def test_minicpm_tags_resolve(self, dictionary_manager: DictionaryManager, tag: str):
+        r = dictionary_manager.lookup(tag)
+        assert r.found, f"MiniCPM-Vタグ '{tag}' が解決できません"

@@ -203,13 +203,13 @@ class TestSynonymCoverage:
 
     def test_synonyms_dir_has_files(self):
         files = list(self.SYNONYMS_DIR.glob("*.json"))
-        assert len(files) >= 3
+        assert len(files) >= 7  # wd14/joycaption/common/florence2/qwen2vl/internvl/minicpm
 
     def test_synonyms_loaded_via_rglob(self):
         """サブディレクトリの辞書が load_dict_dir で正しく読み込まれること"""
         files = load_dict_dir(SYSTEM_DIR, DictSource.SYSTEM)
         synonym_files = [f for f in files if f.category == "synonyms"]
-        assert len(synonym_files) >= 3
+        assert len(synonym_files) >= 7
 
     def test_wd14_specific_tags_present(self):
         dm = DictionaryManager(system_dir=SYSTEM_DIR, user_dir=USER_DIR)
