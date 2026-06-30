@@ -30,6 +30,7 @@ CORE  = ROOT / "fps-core"
 TESTS  = ROOT / "fps-tools" / "tests"
 UNIT   = TESTS / "unit"
 COMPAT = TESTS / "compat"
+PERF   = TESTS / "performance"
 
 sys.path.insert(0, str(CORE))
 
@@ -323,6 +324,7 @@ def run_unit_tests(
     verbose: bool = False,
     coverage: bool = False,
     include_compat: bool = False,
+    include_perf: bool = False,
 ) -> tuple[int, int, float]:
     print(header("── Unit Tests ──────────────────────────────────────────"))
     print()
@@ -335,6 +337,8 @@ def run_unit_tests(
     targets = [str(UNIT)]
     if include_compat and COMPAT.exists() and list(COMPAT.glob("test_*.py")):
         targets.append(str(COMPAT))
+    if include_perf and PERF.exists() and list(PERF.glob("test_*.py")):
+        targets.append(str(PERF))
 
     args = [sys.executable, "-m", "pytest", *targets,
             "--tb=short", "--no-header"]
@@ -342,6 +346,8 @@ def run_unit_tests(
         args.append("-v")
     else:
         args.append("-q")
+    if include_perf:
+        args.append("-s")   # performance テストの print 出力を表示
     if coverage:
         args += [
             f"--cov={CORE}",
@@ -581,6 +587,7 @@ def main() -> None:
     parser.add_argument("--smoke",     action="store_true", help="スモークテストのみ")
     parser.add_argument("--unit",      action="store_true", help="ユニットテストのみ")
     parser.add_argument("--compat",    action="store_true", help="互換性テストも含めて実行")
+    parser.add_argument("--perf",      action="store_true", help="性能テストも含めて実行")
     parser.add_argument("--cov",       action="store_true", help="カバレッジ付きテスト")
     parser.add_argument("--lint",      action="store_true", help="Ruff lint")
     parser.add_argument("--format",    action="store_true", help="Black フォーマットチェック")
@@ -603,18 +610,20 @@ def main() -> None:
 
     any_explicit_check = any([
         args.smoke, args.unit, args.cov, args.lint,
-        args.format, args.typecheck, args.check, args.all, args.compat,
+        args.format, args.typecheck, args.check, args.all, args.compat, args.perf,
     ])
-    run_tests   = args.all or args.smoke or args.unit or args.cov or args.compat or not any_explicit_check
+    run_tests   = (args.all or args.smoke or args.unit or args.cov
+                   or args.compat or args.perf or not any_explicit_check)
     run_quality = args.all or args.check or args.lint or args.format or args.typecheck
 
     if run_tests or args.smoke:
         smoke_res = run_smoke_tests(args.verbose)
-    if run_tests or args.unit or args.cov or args.compat:
+    if run_tests or args.unit or args.cov or args.compat or args.perf:
         passed, failed, elapsed = run_unit_tests(
             verbose=args.verbose,
             coverage=args.cov or args.all,
             include_compat=args.compat or args.all,
+            include_perf=args.perf,
         )
     if run_quality or args.check:
         quality_res = run_quality_checks(
