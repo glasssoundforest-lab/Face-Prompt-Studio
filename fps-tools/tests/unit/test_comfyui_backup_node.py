@@ -57,10 +57,10 @@ class TestFacePromptBackupNode:
 
         assert "🎭" in NODE_DISPLAY_NAME_MAPPINGS["FacePromptBackup"]
 
-    def test_total_node_count_is_nine(self):
+    def test_total_node_count_is_ten(self):
         from comfyui import NODE_CLASS_MAPPINGS
 
-        assert len(NODE_CLASS_MAPPINGS) == 9
+        assert len(NODE_CLASS_MAPPINGS) == 10
 
     def test_input_types_structure(self):
         types = FacePromptBackupNode.INPUT_TYPES()
