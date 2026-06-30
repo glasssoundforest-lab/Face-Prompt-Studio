@@ -28,10 +28,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest pytest-cov pyyaml
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
           python -m pytest fps-tools/tests/unit \
-            --pythonpath fps-core \
+            --tb=short \
+            -v
+
+      - name: Run compat tests
+        run: |
+          python -m pytest fps-tools/tests/compat \
             --tb=short \
             -v
 

@@ -18,7 +18,7 @@ dev   = [
 
 [tool.pytest.ini_options]
 testpaths    = ["fps-tools/tests"]
-pythonpath   = ["fps-core"]
+pythonpath   = ["fps-core", "fps-adapters"]
 addopts      = "-v --tb=short --cov=fps-core --cov-report=term-missing --cov-fail-under=80"
 
 [tool.black]
