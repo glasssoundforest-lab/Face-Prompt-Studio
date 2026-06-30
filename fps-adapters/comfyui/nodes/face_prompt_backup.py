@@ -141,8 +141,10 @@ class FacePromptBackupNode(FPSNodeBase):
         ]
 
         entries = bm.list_backups()[:10]
-        for e in entries:
-            lines.append(f"  {e.id}  [{e.target}]  {e.created_at_str}  ({e.size_kb:.1f}KB)")
+        for entry in entries:
+            lines.append(
+                f"  {entry.id}  [{entry.target}]  {entry.created_at_str}  ({entry.size_kb:.1f}KB)"
+            )
         if not entries:
             lines.append("  (no backups yet)")
 
