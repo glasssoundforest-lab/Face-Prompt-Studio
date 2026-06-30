@@ -9,22 +9,22 @@ ComfyUI はアダプターの一つに過ぎない、ロングタームで拡張
 
 ## ステータス
 
-**v0.5.0** — Phase 1 Foundation 完了
+**v0.6.0** — Phase 2 Face Prompt Cleaner 強化完了
 
-- 390 unit tests / 146 compat tests / 27 performance tests — 全て PASS
+- 438 unit tests / 203 compat tests — 全て PASS（合計641件）
 - Coverage 90%（閾値 85%）
 - Ruff / Black / mypy 全クリア
 
 ## 特徴
 
-- **顔特化辞書システム** — 17カテゴリ・784キー（eyes / hair / expression /
-  makeup / fantasy_parts など）
-- **同義語対応** — WD14 / JoyCaption / Florence2 など主要キャプション
-  モデルの出力タグを自動正規化
+- **顔特化辞書システム** — 24カテゴリ・1169キー（eyes / hair / expression /
+  makeup / fantasy_parts / age / ethnicity など）
+- **同義語対応** — WD14 / JoyCaption / Florence2 / Qwen2-VL / InternVL /
+  MiniCPM-V 主要キャプションモデルの出力タグを自動正規化
 - **10ステージパイプライン** — Parser → Normalizer → Blacklist →
   Categorizer → RuleEngine → Optimizer → Exporter
 - **JSON駆動ルールエンジン** — Python修正不要でタグの追加/削除/重み変更
-- **ComfyUI ノード3種** — Cleaner / Compiler / Debug
+- **ComfyUI ノード6種** — Cleaner / Compiler / Debug / Preset / RuleEditor / CategoryFilter
 - **Clean Architecture** — core はアダプター依存ゼロ、拡張容易
 
 ## リポジトリ構造
@@ -41,7 +41,7 @@ fps/
 │   ├── backup/        BackupManager
 │   └── pipeline/      PipelineManager（10ステージ）
 ├── fps-adapters/      アダプター（core から独立）
-│   └── comfyui/       ComfyUI Adapter + カスタムノード3種
+│   └── comfyui/       ComfyUI Adapter + カスタムノード6種
 ├── fps-data/          辞書・ルール・プリセットデータ
 │   └── dictionaries/system/
 │       ├── (17 顔特化カテゴリ).json
@@ -111,6 +111,9 @@ ComfyUI/custom_nodes/Face-Prompt-Studio/   ← このリポジトリを clone
 - **Face Prompt Cleaner** — プロンプトクリーニング、17カテゴリスイッチ
 - **Face Prompt Compiler** — DSLフルコンパイル、プリセット適用
 - **Face Prompt Debug** — 変換差分・辞書統計表示
+- **Face Prompt Preset** — プリセット選択・複数マージ
+- **Face Prompt Rule Editor** — ルール確認・テスト・一時無効化
+- **Face Prompt Category Filter** — カテゴリベースのタグ抽出/除外
 
 ## DSL 構文
 
@@ -134,7 +137,7 @@ word                       プレーンタグ（辞書解決） 例: masterpiece
 | Phase | 内容 | 状態 |
 |---|---|---|
 | 1 | Foundation | ✅ 完了（v0.5.0） |
-| 2 | Face Prompt Cleaner 強化 | 計画中 |
+| 2 | Face Prompt Cleaner 強化 | ✅ 完了（v0.6.0） |
 | 3 | Prompt Optimizer | 計画中 |
 | 4 | AI Adapter Layer | 計画中 |
 | 5 | GUI Studio | 計画中 |

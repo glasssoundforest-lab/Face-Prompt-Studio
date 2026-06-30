@@ -7,13 +7,61 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ## [Unreleased]
 
-### Planned (Milestone 2 以降)
-- 追加入力モデル対応（Florence2 / Qwen2-VL / InternVL / MiniCPM-V）
-- Category Weight Engine GUI 強化
+### Planned (Milestone 3 以降)
 - Prompt Optimizer（品質スコアリング・矛盾検出）
 - A1111 / NovelAI アダプター
 - Plugin System / Event System
 - GUI Studio（Web UI）
+
+---
+
+## [0.6.0] — 2026-06-30
+
+Phase 2 Face Prompt Cleaner 強化完了。対応キャプションモデルを拡大し、
+辞書・デバッグ機能・ComfyUI ノードを大幅に強化。
+
+### Added — Dictionary Expansion
+
+- **追加入力モデル同義語辞書**（4種、121エントリ）
+  - `florence2_tags.json`（33）— Florence2 詳細キャプション対応
+  - `qwen2vl_tags.json`（21）— Qwen2-VL 構造化記述（key:value形式）対応
+  - `internvl_tags.json`（19）— InternVL 詳細記述対応
+  - `minicpm_tags.json`（18）— MiniCPM-V 簡潔記述対応
+
+- **補助カテゴリ辞書**（4種、44エントリ）
+  - `age.json` — 年齢表現（child〜elderly、外見的特徴）
+  - `ethnicity.json` — 地域特有の顔特徴（中立的記述語彙）
+  - `body.json` — 顔写りに関連する首・肩周りの体格
+  - `clothing.json` — 顔周り・首元の服装（襟・ネックライン・帽子等）
+
+辞書総計: **1169キー / 30ファイル / 24カテゴリ**
+（v0.5.0 の784キー/22ファイルから49%拡大）
+
+### Added — Debug Output Enhancement
+
+- **PipelineResult.meta['applied_rules']** — 発火した全ルールの追跡情報を
+  パイプライン結果に記録
+- **Face Prompt Cleaner デバッグ出力強化**
+  - Tag Diff（parsed → final）: ルール由来の追加とカテゴリスイッチ由来の
+    除外を明確に区別して表示
+  - Category Summary: カテゴリ別タグ数・平均重みの集計表
+  - Applied Rules: 発火した全ルールの ID・アクション・対象タグ・詳細一覧
+
+### Added — ComfyUI Nodes（3種追加、合計6ノード）
+
+- **🎭 Face Prompt Preset** — プリセット選択式ドロップダウン、複数プリセット
+  マージ、追加プロンプト合成に対応
+- **🎭 Face Prompt Rule Editor** — ロード済みルールの一覧・統計表示、
+  ルールの一時無効化テスト（副作用なし設計）、テストプロンプトでの
+  適用結果確認
+- **🎭 Face Prompt Category Filter** — keep_only/exclude モードでの
+  カテゴリベースタグ抽出、カテゴリ内訳レポート
+
+### Testing
+
+- ユニットテスト 438件（前回390件から48件増）
+- 互換性テスト 203件（モデル別タグ網羅24件追加、ComfyUI 6ノード自動カバー）
+- 合計 641 tests PASSED / Coverage 90%（閾値85%維持）
 
 ---
 
@@ -147,5 +195,6 @@ DSL構文サポート: `(category:value)`、`(category:value:weight)`、
 
 ---
 
-[Unreleased]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/glasssoundforest-lab/Face-Prompt-Studio/releases/tag/v0.5.0
