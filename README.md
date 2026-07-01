@@ -1,185 +1,217 @@
 # Face Prompt Studio
 
-Prompt Compiler Framework for Stable Diffusion / ComfyUI — 顔プロンプト
-（face prompt）の最適化・クリーニング・ルールベース処理に特化した
-プロフェッショナル品質のフレームワーク。
+Stable Diffusion / ComfyUI 向け顔プロンプト最適化フレームワーク。
 
-ComfyUI はアダプターの一つに過ぎない、ロングタームで拡張可能な
-アーキテクチャを採用しています。
+タグの正規化・矛盾検出・スコアリング・テンプレート展開をまとめて行う
+プロダクションレディなプロンプト管理プラットフォームです。
+
+ComfyUI はアダプターの一つに過ぎない、長期拡張可能な
+Clean Architecture を採用しています。
 
 ---
 
 ## ステータス
 
-**v1.0.0** 🎉 — 正式リリース
+**v1.6.0** — 日本語辞書大規模拡充 完了（2026-07-01）
 
 | 指標 | 値 |
 |---|---|
-| 安定テスト通過数 | **843件 PASS** |
-| 新規テスト（M5/M6） | +140件 |
-| エンドポイント総数 | **20本**（REST API） |
-| 辞書エントリ | **1169キー**（英語）+ **105キー**（日本語） |
-| カテゴリ数 | 24カテゴリ |
-| テンプレート | 5種（組み込み） |
-| ComfyUI ノード | 10種 |
+| テスト | **1122 PASS / 0 FAILED** |
+| REST API | **24 エンドポイント** |
+| 辞書キー総数 | **2793キー**（英語 + 日本語） |
+| 日本語エントリ | **517件**（21カテゴリ） |
+| ComfyUI ノード | **11種** |
+| テンプレート | **5種**（組み込み） |
+| Python ファイル | 130本 |
 
 ---
 
-## 特徴
+## 機能一覧
 
-### Core Pipeline
-- **顔特化辞書システム** — 24カテゴリ・1169キー（eyes / hair / expression /
-  makeup / fantasy_parts / age / ethnicity など）+ 日本語105キー（MeCab不要）
-- **同義語対応** — WD14 / JoyCaption / Florence2 / Qwen2-VL / InternVL /
-  MiniCPM-V 主要キャプションモデルの出力タグを自動正規化
-- **10ステージパイプライン** — Parser → Normalizer → Blacklist →
-  Categorizer → RuleEngine → Optimizer → Exporter
-- **JSON駆動ルールエンジン** — Python修正不要でタグの追加/削除/重み変更
+### Core Pipeline（10ステージ）
+Parser → Normalizer → Blacklist → Categorizer → RuleEngine → Optimizer → Exporter
 
-### Optimizer（M6強化）
-- **矛盾検出** — 同一排他グループ内の競合タグを自動検出（18グループ）
-- **冗長検出** — 意味的に近いタグの重複を警告
-- **ネガティブプロンプト最適化** ★NEW — positive/negative クロス矛盾検出
-- **品質スコアリング** — coverage / balance / redundancy / negative_coverage
-- **改善提案** — 不足カテゴリ・矛盾・バランス改善を自然言語で提案
+- **顔特化辞書** — 英語1169キー + 日本語517キー（MeCab不要）
+- **同義語対応** — WD14 / JoyCaption / Florence2 / Qwen2-VL 対応
+- **JSON駆動ルールエンジン** — Python 修正不要
 
-### GUI Studio (M5)
-- **REST API 20本** — FastAPI + Pydantic v2、OpenAPI自動生成
-- **Web UI SPA** — Editor / Optimize / Presets / Knowledge / History
-- **🔍 Knowledge Browser** — 24カテゴリ・タグ検索・同義語表示・エディタ連携
-- **🕐 History Timeline** — スコア推移グラフ（SVG）・比較diff・お気に入り
+### Optimizer（v1.5 AI強化）
 
-### Templates（M6-3 NEW）
-- **プロンプトテンプレートエンジン** — `{variable}` 形式の変数置換
-- 組み込みテンプレート5種（基本顔・詳細顔・ファンタジー・ネガティブ・スタイル）
-- `GET /templates`, `POST /templates/{id}/render`
-
-### 多言語対応（M6-2 NEW）
-- **日本語入力** — 「青い目」→ `Eyes.Blue` など105件のマッピング（MeCab不要）
-- ひらがな・カタカナ・漢字キーに対応
-
-### Platform
-- **ComfyUI ノード10種** — Cleaner / Compiler / Debug / Preset / RuleEditor /
-  CategoryFilter / Optimizer / History / CategoryGroup / GroupControl
-- **出力アダプター** — A1111 / NovelAI / ComfyUI
-- **CLI ツール** — `fps compile / optimize / history / preset / validate`
-- **プラグインシステム** — 外部 `.py` からの動的ロード
-- **イベントシステム** — 14種の EventType、優先度付き購読
-
----
-
-## リポジトリ構造
-
-```
-fps/
-├── fps-core/              Pure Python core（アダプター依存ゼロ）
-│   ├── config/            ConfigManager
-│   ├── fps_logging/       FPSLogger
-│   ├── dictionary/        DictionaryManager（英語1169 + 日本語105）
-│   ├── rules/             RuleManager
-│   ├── pipeline/          PipelineManager（10ステージ）
-│   ├── optimizer/         OptimizerManager（M6: ネガティブ対応）
-│   ├── history/           HistoryManager（M5-0）
-│   ├── template/          TemplateManager（M6-3）★NEW
-│   ├── presets/           PresetManager
-│   ├── plugins/           PluginRegistry
-│   └── events/            EventBus（14種）
-│
-├── fps-adapters/          外部システム連携
-│   ├── rest/              FastAPI REST API（20エンドポイント）
-│   ├── comfyui/           ComfyUI ノード（10種）
-│   ├── a1111/             AUTOMATIC1111 WebUI
-│   ├── novelai/           NovelAI
-│   └── input/             WD14 / JoyCaption / Florence2
-│
-├── fps-gui/
-│   └── web/               index.html（SPA: Editor/Optimize/Presets/Knowledge/History）
-│
-├── fps-data/
-│   ├── dictionaries/
-│   │   ├── system/        英語辞書24ファイル + 日本語synonyms★NEW
-│   │   └── user/          ユーザー辞書
-│   └── templates/         テンプレートJSON★NEW
-│
-└── fps-tools/
-    ├── cli/               fps CLI
-    └── tests/unit/        843件以上のユニットテスト
-```
-
----
-
-## クイックスタート
-
-```bash
-# REST APIサーバー起動
-uvicorn fps-adapters.rest.app:app --reload --port 8420
-
-# 基本的なプロンプト処理
-curl -X POST "http://localhost:8420/compile?prompt=masterpiece,blue_eyes,long_hair"
-
-# 日本語でも動作
-curl -X POST "http://localhost:8420/compile?prompt=高品質,青い目,長い髪"
-
-# ネガティブプロンプト最適化
-curl -X POST "http://localhost:8420/optimize?prompt=masterpiece&negative_prompt=low_quality,bad_anatomy"
-
-# テンプレート展開
-curl -X POST "http://localhost:8420/templates/face_basic/render" \
-  -H "Content-Type: application/json" \
-  -d '{"variables": {"quality": "masterpiece", "eye_color": "blue_eyes", "hair_color": "blonde", "hair_length": "long", "expression": "smile"}}'
-
-# CLI
-python -m fps compile "masterpiece, blue_eyes, long_hair"
-python -m fps history list
-```
-
----
-
-## REST API エンドポイント一覧
-
-| Method | Path | 説明 |
+| スコア | 内容 | 重み |
 |---|---|---|
+| coverage_score | 重要カテゴリ網羅度 | 0.25 |
+| balance_score | 重みバランス | 0.20 |
+| redundancy_score | 非冗長性 | 0.25 |
+| **combination_score** | ★スタイル一貫性 | 0.20 |
+| **token_score** | ★トークンバジェット | 0.10 |
+
+- **矛盾検出** — 18グループの排他チェック
+- **スタイル組み合わせチェック** ★v1.5 — 非推奨8ペア / 推奨5ペア
+- **トークンバジェット警告** ★v1.5 — CLIP 75トークン上限
+- **ネガティブプロンプト最適化** — cross-conflict 検出
+
+### 日本語辞書（v1.6 大幅拡充）★
+
+517件、21カテゴリ完全対応。MeCab 不要のキーワードマッチ方式。
+
+```
+目(40) / スタイル(46) / ファンタジー(62) / 衣装(45) / 表情(41)
+髪(38) / アクセサリー(33) / メイク(25) / 年齢(23) / 肌(22)
+体型(20) / 顔型(16) / 眉(16) / 民族(16) / 口(14) / 歯(11)
+品質(10) / まつ毛(10) / 鼻(10) / 眼鏡(10) / ピアス(9)
+```
+
+対応例: `「萌え」「ギャル」「VTuber風」「九尾」「天狗」「凛々しい」「中性的」`
+
+### GUI Studio（REST API + Web UI）
+
+- **REST API 24本** — FastAPI + Pydantic v2
+- **Web UI SPA** — Editor / Optimize / Presets / Knowledge / History
+- **Knowledge Browser** ★v1.2 — ユーザー辞書 CRUD（4エンドポイント）
+- **History Timeline** — SVGグラフ・差分比較・お気に入り
+
+### テンプレートエンジン
+
+5種の組み込みテンプレート（`face_basic` / `face_detailed` / `fantasy_character` / `negative_basic` / `style_transfer`）
+
+### ComfyUI ノード 11種 ★v1.3
+
+`FacePromptCleaner` / `FacePromptCompiler` / `FacePromptDebug` /
+`FacePromptPreset` / `FacePromptRuleEditor` / `FacePromptCategoryFilter` /
+`FacePromptOptimizer` / `FacePromptHistory` / `FacePromptBackup` /
+`FacePromptGroupControl` / **`FacePromptTemplate`**
+
+---
+
+## REST API エンドポイント（24本）
+
+| Method | Path | 概要 |
+|---|---|---|
+| GET | `/health` | ヘルスチェック |
 | POST | `/compile` | プロンプトコンパイル |
-| POST | `/optimize?negative_prompt=` | 最適化分析（ネガティブ対応） |
+| POST | `/optimize` | 最適化（ネガティブ対応） |
+| POST | `/validate` | バリデーション |
 | GET | `/dictionary/search` | タグ検索 |
 | GET | `/dictionary/stats` | 辞書統計 |
 | GET | `/dictionary/categories` | カテゴリ一覧 |
 | GET | `/dictionary/entries` | エントリ検索 |
 | GET | `/dictionary/synonyms` | 同義語取得 |
+| GET | `/dictionary/user/entries` | ★ユーザー辞書一覧 |
+| POST | `/dictionary/user/entries` | ★ユーザー辞書追加 |
+| PUT | `/dictionary/user/entries/{key}` | ★ユーザー辞書更新 |
+| DELETE | `/dictionary/user/entries/{key}` | ★ユーザー辞書削除 |
+| GET | `/presets` | プリセット一覧 |
+| POST | `/presets/{id}/apply` | プリセット適用 |
 | GET | `/history` | 履歴一覧 |
 | GET | `/history/{id}` | 履歴詳細 |
 | POST | `/history/{id}/favorite` | お気に入りトグル |
 | PUT | `/history/{id}/label` | ラベル設定 |
 | GET | `/history/{id1}/diff/{id2}` | 差分比較 |
 | DELETE | `/history/{id}` | 削除 |
-| GET | `/presets` | プリセット一覧 |
-| POST | `/presets/{id}/apply` | プリセット適用 |
 | GET | `/templates` | テンプレート一覧 |
 | POST | `/templates/{id}/render` | テンプレート展開 |
 | POST | `/templates/render` | 直接展開 |
-| POST | `/validate` | バリデーション |
-| GET | `/health` | ヘルスチェック |
+
+---
+
+## クイックスタート
+
+```bash
+# REST API サーバー起動
+uvicorn fps-adapters.rest.app:app --reload --port 8420
+
+# Web UI
+open http://localhost:8420/
+
+# 英語プロンプト
+curl -X POST "http://localhost:8420/compile?prompt=masterpiece,blue_eyes,long_hair"
+
+# 日本語プロンプト
+curl -X POST "http://localhost:8420/compile?prompt=高品質,青い目,長い髪,萌え"
+
+# スタイル組み合わせチェック付き最適化
+curl -X POST "http://localhost:8420/optimize?prompt=masterpiece,anime_style,photorealistic"
+
+# テンプレート展開
+curl -X POST "http://localhost:8420/templates/face_basic/render" \
+  -H "Content-Type: application/json" \
+  -d '{"variables":{"quality":"masterpiece","eye_color":"blue_eyes","hair_color":"blonde","hair_length":"long","expression":"smile"}}'
+```
+
+---
+
+## プロジェクト構造
+
+```
+fps/
+├── fps-core/          Pure Python core（アダプター依存ゼロ）
+│   ├── cache/         CacheManager / LRUCache          ★v1.1
+│   ├── backup/        BackupManager                    ★v1.1
+│   ├── config/        ConfigManager
+│   ├── dictionary/    DictionaryManager（CRUD対応）    ★v1.2
+│   ├── events/        EventBus（14種）
+│   ├── fps_logging/   FPSLogger
+│   ├── history/       HistoryManager
+│   ├── optimizer/     OptimizerManager
+│   │   ├── combination_checker.py  ★v1.5 スタイル/トークン
+│   │   ├── conflict_detector.py
+│   │   ├── quality_scorer.py       ★v1.5 5スコア体制
+│   │   └── redundancy_detector.py
+│   ├── pipeline/      PipelineManager（10ステージ）
+│   ├── plugins/       PluginRegistry
+│   ├── preset/        PresetManager
+│   ├── rules/         RuleManager
+│   └── template/      TemplateManager                  ★M6-3
+│
+├── fps-adapters/
+│   ├── a1111/         AUTOMATIC1111 アダプター
+│   ├── comfyui/       ComfyUI ノード 11種              ★v1.3
+│   ├── novelai/       NovelAI アダプター
+│   ├── input/         WD14 / JoyCaption / Florence2
+│   └── rest/          FastAPI 24エンドポイント          ★v1.2
+│
+├── fps-gui/web/       SPA Web UI（5タブ）
+│
+├── fps-data/
+│   ├── dictionaries/system/
+│   │   ├── *.json     英語辞書（24カテゴリ）
+│   │   └── synonyms/
+│   │       ├── japanese_tags.json  ★v1.6 517件
+│   │       └── wd14_tags.json 他
+│   └── rules/
+│       └── style_combinations.json  ★v1.5
+│
+└── fps-tools/tests/unit/   34ファイル / 1122件 PASS
+```
 
 ---
 
 ## 開発
 
 ```bash
-# テスト実行（安定テスト）
-python -m pytest fps-tools/tests/unit/ \
-  --ignore=fps-tools/tests/unit/test_backup.py \
-  --ignore=fps-tools/tests/unit/test_auto_backup.py \
-  --ignore=fps-tools/tests/unit/test_cache.py \
-  --ignore=fps-tools/tests/unit/test_pipeline_cache.py \
-  --ignore=fps-tools/tests/unit/test_python_facade.py \
-  --no-cov -q
+# テスト（全件）
+python -m pytest fps-tools/tests/unit/ --no-cov -q
 
 # Lint
 ruff check fps-core/ fps-adapters/ fps-tools/
 
 # 型チェック
-mypy fps-core/ fps-adapters/
+mypy fps-core/ fps-adapters/ --ignore-missing-imports
 ```
+
+---
+
+## タグ履歴
+
+| タグ | 内容 |
+|---|---|
+| v1.6.0 | 日本語辞書 228→517件（★今ここ） |
+| v1.5.0 | AI スコアリング強化（スタイル/トークン） |
+| v1.2.0 | KB強化+テンプレートノード+日本語228件 |
+| v1.1.0 | テスト完全グリーン化（1032件） |
+| v1.0.0 | 正式リリース |
+| v0.9.5 | Phase 5+6 完了 |
+| v0.8.0 | Phase 4 AI Adapter Layer |
 
 ---
 
