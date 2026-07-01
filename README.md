@@ -12,17 +12,45 @@ Clean Architecture を採用しています。
 
 ## ステータス
 
-**v1.7.0** — Preset エディタ Web UI 完了（2026-07-02）
+**v1.8.0** — バックアップ Web UI + History 強化 + ダッシュボード完了（2026-07-02）
 
 | 指標 | 値 |
 |---|---|
-| テスト | **1152 PASS / 0 FAILED** |
-| REST API | **28 エンドポイント**（+4） |
+| テスト | **1182 PASS / 0 FAILED** |
+| REST API | **35 エンドポイント**（+7） |
 | 辞書キー総数 | **2793キー**（英語 + 日本語） |
 | 日本語エントリ | **1002件**（41カテゴリ） |
 | ComfyUI ノード | **11種** |
 | テンプレート | **5種**（組み込み） |
 | Python ファイル | 132本 |
+
+---
+
+## v1.8.0 新機能
+
+### ① バックアップ REST API（+4エンドポイント）
+
+```
+POST   /backup               # バックアップ作成（target: all|dictionary|rules|presets）
+GET    /backup               # バックアップ一覧
+DELETE /backup/{id}          # バックアップ削除
+POST   /backup/{id}/restore  # リストア
+```
+
+### ② History タブ強化
+
+- **キーワード検索** — プロンプト内容でリアルタイム絞り込み
+- **スコアフィルタ** — 60点以上・80点以上など閾値指定
+- **お気に入りフィルタ** — ⭐ のみ表示
+- **CSV/JSONエクスポート** — フィルタ済みデータをダウンロード
+- **統計パネル** — 件数・平均スコア・頻出タグ Top20（`GET /history/stats`）
+
+### ③ Dashboard タブ（新設）
+
+- 辞書キー数・日本語エントリ数・プリセット数・履歴件数・バックアップ数
+- 平均スコアのリアルタイム表示
+- 頻出タグ Top10 バーグラフ
+- 最近の変換アクティビティ
 
 ---
 
@@ -88,6 +116,7 @@ tm = ctx.template_manager   # 遅延初期化・スレッドセーフ
 | v1.5.0 | AI スコアリング強化（combination_checker / QualityScore 5スコア体制） |
 | v1.6.0 | 日本語辞書大規模拡充（228 → 517件、21カテゴリ） |
 | **v1.7.0** | **Preset エディタ Web UI / PresetManager CRUD / CliContext 統合** |
+| **v1.8.0** | **バックアップ Web UI / History 強化（検索・エクスポート・統計）/ ダッシュボード** |
 
 ---
 
@@ -128,6 +157,13 @@ tm = ctx.template_manager   # 遅延初期化・スレッドセーフ
 | **PUT** | **`/presets/{id}`** | **部分更新 ★v1.7** |
 | **DELETE** | **`/presets/{id}`** | **削除 ★v1.7** |
 | **POST** | **`/presets/{id}/tags/add`** | **タグ追記 ★v1.7** |
+| **POST** | **`/backup`** | **バックアップ作成 ★v1.8** |
+| **GET** | **`/backup`** | **一覧 ★v1.8** |
+| **DELETE** | **`/backup/{id}`** | **削除 ★v1.8** |
+| **POST** | **`/backup/{id}/restore`** | **リストア ★v1.8** |
+| **GET** | **`/history/stats`** | **統計 ★v1.8** |
+| **GET** | **`/history/export`** | **CSV/JSONエクスポート ★v1.8** |
+| **GET** | **`/dashboard`** | **ダッシュボード ★v1.8** |
 | GET | `/history` | 履歴一覧 |
 | GET | `/history/{id}` | 履歴詳細 |
 | POST | `/history/{id}/favorite` | お気に入りトグル |
