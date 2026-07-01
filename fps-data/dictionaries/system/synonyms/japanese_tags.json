@@ -7082,6 +7082,7175 @@
         "japanese",
         "style"
       ]
+    },
+    {
+      "key": "自然光",
+      "resolved": "Lighting.Natural",
+      "aliases": [
+        "ナチュラルライト",
+        "太陽光",
+        "外光",
+        "屋外光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "スタジオ照明",
+      "resolved": "Lighting.Studio",
+      "aliases": [
+        "スタジオライト",
+        "スタジオ光",
+        "プロ照明",
+        "撮影照明"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "逆光",
+      "resolved": "Lighting.Backlight",
+      "aliases": [
+        "バックライト",
+        "シルエット光",
+        "逆光効果"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "サイドライト",
+      "resolved": "Lighting.Sidelight",
+      "aliases": [
+        "横光",
+        "側面照明",
+        "斜め光",
+        "半影"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "ソフトライト",
+      "resolved": "Lighting.Soft",
+      "aliases": [
+        "柔らかい光",
+        "拡散光",
+        "拡散照明",
+        "ディフューズ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "ハードライト",
+      "resolved": "Lighting.Hard",
+      "aliases": [
+        "強い光",
+        "鋭い光",
+        "直射光",
+        "強光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "夕暮れ光",
+      "resolved": "Lighting.GoldenHour",
+      "aliases": [
+        "ゴールデンアワー",
+        "黄金時間",
+        "夕陽光",
+        "マジックアワー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "月明かり",
+      "resolved": "Lighting.Moonlight",
+      "aliases": [
+        "月光",
+        "ムーンライト",
+        "月の光",
+        "月夜"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "蛍光灯",
+      "resolved": "Lighting.Fluorescent",
+      "aliases": [
+        "蛍光光",
+        "白色光",
+        "オフィス照明",
+        "室内蛍光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "ネオンライト",
+      "resolved": "Lighting.Neon",
+      "aliases": [
+        "ネオン光",
+        "ネオン照明",
+        "ネオン灯",
+        "カラーネオン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "キャンドルライト",
+      "resolved": "Lighting.Candlelight",
+      "aliases": [
+        "ろうそく光",
+        "蝋燭照明",
+        "炎の光",
+        "暖炎光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "ランプ光",
+      "resolved": "Lighting.Lamp",
+      "aliases": [
+        "電球光",
+        "白熱光",
+        "暖色照明",
+        "室内ランプ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "薄暗い照明",
+      "resolved": "Lighting.Dim",
+      "aliases": [
+        "薄明かり",
+        "ほの暗い",
+        "薄光",
+        "低照度"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "明るい照明",
+      "resolved": "Lighting.Bright",
+      "aliases": [
+        "明るい光",
+        "高照度",
+        "ブライト",
+        "強照明"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "逆光シルエット",
+      "resolved": "Lighting.Silhouette",
+      "aliases": [
+        "シルエット",
+        "影絵",
+        "輪郭光",
+        "バックシルエット"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "スポットライト",
+      "resolved": "Lighting.Spotlight",
+      "aliases": [
+        "スポット光",
+        "集光",
+        "ピンスポット",
+        "舞台照明"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "フラッシュライト",
+      "resolved": "Lighting.Flash",
+      "aliases": [
+        "フラッシュ",
+        "閃光",
+        "ストロボ光",
+        "発光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "冷色照明",
+      "resolved": "Lighting.Cool",
+      "aliases": [
+        "青白い光",
+        "クールライト",
+        "寒色光",
+        "クールトーン光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "レンズフレア",
+      "resolved": "Lighting.LensFlare",
+      "aliases": [
+        "フレア",
+        "光の筋",
+        "レンズ効果",
+        "光芒"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "正面",
+      "resolved": "Camera.FrontView",
+      "aliases": [
+        "フロントビュー",
+        "正面向き",
+        "真正面",
+        "フェイスフロント"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "斜め",
+      "resolved": "Camera.ThreeQuarter",
+      "aliases": [
+        "三分の二",
+        "斜め向き",
+        "クォータービュー",
+        "斜め顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "横顔",
+      "resolved": "Camera.Profile",
+      "aliases": [
+        "プロフィール",
+        "サイドフェイス",
+        "横向き",
+        "側面"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "俯瞰",
+      "resolved": "Camera.TopDown",
+      "aliases": [
+        "見下ろし",
+        "トップビュー",
+        "真上から",
+        "上から目線"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "仰角",
+      "resolved": "Camera.LowAngle",
+      "aliases": [
+        "ローアングル",
+        "下から見上げ",
+        "仰視",
+        "あおり"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "クローズアップ",
+      "resolved": "Camera.Closeup",
+      "aliases": [
+        "アップ",
+        "クロップ",
+        "接写",
+        "顔アップ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "バストアップ",
+      "resolved": "Camera.BustShot",
+      "aliases": [
+        "胸から上",
+        "上半身",
+        "バストショット",
+        "胸上"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "全身",
+      "resolved": "Camera.FullBody",
+      "aliases": [
+        "全身ショット",
+        "フルボディ",
+        "全体像",
+        "全身像"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "ポートレート",
+      "resolved": "Camera.Portrait",
+      "aliases": [
+        "ポートレイト",
+        "人物写真",
+        "顔写真",
+        "肖像"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "背景ぼかし",
+      "resolved": "Camera.BokehBackground",
+      "aliases": [
+        "ボケ背景",
+        "背景ボケ",
+        "被写界深度",
+        "ピントぼかし"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "ワイドショット",
+      "resolved": "Camera.WideShot",
+      "aliases": [
+        "広角",
+        "ウルトラワイド",
+        "引き",
+        "広角撮影"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "マクロ撮影",
+      "resolved": "Camera.Macro",
+      "aliases": [
+        "マクロ",
+        "超接写",
+        "クローズマクロ",
+        "接近撮影"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "ダッチアングル",
+      "resolved": "Camera.DutchAngle",
+      "aliases": [
+        "斜め構図",
+        "傾き構図",
+        "ダッチティルト",
+        "ティルト"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "肩越し",
+      "resolved": "Camera.OverShoulder",
+      "aliases": [
+        "肩越しショット",
+        "後ろから",
+        "オーバーショルダー",
+        "越し撮り"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "眼高アングル",
+      "resolved": "Camera.EyeLevel",
+      "aliases": [
+        "アイレベル",
+        "水平アングル",
+        "目線高さ",
+        "水平視点"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "被写界深度浅い",
+      "resolved": "Camera.ShallowDOF",
+      "aliases": [
+        "浅い被写界深度",
+        "背景ぼかし強",
+        "シャロウフォーカス",
+        "前ボケ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "鏡の反射",
+      "resolved": "Camera.Mirror",
+      "aliases": [
+        "鏡撮り",
+        "ミラー反射",
+        "鏡ショット",
+        "ミラーリング"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "後ろ姿",
+      "resolved": "Camera.BackView",
+      "aliases": [
+        "バックビュー",
+        "後姿",
+        "後方視点"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "微笑みポーズ",
+      "resolved": "Pose.Smiling",
+      "aliases": [
+        "スマイルポーズ",
+        "笑顔ポーズ",
+        "微笑"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "考えるポーズ",
+      "resolved": "Pose.Thinking",
+      "aliases": [
+        "考え中",
+        "思考ポーズ",
+        "チン手",
+        "思案顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "手を振る",
+      "resolved": "Pose.Waving",
+      "aliases": [
+        "ウェービング",
+        "バイバイ",
+        "手振り",
+        "手を挙げる"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "腕組み",
+      "resolved": "Pose.ArmsСrossed",
+      "aliases": [
+        "腕を組む",
+        "クロスアーム",
+        "腕交差",
+        "胸腕"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "ピースサイン",
+      "resolved": "Pose.PeaceSign",
+      "aliases": [
+        "Vサイン",
+        "ピース",
+        "Vサイン",
+        "チョキ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "顎に手",
+      "resolved": "Pose.HandOnChin",
+      "aliases": [
+        "あご手",
+        "顎乗せ",
+        "顎を支える"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "頬に手",
+      "resolved": "Pose.HandOnCheek",
+      "aliases": [
+        "頬杖",
+        "ほお手",
+        "頬に触れる",
+        "顔に手"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "見上げる",
+      "resolved": "Pose.LookingUp",
+      "aliases": [
+        "仰ぎ見る",
+        "上を向く",
+        "視線上"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "目を閉じる",
+      "resolved": "Pose.EyesClosed",
+      "aliases": [
+        "閉眼",
+        "瞼を閉じる",
+        "目閉じ",
+        "クローズアイ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "横を向く",
+      "resolved": "Pose.LookingAway",
+      "aliases": [
+        "視線外し",
+        "そっぽ向き",
+        "顔を背ける"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "見下ろす",
+      "resolved": "Pose.LookingDown",
+      "aliases": [
+        "下目線",
+        "うつむき",
+        "下を向く",
+        "伏し目"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "カメラ目線",
+      "resolved": "Pose.LookingAtCamera",
+      "aliases": [
+        "カメラ見つめ",
+        "正面凝視",
+        "アイコンタクト",
+        "カメラ見る"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "指差し",
+      "resolved": "Pose.Pointing",
+      "aliases": [
+        "ポインティング",
+        "指を指す",
+        "人差し指",
+        "指さし"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "抱擁",
+      "resolved": "Pose.Hugging",
+      "aliases": [
+        "ハグ",
+        "抱きしめる",
+        "抱きつく",
+        "抱擁ポーズ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "座るポーズ",
+      "resolved": "Pose.Sitting",
+      "aliases": [
+        "座り",
+        "シッティング",
+        "腰掛け",
+        "座位"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "立ちポーズ",
+      "resolved": "Pose.Standing",
+      "aliases": [
+        "立ち姿",
+        "スタンディング",
+        "直立",
+        "立ち"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "寝そべり",
+      "resolved": "Pose.Lying",
+      "aliases": [
+        "横たわり",
+        "ライイング",
+        "仰向け",
+        "寝姿"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "しゃがむ",
+      "resolved": "Pose.Crouching",
+      "aliases": [
+        "しゃがみ",
+        "クラウチ",
+        "腰を落とす",
+        "低姿勢"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "ジャンプ",
+      "resolved": "Pose.Jumping",
+      "aliases": [
+        "飛ぶ",
+        "ジャンプポーズ",
+        "空中",
+        "跳躍"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "走るポーズ",
+      "resolved": "Pose.Running",
+      "aliases": [
+        "ランニング",
+        "走り",
+        "疾走",
+        "駆け足"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "白背景",
+      "resolved": "Scene.WhiteBackground",
+      "aliases": [
+        "白バック",
+        "無地白",
+        "シンプル背景",
+        "ホワイトバック"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "黒背景",
+      "resolved": "Scene.BlackBackground",
+      "aliases": [
+        "黒バック",
+        "ダーク背景",
+        "暗い背景",
+        "ブラックバック"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "グラデーション背景",
+      "resolved": "Scene.GradientBackground",
+      "aliases": [
+        "グラデ背景",
+        "グラデ",
+        "グラデーション",
+        "カラーグラデ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "屋外",
+      "resolved": "Scene.Outdoor",
+      "aliases": [
+        "外",
+        "アウトドア",
+        "野外",
+        "屋外シーン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "室内",
+      "resolved": "Scene.Indoor",
+      "aliases": [
+        "内",
+        "インドア",
+        "室内シーン",
+        "屋内"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "桜の木",
+      "resolved": "Scene.CherryBlossom",
+      "aliases": [
+        "桜",
+        "サクラ",
+        "さくら",
+        "花見"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "海辺",
+      "resolved": "Scene.Beach",
+      "aliases": [
+        "ビーチ",
+        "砂浜",
+        "海岸",
+        "海の辺"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "夕日",
+      "resolved": "Scene.Sunset",
+      "aliases": [
+        "夕暮れ",
+        "サンセット",
+        "夕焼け",
+        "日没"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "森の中",
+      "resolved": "Scene.Forest",
+      "aliases": [
+        "森林",
+        "林",
+        "ウッズ",
+        "木々の中"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "雪景色",
+      "resolved": "Scene.SnowScene",
+      "aliases": [
+        "雪",
+        "スノー",
+        "冬景色",
+        "雪化粧"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "夜景",
+      "resolved": "Scene.NightCity",
+      "aliases": [
+        "夜の街",
+        "ナイトビュー",
+        "夜景色",
+        "夜の景色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "花畑",
+      "resolved": "Scene.FlowerField",
+      "aliases": [
+        "花のフィールド",
+        "お花畑",
+        "花園",
+        "フラワーフィールド"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "カフェ",
+      "resolved": "Scene.Cafe",
+      "aliases": [
+        "コーヒーショップ",
+        "喫茶店",
+        "カフェシーン",
+        "カフェ内"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "学校",
+      "resolved": "Scene.School",
+      "aliases": [
+        "校舎",
+        "学校内",
+        "スクール",
+        "教室"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "城",
+      "resolved": "Scene.Castle",
+      "aliases": [
+        "お城",
+        "シャトー",
+        "城郭",
+        "キャッスル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "宇宙",
+      "resolved": "Scene.Space",
+      "aliases": [
+        "宇宙空間",
+        "スペース",
+        "星空",
+        "銀河"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "雨の日",
+      "resolved": "Scene.Rainy",
+      "aliases": [
+        "雨天",
+        "雨",
+        "雨の日シーン",
+        "レイニー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "霧の中",
+      "resolved": "Scene.Foggy",
+      "aliases": [
+        "霧",
+        "霧深い",
+        "フォグ",
+        "靄の中"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "温泉",
+      "resolved": "Scene.HotSpring",
+      "aliases": [
+        "露天風呂",
+        "温泉シーン",
+        "湯",
+        "入浴シーン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "神社",
+      "resolved": "Scene.Shrine",
+      "aliases": [
+        "神社シーン",
+        "鳥居",
+        "境内",
+        "社"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "ロマンチック",
+      "resolved": "Mood.Romantic",
+      "aliases": [
+        "ロマンス",
+        "恋愛的",
+        "甘い雰囲気",
+        "ラブリー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "ミステリアス",
+      "resolved": "Mood.Mysterious",
+      "aliases": [
+        "謎めいた",
+        "神秘的",
+        "ミステリー",
+        "不思議な"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "明るい雰囲気",
+      "resolved": "Mood.Cheerful",
+      "aliases": [
+        "明るい",
+        "楽しい",
+        "ハッピー",
+        "元気な"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "暗い雰囲気",
+      "resolved": "Mood.Dark",
+      "aliases": [
+        "ダーク",
+        "暗い",
+        "陰鬱",
+        "ダークムード"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "エレガント",
+      "resolved": "Mood.Elegant",
+      "aliases": [
+        "上品",
+        "優雅",
+        "品のある",
+        "洗練された"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "セクシー",
+      "resolved": "Mood.Sexy",
+      "aliases": [
+        "魅惑的",
+        "セダクティブ",
+        "扇情的"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "神聖な",
+      "resolved": "Mood.Holy",
+      "aliases": [
+        "神聖",
+        "聖なる",
+        "ホーリー",
+        "崇高"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "悪夢的",
+      "resolved": "Mood.Nightmare",
+      "aliases": [
+        "ホラー",
+        "悪夢",
+        "ナイトメア"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "メランコリック",
+      "resolved": "Mood.Melancholic",
+      "aliases": [
+        "憂鬱",
+        "悲しい",
+        "哀愁",
+        "センチメンタル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "エネルギッシュ",
+      "resolved": "Mood.Energetic",
+      "aliases": [
+        "活発",
+        "エネルギッシュ",
+        "躍動感",
+        "活気"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "平和な",
+      "resolved": "Mood.Peaceful",
+      "aliases": [
+        "穏やか",
+        "静か",
+        "のどか",
+        "平穏"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "緊張感",
+      "resolved": "Mood.Tense",
+      "aliases": [
+        "緊迫",
+        "張りつめた",
+        "テンション",
+        "緊張"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "ノスタルジック",
+      "resolved": "Mood.Nostalgic",
+      "aliases": [
+        "懐かしい",
+        "レトロ感",
+        "ノスタルジー",
+        "昭和感"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "モノクロ",
+      "resolved": "Color.Monochrome",
+      "aliases": [
+        "白黒",
+        "グレースケール",
+        "モノクローム",
+        "白黒写真"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "パステルカラー",
+      "resolved": "Color.Pastel",
+      "aliases": [
+        "パステル",
+        "淡色",
+        "淡い色",
+        "パステルトーン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "ビビッドカラー",
+      "resolved": "Color.Vivid",
+      "aliases": [
+        "鮮やか",
+        "ビビッド",
+        "原色",
+        "彩度高い"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "セピア",
+      "resolved": "Color.Sepia",
+      "aliases": [
+        "セピア色",
+        "茶褐色",
+        "褐色",
+        "アンティーク色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "暖色",
+      "resolved": "Color.WarmTone",
+      "aliases": [
+        "ウォームトーン",
+        "赤系",
+        "オレンジ系",
+        "暖色系"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "寒色",
+      "resolved": "Color.CoolTone",
+      "aliases": [
+        "クールトーン",
+        "青系",
+        "寒色系",
+        "ブルートーン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "虹色",
+      "resolved": "Color.Rainbow",
+      "aliases": [
+        "レインボー",
+        "七色",
+        "多彩",
+        "カラフル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "金色",
+      "resolved": "Color.Gold",
+      "aliases": [
+        "ゴールド",
+        "黄金",
+        "金",
+        "金色の"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "銀色",
+      "resolved": "Color.Silver",
+      "aliases": [
+        "シルバー",
+        "銀",
+        "メタリックシルバー",
+        "銀色の"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "ピンク系",
+      "resolved": "Color.Pink",
+      "aliases": [
+        "ピンク",
+        "桃色",
+        "ローズピンク",
+        "ベビーピンク"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "紫系",
+      "resolved": "Color.Purple",
+      "aliases": [
+        "紫",
+        "パープル",
+        "バイオレット",
+        "ラベンダー色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "緑系",
+      "resolved": "Color.Green",
+      "aliases": [
+        "緑",
+        "グリーン",
+        "エメラルド",
+        "翡翠色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "ボブカット",
+      "resolved": "Hair.Bob",
+      "aliases": [
+        "ボブ",
+        "ショートボブ",
+        "おかっぱ",
+        "丸ボブ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "ウェーブヘア",
+      "resolved": "Hair.Wavy",
+      "aliases": [
+        "波髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "カーリーヘア",
+      "resolved": "Hair.Curly",
+      "aliases": [
+        "巻き髪",
+        "くるくる",
+        "スパイラル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "前髪なし",
+      "resolved": "Hair.NoBangs",
+      "aliases": [
+        "前髪なし",
+        "オールバック",
+        "額出し",
+        "髪を上げた"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "グラデーションヘア",
+      "resolved": "Hair.Gradient",
+      "aliases": [
+        "グラデ染め"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "アホ毛",
+      "resolved": "Hair.Ahoge",
+      "aliases": [
+        "アホ毛",
+        "寝ぐせ毛",
+        "ぴょん毛",
+        "触覚"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "カジュアル",
+      "resolved": "Clothing.Casual",
+      "aliases": [
+        "普段着",
+        "カジュアルウェア",
+        "ラフ",
+        "日常服"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "戦闘服",
+      "resolved": "Clothing.BattleOutfit",
+      "aliases": [
+        "バトルスーツ",
+        "戦闘衣装",
+        "アーマー",
+        "戦士の服"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "魔法使いローブ",
+      "resolved": "Clothing.MageRobe",
+      "aliases": [
+        "魔法ローブ",
+        "魔女服",
+        "ウィザードローブ",
+        "魔術師服"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "ゴシック",
+      "resolved": "Clothing.Gothic",
+      "aliases": [
+        "ゴシックドレス",
+        "ダークロリータ",
+        "ゴシック系"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "パジャマ",
+      "resolved": "Clothing.Pajamas",
+      "aliases": [
+        "パジャマ姿",
+        "寝間着",
+        "ナイトウェア",
+        "寝巻き"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "羽織",
+      "resolved": "Clothing.Haori",
+      "aliases": [
+        "羽織",
+        "はおり",
+        "和風コート",
+        "羽織袴"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "花冠",
+      "resolved": "Accessories.FlowerCrown",
+      "aliases": [
+        "花かんむり",
+        "フラワークラウン",
+        "髪の花"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "扇子",
+      "resolved": "Accessories.Fan",
+      "aliases": [
+        "扇",
+        "センス",
+        "折り扇",
+        "和扇子"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "傘",
+      "resolved": "Accessories.Umbrella",
+      "aliases": [
+        "日傘",
+        "パラソル",
+        "雨傘",
+        "アンブレラ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "兎耳",
+      "resolved": "Accessories.BunnyEars",
+      "aliases": [
+        "うさ耳",
+        "ウサミミ",
+        "ラビットイヤー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "ヘッドフォン",
+      "resolved": "Accessories.Headphones",
+      "aliases": [
+        "ヘッドホン",
+        "イヤホン",
+        "ゲームヘッドセット",
+        "音楽ヘッドホン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "手袋",
+      "resolved": "Accessories.Gloves",
+      "aliases": [
+        "グローブ",
+        "手袋",
+        "レザーグローブ",
+        "ミトン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "バッグ",
+      "resolved": "Accessories.Bag",
+      "aliases": [
+        "鞄",
+        "かばん",
+        "ハンドバッグ",
+        "ショルダーバッグ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "杖",
+      "resolved": "Accessories.Cane",
+      "aliases": [
+        "魔法の杖",
+        "ワンド",
+        "スタッフ",
+        "つえ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "盾",
+      "resolved": "Accessories.Shield",
+      "aliases": [
+        "シールド",
+        "防具",
+        "盾",
+        "ガード"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "カラーアイシャドウ",
+      "resolved": "Makeup.ColorEyeshadow",
+      "aliases": [
+        "カラーシャドウ",
+        "眼影",
+        "カラーまぶた"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "マット口紅",
+      "resolved": "Makeup.MatteLipstick",
+      "aliases": [
+        "マットリップ",
+        "マット唇",
+        "つや消しリップ",
+        "マットレッド"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "グロス",
+      "resolved": "Makeup.Gloss",
+      "aliases": [
+        "グロッシー",
+        "艶リップ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "アイライナー",
+      "resolved": "Makeup.Eyeliner",
+      "aliases": [],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "ビューラー",
+      "resolved": "Makeup.LashCurl",
+      "aliases": [
+        "まつ毛カール",
+        "上がったまつ毛",
+        "まつエク"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "コンシーラー",
+      "resolved": "Makeup.Concealer",
+      "aliases": [
+        "隠し化粧",
+        "カバーメイク",
+        "クマ隠し",
+        "スポットカバー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "パール感",
+      "resolved": "Makeup.Pearlescent",
+      "aliases": [
+        "パール",
+        "真珠光沢",
+        "パーリー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "グリッター",
+      "resolved": "Makeup.Glitter",
+      "aliases": [
+        "ラメ",
+        "キラキラ",
+        "ラメ入り"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "眉毛メイク",
+      "resolved": "Makeup.Eyebrow",
+      "aliases": [
+        "アイブロウ",
+        "眉毛を描く",
+        "眉書き"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "びっくり顔",
+      "resolved": "Expression.Surprised",
+      "aliases": [
+        "驚き顔",
+        "驚愕",
+        "サプライズ顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "真剣顔",
+      "resolved": "Expression.Serious",
+      "aliases": [
+        "真面目顔",
+        "シリアス顔",
+        "本気顔",
+        "凛とした顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "にやけ顔",
+      "resolved": "Expression.Smirk",
+      "aliases": [
+        "不敵な笑い",
+        "ニヤ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "目を細める",
+      "resolved": "Expression.Squinting",
+      "aliases": [
+        "目を細くする",
+        "ニヤ目",
+        "半閉じ目"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "舌を出す",
+      "resolved": "Expression.TongueOut",
+      "aliases": [
+        "べーっ",
+        "べー",
+        "アッカンベー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "口を開ける",
+      "resolved": "Expression.MouthOpen",
+      "aliases": [
+        "口開き",
+        "ポカン顔",
+        "口を開く"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "歯を見せる笑顔",
+      "resolved": "Expression.ToothySmile",
+      "aliases": [
+        "歯見せ笑い",
+        "ニカッ",
+        "歯を見せる",
+        "ガハハ笑い"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "透明感肌",
+      "resolved": "Skin.Translucent",
+      "aliases": [
+        "透明感",
+        "透明肌",
+        "クリア肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "色白肌",
+      "resolved": "Skin.Pale",
+      "aliases": [
+        "ペール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "ぷるぷる肌",
+      "resolved": "Skin.Dewy",
+      "aliases": [
+        "しっとり肌",
+        "うるおい肌",
+        "水光肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "オイリー肌",
+      "resolved": "Skin.Oily",
+      "aliases": [
+        "テカリ肌",
+        "脂っぽい肌",
+        "皮脂",
+        "テカ肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "超高精細",
+      "resolved": "Quality.UltraHD",
+      "aliases": [
+        "ウルトラHD",
+        "超精細",
+        "超解像"
+      ],
+      "weight": 1.2,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "水彩画風",
+      "resolved": "Quality.Watercolor",
+      "aliases": [
+        "ウォーターカラー",
+        "水彩絵",
+        "水彩タッチ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "CGレンダリング",
+      "resolved": "Quality.CGRendering",
+      "aliases": [
+        "CG",
+        "3Dレンダ",
+        "リアルCG",
+        "フォトリアル3D"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "龍族",
+      "resolved": "Fantasy.DragonRace",
+      "aliases": [
+        "ドラゴン族",
+        "竜人",
+        "ドラゴニア",
+        "龍の化身"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "獣耳娘",
+      "resolved": "Fantasy.NekoMimi",
+      "aliases": [
+        "ケモミミ",
+        "けもの耳",
+        "獣耳",
+        "フォックスガール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "神様",
+      "resolved": "Fantasy.Deity",
+      "aliases": [
+        "神",
+        "ゴッド",
+        "神格",
+        "神の化身"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "狐娘",
+      "resolved": "Fantasy.FoxGirl",
+      "aliases": [
+        "キツネ娘",
+        "狐尾"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "狼人間",
+      "resolved": "Fantasy.Werewolf",
+      "aliases": [
+        "ウルフマン",
+        "狼男",
+        "ライカンスロープ",
+        "狼族"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "魔女",
+      "resolved": "Fantasy.Witch",
+      "aliases": [
+        "ウィッチ",
+        "まじょ",
+        "黒魔女",
+        "ソーサレス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "学者",
+      "resolved": "Fantasy.Scholar",
+      "aliases": [
+        "魔法学者",
+        "賢者",
+        "魔術研究者"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "レトロ",
+      "resolved": "Style.Retro",
+      "aliases": [
+        "レトロスタイル",
+        "懐古調",
+        "ビンテージ",
+        "クラシック"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "ストリート系",
+      "resolved": "Style.Street",
+      "aliases": [
+        "ストリートファッション",
+        "ストリート",
+        "スケーター",
+        "ヒップホップスタイル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "ビジュアル系",
+      "resolved": "Style.VisualKei",
+      "aliases": [
+        "ヴィジュアル系",
+        "V系",
+        "バンギャ",
+        "ロック系"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "姫系",
+      "resolved": "Style.Hime",
+      "aliases": [
+        "姫スタイル",
+        "お姫様系",
+        "プリンセス系",
+        "姫カット"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "モード系",
+      "resolved": "Style.Avant",
+      "aliases": [
+        "アバンギャルド",
+        "モード",
+        "前衛的",
+        "ハイファッション"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "ギャル系",
+      "resolved": "Style.Gyaru",
+      "aliases": [
+        "ギャルスタイル",
+        "ギャルメイク"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "オタク系",
+      "resolved": "Style.Otaku",
+      "aliases": [
+        "アキバ系",
+        "オタクスタイル",
+        "コスプレ系"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "着物スタイル",
+      "resolved": "Style.KimonoStyle",
+      "aliases": [
+        "和スタイル",
+        "和モダン",
+        "着物モダン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "軍服スタイル",
+      "resolved": "Style.Military",
+      "aliases": [
+        "ミリタリー",
+        "軍装",
+        "ミリタリーファッション"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "日本人",
+      "resolved": "Ethnicity.Japanese",
+      "aliases": [
+        "和顔",
+        "日本の顔立ち",
+        "日系",
+        "やまとなでしこ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "ethnicity"
+      ]
+    },
+    {
+      "key": "韓国人",
+      "resolved": "Ethnicity.Korean",
+      "aliases": [
+        "韓国顔",
+        "コリアン",
+        "韓系",
+        "K-POPスタイル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "ethnicity"
+      ]
+    },
+    {
+      "key": "中国人",
+      "resolved": "Ethnicity.Chinese",
+      "aliases": [
+        "中国顔",
+        "チャイニーズ",
+        "中系",
+        "東洋美人"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "ethnicity"
+      ]
+    },
+    {
+      "key": "欧米人",
+      "resolved": "Ethnicity.Caucasian",
+      "aliases": [
+        "コーカシアン",
+        "西洋人",
+        "ヨーロッパ顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "ethnicity"
+      ]
+    },
+    {
+      "key": "平行眉",
+      "resolved": "Eyebrows.Straight",
+      "aliases": [
+        "ストレート眉",
+        "平眉",
+        "水平眉",
+        "フラット眉"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyebrows"
+      ]
+    },
+    {
+      "key": "下がり眉",
+      "resolved": "Eyebrows.Drooping",
+      "aliases": [
+        "たれ眉",
+        "困り眉",
+        "柔和な眉",
+        "やさしい眉"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyebrows"
+      ]
+    },
+    {
+      "key": "目の下のほくろ",
+      "resolved": "Eyes.MoleUnderEye",
+      "aliases": [
+        "目ほくろ",
+        "泣き黒子",
+        "アイモール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "ヘテロクロミア",
+      "resolved": "Eyes.Heterochromia",
+      "aliases": [
+        "左右の目の色が違う",
+        "オッドアイズ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "逆三角顔",
+      "resolved": "FaceShape.HeartShaped",
+      "aliases": [
+        "ハート型顔",
+        "ハートフェイス",
+        "逆三角形",
+        "ハート顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "猫",
+      "resolved": "Creature.Cat",
+      "aliases": [
+        "ネコ",
+        "にゃんこ",
+        "キャット",
+        "猫ちゃん"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "犬",
+      "resolved": "Creature.Dog",
+      "aliases": [
+        "イヌ",
+        "ワンコ",
+        "ドッグ",
+        "愛犬"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "ユニコーン",
+      "resolved": "Creature.Unicorn",
+      "aliases": [
+        "一角獣",
+        "ユニコン",
+        "白馬",
+        "神馬"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "狼",
+      "resolved": "Creature.Wolf",
+      "aliases": [
+        "ウルフ",
+        "おおかみ",
+        "白狼",
+        "銀狼"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "狐",
+      "resolved": "Creature.Fox",
+      "aliases": [
+        "キツネ",
+        "妖狐",
+        "白狐"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "蝶",
+      "resolved": "Creature.Butterfly",
+      "aliases": [
+        "チョウ",
+        "バタフライ",
+        "蝶々",
+        "羽蝶"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "烏",
+      "resolved": "Creature.Crow",
+      "aliases": [
+        "カラス",
+        "クロウ",
+        "黒鳥",
+        "からす"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "鷹",
+      "resolved": "Creature.Hawk",
+      "aliases": [
+        "タカ",
+        "ホーク",
+        "鷲",
+        "鳥"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "梟",
+      "resolved": "Creature.Owl",
+      "aliases": [
+        "フクロウ",
+        "ミミズク",
+        "オウル",
+        "夜の鳥"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "槍",
+      "resolved": "Weapon.Spear",
+      "aliases": [
+        "スピア",
+        "長槍",
+        "ランス",
+        "穂先"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "weapon"
+      ]
+    },
+    {
+      "key": "斧",
+      "resolved": "Weapon.Axe",
+      "aliases": [
+        "アックス",
+        "戦斧",
+        "バトルアックス",
+        "手斧"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "weapon"
+      ]
+    },
+    {
+      "key": "魔法書",
+      "resolved": "Weapon.Grimoire",
+      "aliases": [
+        "グリモワール",
+        "魔導書",
+        "呪文書",
+        "魔法の本"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "weapon"
+      ]
+    },
+    {
+      "key": "銃",
+      "resolved": "Weapon.Gun",
+      "aliases": [
+        "ガン",
+        "拳銃",
+        "ピストル",
+        "射撃武器"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "weapon"
+      ]
+    },
+    {
+      "key": "鎌",
+      "resolved": "Weapon.Scythe",
+      "aliases": [
+        "サイズ",
+        "大鎌",
+        "死神の鎌",
+        "サイス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "weapon"
+      ]
+    },
+    {
+      "key": "双剣",
+      "resolved": "Weapon.DualSwords",
+      "aliases": [
+        "二刀流",
+        "デュアルブレード",
+        "双刃",
+        "二本刀"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "weapon"
+      ]
+    },
+    {
+      "key": "春",
+      "resolved": "Time.Spring",
+      "aliases": [
+        "春の日",
+        "桜の季節",
+        "春景色",
+        "はる"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "夏",
+      "resolved": "Time.Summer",
+      "aliases": [
+        "夏の日",
+        "夏景色",
+        "真夏",
+        "サマー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "秋",
+      "resolved": "Time.Autumn",
+      "aliases": [
+        "秋の日",
+        "紅葉",
+        "秋景色",
+        "オータム"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "冬",
+      "resolved": "Time.Winter",
+      "aliases": [
+        "冬の日",
+        "真冬",
+        "ウィンター"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "朝",
+      "resolved": "Time.Morning",
+      "aliases": [
+        "早朝",
+        "朝の光",
+        "夜明け",
+        "日の出"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "昼",
+      "resolved": "Time.Noon",
+      "aliases": [
+        "真昼",
+        "正午",
+        "昼間",
+        "日中"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "夕方",
+      "resolved": "Time.Evening",
+      "aliases": [
+        "夕暮れ時",
+        "夕刻",
+        "黄昏",
+        "イブニング"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "夜",
+      "resolved": "Time.Night",
+      "aliases": [
+        "夜間",
+        "深夜",
+        "真夜中"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "嵐",
+      "resolved": "Time.Storm",
+      "aliases": [
+        "嵐の日",
+        "台風",
+        "雷雨",
+        "ストーム"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "晴天",
+      "resolved": "Time.Sunny",
+      "aliases": [
+        "晴れ",
+        "快晴",
+        "青空",
+        "サニー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "曇り",
+      "resolved": "Time.Cloudy",
+      "aliases": [
+        "曇天",
+        "雲",
+        "薄曇り",
+        "クラウディ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "time"
+      ]
+    },
+    {
+      "key": "光の粒子",
+      "resolved": "Effect.Particles",
+      "aliases": [
+        "パーティクル",
+        "光子",
+        "光の粒",
+        "キラキラ粒子"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "炎エフェクト",
+      "resolved": "Effect.Fire",
+      "aliases": [
+        "炎",
+        "火炎",
+        "フレームエフェクト",
+        "燃える"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "氷エフェクト",
+      "resolved": "Effect.Ice",
+      "aliases": [
+        "氷",
+        "氷結",
+        "フロストエフェクト",
+        "凍る"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "稲妻",
+      "resolved": "Effect.Lightning",
+      "aliases": [
+        "電撃",
+        "雷",
+        "ライトニング",
+        "サンダー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "オーラ",
+      "resolved": "Effect.Aura",
+      "aliases": [
+        "気",
+        "エネルギー",
+        "発光オーラ",
+        "輝きオーラ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "桜吹雪",
+      "resolved": "Effect.SakuraPetals",
+      "aliases": [
+        "花びら舞う",
+        "桜花",
+        "花吹雪",
+        "散る桜"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "水しぶき",
+      "resolved": "Effect.WaterSplash",
+      "aliases": [
+        "水飛沫",
+        "しぶき",
+        "スプラッシュ",
+        "水エフェクト"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "煙",
+      "resolved": "Effect.Smoke",
+      "aliases": [
+        "煙幕",
+        "スモーク",
+        "霞",
+        "もや"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "桜の花びら",
+      "resolved": "Effect.Petals",
+      "aliases": [
+        "花びら",
+        "ペタル",
+        "花の雨",
+        "花弁"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "輝き",
+      "resolved": "Effect.Sparkle",
+      "aliases": [
+        "スパークル",
+        "輝く",
+        "星輝き"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "対称構図",
+      "resolved": "Composition.Symmetry",
+      "aliases": [
+        "シンメトリー",
+        "左右対称",
+        "対称",
+        "完全対称"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "黄金比",
+      "resolved": "Composition.GoldenRatio",
+      "aliases": [
+        "黄金分割",
+        "フィボナッチ",
+        "自然比",
+        "理想比"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "余白あり",
+      "resolved": "Composition.NegativeSpace",
+      "aliases": [
+        "余白",
+        "ネガティブスペース",
+        "空間",
+        "シンプル構図"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "フレーム内フレーム",
+      "resolved": "Composition.FrameInFrame",
+      "aliases": [
+        "額縁構図",
+        "フレーム",
+        "二重フレーム",
+        "窓構図"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "三分割法",
+      "resolved": "Composition.RuleOfThirds",
+      "aliases": [
+        "三分割",
+        "グリッド構図",
+        "サードルール",
+        "分割構図"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "中央配置",
+      "resolved": "Composition.Centered",
+      "aliases": [
+        "中心",
+        "センター",
+        "正中線",
+        "センター配置"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "対角線",
+      "resolved": "Composition.Diagonal",
+      "aliases": [
+        "ダイアゴナル",
+        "対角",
+        "斜め線"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "廃墟",
+      "resolved": "Place.Ruins",
+      "aliases": [
+        "廃墟",
+        "遺跡",
+        "崩れた建物",
+        "ルイン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "図書館",
+      "resolved": "Place.Library",
+      "aliases": [
+        "本棚",
+        "ライブラリ",
+        "書庫",
+        "書架"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "寺院",
+      "resolved": "Place.Temple",
+      "aliases": [
+        "お寺",
+        "仏閣",
+        "寺",
+        "テンプル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "公園",
+      "resolved": "Place.Park",
+      "aliases": [
+        "公園",
+        "パーク",
+        "広場",
+        "庭園"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "駅",
+      "resolved": "Place.Station",
+      "aliases": [
+        "駅",
+        "ステーション",
+        "電車駅",
+        "ホーム"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "病院",
+      "resolved": "Place.Hospital",
+      "aliases": [
+        "病院",
+        "医院",
+        "クリニック",
+        "ホスピタル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "研究室",
+      "resolved": "Place.Lab",
+      "aliases": [
+        "実験室",
+        "ラボ",
+        "研究所",
+        "科学室"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "戦場",
+      "resolved": "Place.Battlefield",
+      "aliases": [
+        "戦地",
+        "バトルフィールド",
+        "激戦地",
+        "戦場跡"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "水中",
+      "resolved": "Place.Underwater",
+      "aliases": [
+        "海中",
+        "アンダーウォーター",
+        "深海",
+        "水の底"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "山頂",
+      "resolved": "Place.Mountain",
+      "aliases": [
+        "山の頂",
+        "峰",
+        "マウンテン",
+        "山岳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "砂漠",
+      "resolved": "Place.Desert",
+      "aliases": [
+        "砂地",
+        "デザート",
+        "砂丘",
+        "乾燥地"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "氷原",
+      "resolved": "Place.Tundra",
+      "aliases": [
+        "氷の大地",
+        "ツンドラ",
+        "雪原",
+        "氷野"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "熱帯雨林",
+      "resolved": "Place.Jungle",
+      "aliases": [
+        "ジャングル",
+        "密林",
+        "熱帯林",
+        "ジャングル地帯"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "洞窟",
+      "resolved": "Place.Cave",
+      "aliases": [
+        "洞穴",
+        "ケーブ",
+        "鍾乳洞",
+        "岩穴"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "天空",
+      "resolved": "Place.Sky",
+      "aliases": [
+        "雲の上",
+        "天空の城",
+        "スカイ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "地下",
+      "resolved": "Place.Underground",
+      "aliases": [
+        "地下空間",
+        "ダンジョン",
+        "地底",
+        "地下世界"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "中華風",
+      "resolved": "Culture.Chinese",
+      "aliases": [
+        "中国風",
+        "中華",
+        "チャイニーズスタイル",
+        "中国式"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "ヨーロッパ風",
+      "resolved": "Culture.European",
+      "aliases": [
+        "欧風",
+        "ヨーロッパ式",
+        "ウエスタン",
+        "西洋風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "アラビアン",
+      "resolved": "Culture.Arabian",
+      "aliases": [
+        "アラブ",
+        "中東",
+        "アラビアスタイル",
+        "アラビアン風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "インド風",
+      "resolved": "Culture.Indian",
+      "aliases": [
+        "インド式",
+        "インドスタイル",
+        "南アジア",
+        "サリー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "アフリカン",
+      "resolved": "Culture.African",
+      "aliases": [
+        "アフリカ",
+        "アフリカン",
+        "トライバル",
+        "部族スタイル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "ビクトリアン",
+      "resolved": "Culture.Victorian",
+      "aliases": [
+        "ビクトリア朝",
+        "イギリス古典",
+        "19世紀英国",
+        "クラシックヴィクトリア"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "未来",
+      "resolved": "Culture.Futuristic",
+      "aliases": [
+        "フューチャー",
+        "SF",
+        "未来的",
+        "テクノフューチャー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "チアスキアロ",
+      "resolved": "Lighting.Chiaroscuro",
+      "aliases": [
+        "光と影",
+        "明暗対比",
+        "キアロスクーロ",
+        "ドラマチック明暗"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "アンビエント",
+      "resolved": "Lighting.Ambient",
+      "aliases": [
+        "環境光",
+        "アンビアント",
+        "間接照明",
+        "周囲光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "霧のような光",
+      "resolved": "Lighting.Misty",
+      "aliases": [
+        "ミスティ光",
+        "霞光",
+        "柔霧光",
+        "霧の照明"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "サブサーフェス",
+      "resolved": "Lighting.Subsurface",
+      "aliases": [
+        "透過光",
+        "肌の透明感光",
+        "皮下散乱",
+        "SSS"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "夜のネオン",
+      "resolved": "Lighting.NightNeon",
+      "aliases": [
+        "都会のネオン",
+        "ネオン夜",
+        "カラフルネオン夜",
+        "夜ネオン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "バレエポーズ",
+      "resolved": "Pose.Ballet",
+      "aliases": [
+        "バレエ",
+        "バレリーナポーズ",
+        "つま先立ち",
+        "クラシックダンス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "戦闘ポーズ",
+      "resolved": "Pose.Battle",
+      "aliases": [
+        "バトルポーズ",
+        "戦いの構え",
+        "戦士ポーズ",
+        "構え"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "魔法詠唱ポーズ",
+      "resolved": "Pose.Casting",
+      "aliases": [
+        "詠唱",
+        "スペルキャスト",
+        "魔法発動",
+        "呪文詠唱"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "勝ちポーズ",
+      "resolved": "Pose.Victory",
+      "aliases": [
+        "勝利ポーズ",
+        "万歳",
+        "ガッツポーズ",
+        "ビクトリーポーズ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "祈るポーズ",
+      "resolved": "Pose.Praying",
+      "aliases": [
+        "祈り",
+        "プレイポーズ",
+        "合掌",
+        "神に祈る"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "踊るポーズ",
+      "resolved": "Pose.Dancing",
+      "aliases": [
+        "ダンスポーズ",
+        "舞",
+        "ダンシング",
+        "踊り"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "弓を引く",
+      "resolved": "Pose.DrawingBow",
+      "aliases": [
+        "弓引き",
+        "アーチャーポーズ",
+        "弓を構える",
+        "矢を番える"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "ドローン撮影",
+      "resolved": "Camera.Drone",
+      "aliases": [
+        "空撮",
+        "ドローンビュー",
+        "航空撮影",
+        "上空から"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "水面反射",
+      "resolved": "Camera.WaterReflection",
+      "aliases": [
+        "水面に映る",
+        "リフレクション",
+        "水鏡",
+        "水反射"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "魚眼レンズ",
+      "resolved": "Camera.Fisheye",
+      "aliases": [
+        "フィッシュアイ",
+        "超広角",
+        "歪んだレンズ",
+        "球面レンズ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "長時間露光",
+      "resolved": "Camera.LongExposure",
+      "aliases": [
+        "長露出",
+        "光の軌跡",
+        "スロー露出",
+        "光流れ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "ダブル露光",
+      "resolved": "Camera.DoubleExposure",
+      "aliases": [
+        "二重露出",
+        "多重露出",
+        "ダブルエクスポージャー",
+        "重ね撮り"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "ほっそりした手",
+      "resolved": "Body.SlenderHands",
+      "aliases": [
+        "細い手",
+        "スレンダーハンド",
+        "華奢な手",
+        "細い指"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "body"
+      ]
+    },
+    {
+      "key": "細いウエスト",
+      "resolved": "Body.SlimWaist",
+      "aliases": [
+        "細腰",
+        "ウエスト細い",
+        "クビレ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "body"
+      ]
+    },
+    {
+      "key": "丸みのある肩",
+      "resolved": "Body.RoundedShoulders",
+      "aliases": [
+        "丸肩",
+        "柔らかい肩",
+        "なめらか肩"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "body"
+      ]
+    },
+    {
+      "key": "白い目",
+      "resolved": "Eyes.White",
+      "aliases": [
+        "白眼",
+        "白い瞳",
+        "ホワイトアイ",
+        "薄い目の色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "虹彩",
+      "resolved": "Eyes.Iris",
+      "aliases": [
+        "虹彩模様",
+        "複雑な眼",
+        "模様眼",
+        "マルチカラーアイ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "光る目",
+      "resolved": "Eyes.Glowing",
+      "aliases": [
+        "発光する目",
+        "光眼",
+        "グロウアイ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "ゾンビ肌",
+      "resolved": "Skin.Zombie",
+      "aliases": [
+        "ゾンビ",
+        "腐った肌",
+        "死人肌",
+        "アンデッド肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "うろこ肌",
+      "resolved": "Skin.Scale",
+      "aliases": [
+        "鱗肌",
+        "竜の肌",
+        "うろこ",
+        "スケール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "宝石のような肌",
+      "resolved": "Skin.Gem",
+      "aliases": [
+        "宝石肌",
+        "クリスタル肌",
+        "輝く肌",
+        "宝石のよう"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "深夜肌",
+      "resolved": "Skin.Dark",
+      "aliases": [
+        "濃い褐色",
+        "ダークスキン",
+        "ブラウンスキン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "黄ばんだ歯",
+      "resolved": "Teeth.Stained",
+      "aliases": [
+        "黄歯",
+        "着色歯",
+        "古い歯",
+        "煙草歯"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "teeth"
+      ]
+    },
+    {
+      "key": "ぽかんと開けた口",
+      "resolved": "Mouth.Agape",
+      "aliases": [
+        "口をぽかん",
+        "唖然",
+        "口大きく開ける",
+        "ぽかん"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mouth"
+      ]
+    },
+    {
+      "key": "唇を噛む",
+      "resolved": "Mouth.BitingLip",
+      "aliases": [
+        "唇を噛み",
+        "くちびる噛み",
+        "歯で唇",
+        "ビティングリップ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mouth"
+      ]
+    },
+    {
+      "key": "鼻筋が通った",
+      "resolved": "Nose.HighBridge",
+      "aliases": [
+        "鼻梁",
+        "ハイノーズ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "nose"
+      ]
+    },
+    {
+      "key": "丸い鼻",
+      "resolved": "Nose.Rounded",
+      "aliases": [
+        "丸鼻",
+        "チャーミーノーズ",
+        "ぽちゃ鼻",
+        "丸みノーズ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "nose"
+      ]
+    },
+    {
+      "key": "大きな耳",
+      "resolved": "Ears.Large",
+      "aliases": [
+        "大耳",
+        "ビッグイヤー",
+        "耳が大きい",
+        "でかい耳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "ears"
+      ]
+    },
+    {
+      "key": "垂れた耳",
+      "resolved": "Ears.Floppy",
+      "aliases": [
+        "垂れ耳",
+        "犬耳垂れ",
+        "フロッピーイヤー",
+        "耳が垂れる"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "ears"
+      ]
+    },
+    {
+      "key": "動く耳",
+      "resolved": "Ears.Animated",
+      "aliases": [
+        "ぴくぴく耳",
+        "動物耳動く",
+        "反応耳",
+        "ムービングイヤー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "ears"
+      ]
+    },
+    {
+      "key": "幼稚園児",
+      "resolved": "Age.Toddler",
+      "aliases": [
+        "幼児",
+        "幼稚園",
+        "幼いこ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "age"
+      ]
+    },
+    {
+      "key": "老年",
+      "resolved": "Age.Elderly",
+      "aliases": [
+        "年配",
+        "エルダー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "age"
+      ]
+    },
+    {
+      "key": "丸いメガネ",
+      "resolved": "Glasses.Round",
+      "aliases": [
+        "サークルグラス",
+        "ラウンド"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "glasses"
+      ]
+    },
+    {
+      "key": "スクエアメガネ",
+      "resolved": "Glasses.Square",
+      "aliases": [
+        "四角グラス",
+        "矩形フレーム"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "glasses"
+      ]
+    },
+    {
+      "key": "ハートメガネ",
+      "resolved": "Glasses.Heart",
+      "aliases": [
+        "ハート型眼鏡",
+        "ラブグラス",
+        "ハートフレーム"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "glasses"
+      ]
+    },
+    {
+      "key": "ハロウィン",
+      "resolved": "Style.Halloween",
+      "aliases": [
+        "ハロウィンコスチューム",
+        "魔女衣装",
+        "ハロウィン風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "クリスマス",
+      "resolved": "Style.Christmas",
+      "aliases": [
+        "クリスマスコスチューム",
+        "サンタ",
+        "クリスマス風",
+        "サンタ服"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "ウェディング",
+      "resolved": "Style.Wedding",
+      "aliases": [
+        "ウエディング",
+        "花嫁",
+        "結婚式",
+        "ブライダル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "バニーガール",
+      "resolved": "Style.BunnyGirl",
+      "aliases": [
+        "バニーコスチューム",
+        "うさぎ衣装",
+        "バニースーツ",
+        "プレイボーイバニー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "巫女",
+      "resolved": "Style.Miko",
+      "aliases": [
+        "みこ",
+        "神社娘"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "悪役",
+      "resolved": "Fantasy.Villain",
+      "aliases": [
+        "ヴィラン",
+        "悪の首領",
+        "ボス",
+        "ダークロード"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "神剣士",
+      "resolved": "Fantasy.HolyKnight",
+      "aliases": [
+        "聖騎士",
+        "パラディン",
+        "神の戦士",
+        "ホーリーナイト"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "宇宙人",
+      "resolved": "Fantasy.Alien",
+      "aliases": [
+        "エイリアン",
+        "宇宙生命体",
+        "異星人",
+        "宇宙から来た"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "サイボーグ",
+      "resolved": "Fantasy.Cyborg",
+      "aliases": [
+        "サイバー人間",
+        "機械人間",
+        "ハーフロボット",
+        "バイオニック"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "ロボット",
+      "resolved": "Fantasy.Robot",
+      "aliases": [
+        "ロボ",
+        "アンドロイド",
+        "メカ",
+        "機械人"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "幽霊",
+      "resolved": "Fantasy.Ghost",
+      "aliases": [
+        "ゴースト",
+        "お化け",
+        "亡霊",
+        "幻霊"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "神獣",
+      "resolved": "Fantasy.DivineBeast",
+      "aliases": [
+        "聖獣",
+        "霊獣",
+        "守護獣",
+        "神の使い"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "ジーンズ",
+      "resolved": "Clothing.Jeans",
+      "aliases": [
+        "デニム",
+        "ジーパン",
+        "ジーンズパンツ",
+        "デニムパンツ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "シャツ",
+      "resolved": "Clothing.Shirt",
+      "aliases": [
+        "ブラウス",
+        "ボタンシャツ",
+        "白シャツ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "セーター",
+      "resolved": "Clothing.Sweater",
+      "aliases": [
+        "ニット",
+        "セーター",
+        "プルオーバー",
+        "ニットセーター"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "バンダナ",
+      "resolved": "Clothing.Bandana",
+      "aliases": [
+        "頭巻き",
+        "スカーフ巻き",
+        "バンダナ巻き"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "ブーツ",
+      "resolved": "Clothing.Boots",
+      "aliases": [
+        "靴",
+        "ロングブーツ",
+        "ショートブーツ",
+        "革靴"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "サンダル",
+      "resolved": "Clothing.Sandals",
+      "aliases": [
+        "草履",
+        "ビーチサンダル",
+        "サンダル",
+        "フラットシューズ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "サングラスアクセ",
+      "resolved": "Accessories.Sunglasses",
+      "aliases": [
+        "伊達メガネ",
+        "おしゃれメガネ",
+        "ファッションサングラス",
+        "デザインサングラス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "羽根装飾",
+      "resolved": "Accessories.Feather",
+      "aliases": [
+        "フェザー",
+        "鳥の羽"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "宝石",
+      "resolved": "Accessories.Jewel",
+      "aliases": [
+        "宝石飾り",
+        "ジュエル",
+        "ダイヤ飾り",
+        "宝石アクセ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "精密描写",
+      "resolved": "Quality.Detailed",
+      "aliases": [
+        "精密",
+        "細かい",
+        "詳細な描写"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "写真のような",
+      "resolved": "Quality.Photorealistic",
+      "aliases": [
+        "実写風",
+        "フォトグラフィック"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "手描き",
+      "resolved": "Quality.HandDrawn",
+      "aliases": [
+        "手書き",
+        "手描きスタイル",
+        "アナログ",
+        "手描きアート"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "デジタルアート",
+      "resolved": "Quality.DigitalArt",
+      "aliases": [
+        "デジタル",
+        "デジアート",
+        "電子絵"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "ハイキー",
+      "resolved": "Quality.Highkey",
+      "aliases": [
+        "ハイキー",
+        "明るい写真",
+        "白飛び",
+        "オーバーエクスポ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "ローキー",
+      "resolved": "Quality.Lowkey",
+      "aliases": [
+        "ローキー",
+        "暗い写真",
+        "アンダー露出",
+        "ドラマティックダーク"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "幸福感",
+      "resolved": "Emotion.Happy",
+      "aliases": [
+        "幸せ",
+        "喜び",
+        "幸福"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "嫌悪感",
+      "resolved": "Emotion.Disgust",
+      "aliases": [
+        "嫌い",
+        "ディスガスト",
+        "不快",
+        "嫌悪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "期待感",
+      "resolved": "Emotion.Anticipation",
+      "aliases": [
+        "期待",
+        "ワクワク",
+        "アンティシペーション",
+        "楽しみ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "信頼",
+      "resolved": "Emotion.Trust",
+      "aliases": [
+        "信用",
+        "トラスト",
+        "信頼感",
+        "安心"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "羨望",
+      "resolved": "Emotion.Envy",
+      "aliases": [
+        "嫉妬",
+        "うらやましい",
+        "エンビー",
+        "妬み"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "孤独",
+      "resolved": "Emotion.Lonely",
+      "aliases": [
+        "孤立",
+        "ロンリー",
+        "ひとりぼっち",
+        "孤立感"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "希望",
+      "resolved": "Emotion.Hope",
+      "aliases": [
+        "希望の光",
+        "ホープ",
+        "望み",
+        "希望感"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "絶望",
+      "resolved": "Emotion.Despair",
+      "aliases": [
+        "デスペア",
+        "絶望感",
+        "希望なし",
+        "暗黒"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "探偵",
+      "resolved": "Profession.Detective",
+      "aliases": [
+        "刑事",
+        "ディテクティブ",
+        "私立探偵",
+        "探偵さん"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "教師",
+      "resolved": "Profession.Teacher",
+      "aliases": [
+        "先生",
+        "ティーチャー",
+        "教員",
+        "インストラクター"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "医者",
+      "resolved": "Profession.Doctor",
+      "aliases": [
+        "医師",
+        "ドクター",
+        "お医者さん",
+        "内科医"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "シェフ",
+      "resolved": "Profession.Chef",
+      "aliases": [
+        "料理人",
+        "コック",
+        "コックさん",
+        "板前"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "歌手",
+      "resolved": "Profession.Singer",
+      "aliases": [
+        "シンガー",
+        "ボーカル",
+        "歌い手"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "ダンサー",
+      "resolved": "Profession.Dancer",
+      "aliases": [
+        "ダンサー",
+        "舞踊家",
+        "踊り手",
+        "パフォーマー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "画家",
+      "resolved": "Profession.Painter",
+      "aliases": [
+        "芸術家",
+        "アーティスト",
+        "絵描き",
+        "ペインター"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "兵士",
+      "resolved": "Profession.Soldier",
+      "aliases": [
+        "軍人",
+        "ソルジャー",
+        "兵",
+        "戦士"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "スパイ",
+      "resolved": "Profession.Spy",
+      "aliases": [
+        "エージェント",
+        "スパイ",
+        "諜報員",
+        "工作員"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "冒険家",
+      "resolved": "Profession.Adventurer",
+      "aliases": [
+        "アドベンチャラー",
+        "旅人",
+        "冒険者",
+        "探検家"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "王族",
+      "resolved": "Profession.Royalty",
+      "aliases": [
+        "王家",
+        "ロイヤリティ",
+        "貴族",
+        "王侯貴族"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "聖職者",
+      "resolved": "Profession.Cleric",
+      "aliases": [
+        "クレリック",
+        "牧師",
+        "神父",
+        "司祭"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "シルク",
+      "resolved": "Material.Silk",
+      "aliases": [
+        "絹",
+        "シルク素材",
+        "つやつや",
+        "サテン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "レザー",
+      "resolved": "Material.Leather",
+      "aliases": [
+        "革",
+        "皮",
+        "革素材",
+        "レザー素材"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "ベルベット",
+      "resolved": "Material.Velvet",
+      "aliases": [
+        "ビロード",
+        "ベルベット",
+        "なめらか布",
+        "高級感素材"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "レース",
+      "resolved": "Material.Lace",
+      "aliases": [
+        "レース素材",
+        "レース模様",
+        "レース飾り",
+        "細工布"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "毛皮",
+      "resolved": "Material.Fur",
+      "aliases": [
+        "ファー",
+        "毛皮素材",
+        "フワフワ毛",
+        "ファーコート"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "金属素材",
+      "resolved": "Material.Metal",
+      "aliases": [
+        "メタル",
+        "金属",
+        "鋼",
+        "アイアン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "クリスタル",
+      "resolved": "Material.Crystal",
+      "aliases": [
+        "水晶",
+        "クリスタル素材",
+        "透明石",
+        "結晶"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "木素材",
+      "resolved": "Material.Wood",
+      "aliases": [
+        "木",
+        "ウッド",
+        "木材",
+        "木製"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "石素材",
+      "resolved": "Material.Stone",
+      "aliases": [
+        "石",
+        "ストーン",
+        "岩",
+        "石材"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "ローファイ",
+      "resolved": "Color.Lofi",
+      "aliases": [
+        "ローファイ",
+        "粗い画質",
+        "ノイズ",
+        "ざらつき"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "ドリーミー",
+      "resolved": "Color.Dreamy",
+      "aliases": [
+        "夢っぽい色",
+        "霞がかった",
+        "ソフトカラー",
+        "夢色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "オータムカラー",
+      "resolved": "Color.Autumn",
+      "aliases": [
+        "秋色",
+        "紅葉色",
+        "オレンジ茶",
+        "秋のカラー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "スプリングカラー",
+      "resolved": "Color.Spring",
+      "aliases": [
+        "春色",
+        "桜色",
+        "淡ピンク",
+        "春らしい色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "ウィンターカラー",
+      "resolved": "Color.Winter",
+      "aliases": [
+        "冬色",
+        "青白",
+        "氷色",
+        "雪の色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "サマーカラー",
+      "resolved": "Color.Summer",
+      "aliases": [
+        "夏色",
+        "明るい夏色",
+        "ビビッド夏色",
+        "海の色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "ブラックホワイト",
+      "resolved": "Color.BlackAndWhite",
+      "aliases": [
+        "白と黒",
+        "ブラック＆ホワイト",
+        "コントラスト",
+        "二色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "アースカラー",
+      "resolved": "Color.Earth",
+      "aliases": [
+        "アースカラー",
+        "大地色",
+        "自然色",
+        "テラコッタ色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "カタログヘア",
+      "resolved": "Hair.Catalog",
+      "aliases": [
+        "モデルヘア",
+        "カタログスタイル",
+        "完璧な髪",
+        "プロヘア"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "アンダーカット",
+      "resolved": "Hair.Undercut",
+      "aliases": [
+        "刈り上げサイド",
+        "サイドアンダー",
+        "フェードカット",
+        "サイドシェイブ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "しわ",
+      "resolved": "Face.Wrinkles",
+      "aliases": [
+        "皺",
+        "年齢線",
+        "老け感"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face"
+      ]
+    },
+    {
+      "key": "整った顔",
+      "resolved": "Face.Perfect",
+      "aliases": [
+        "完璧な顔",
+        "理想顔",
+        "整形美人",
+        "完璧フェイス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face"
+      ]
+    },
+    {
+      "key": "個性的な顔",
+      "resolved": "Face.Unique",
+      "aliases": [
+        "変わった顔",
+        "個性顔",
+        "ユニークフェイス",
+        "特徴的な顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face"
+      ]
+    },
+    {
+      "key": "鋭い顔立ち",
+      "resolved": "Face.Sharp",
+      "aliases": [
+        "シャープフェイス",
+        "細い顔",
+        "鋭い目鼻",
+        "精悍な顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face"
+      ]
+    },
+    {
+      "key": "ふくよかな顔",
+      "resolved": "Face.Chubby",
+      "aliases": [
+        "ぷくぷく顔",
+        "ふっくら",
+        "チャビーフェイス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face"
+      ]
+    },
+    {
+      "key": "空港",
+      "resolved": "Scene.Airport",
+      "aliases": [
+        "エアポート",
+        "航空ターミナル",
+        "出発ロビー",
+        "搭乗口"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "電車内",
+      "resolved": "Scene.Train",
+      "aliases": [
+        "電車",
+        "列車内",
+        "車内",
+        "トレイン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "夜の公園",
+      "resolved": "Scene.NightPark",
+      "aliases": [
+        "夜公園",
+        "夜の広場",
+        "公園夜景",
+        "ナイトパーク"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "屋上",
+      "resolved": "Scene.Rooftop",
+      "aliases": [
+        "ルーフトップ",
+        "屋上テラス",
+        "建物屋上",
+        "高層階上"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "バスルーム",
+      "resolved": "Scene.Bathroom",
+      "aliases": [
+        "風呂場",
+        "バスルーム",
+        "脱衣所",
+        "バス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "工場",
+      "resolved": "Scene.Factory",
+      "aliases": [
+        "工場内",
+        "製造工場",
+        "工業地帯"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "ゲームセンター",
+      "resolved": "Scene.Arcade",
+      "aliases": [
+        "アーケード",
+        "ゲーセン",
+        "ゲームアーケード",
+        "ゲームホール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "祭り",
+      "resolved": "Scene.Festival",
+      "aliases": [
+        "お祭り",
+        "フェスティバル",
+        "縁日",
+        "祭り会場"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "宴会",
+      "resolved": "Scene.Party",
+      "aliases": [
+        "パーティー",
+        "宴",
+        "打ち上げ",
+        "パーティーシーン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "ライブ会場",
+      "resolved": "Scene.Live",
+      "aliases": [
+        "コンサート",
+        "ライブ",
+        "ステージ",
+        "会場"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "ファビュラス",
+      "resolved": "Mood.Fabulous",
+      "aliases": [
+        "ファビュ",
+        "素晴らしい",
+        "グレート",
+        "壮観"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "物寂しい",
+      "resolved": "Mood.Desolate",
+      "aliases": [
+        "荒涼",
+        "寂しい",
+        "物悲しい",
+        "デソレート"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "威圧感",
+      "resolved": "Mood.Intimidating",
+      "aliases": [
+        "威圧",
+        "こわい雰囲気",
+        "プレッシャー",
+        "迫力"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "温かみ",
+      "resolved": "Mood.Cozy",
+      "aliases": [
+        "コージー",
+        "温かい",
+        "こぢんまり",
+        "アットホーム"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "幻惑",
+      "resolved": "Mood.Enchanting",
+      "aliases": [
+        "魅惑",
+        "エンチャント",
+        "魔法的",
+        "とりこにする"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "勇敢",
+      "resolved": "Mood.Brave",
+      "aliases": [
+        "勇気",
+        "ブレイブ",
+        "勇ましい",
+        "果敢"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "危険な雰囲気",
+      "resolved": "Mood.Dangerous",
+      "aliases": [
+        "危険",
+        "ダンジャラス",
+        "危ない",
+        "スリリング"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mood"
+      ]
+    },
+    {
+      "key": "フラットデザイン",
+      "resolved": "Rendering.Flat",
+      "aliases": [
+        "フラット",
+        "ベクターアート",
+        "フラットカラー",
+        "平面デザイン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "rendering"
+      ]
+    },
+    {
+      "key": "グリッドワーク",
+      "resolved": "Rendering.Linework",
+      "aliases": [
+        "線画",
+        "ラインアート",
+        "輪郭線",
+        "アウトライン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "rendering"
+      ]
+    },
+    {
+      "key": "パン画",
+      "resolved": "Rendering.Panorama",
+      "aliases": [
+        "パノラマ",
+        "広大な",
+        "大パノラマ",
+        "広角ビュー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "rendering"
+      ]
+    },
+    {
+      "key": "ケルト風",
+      "resolved": "Rendering.Celtic",
+      "aliases": [
+        "ケルト模様",
+        "celtic",
+        "ノット模様",
+        "アイルランド風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "rendering"
+      ]
+    },
+    {
+      "key": "サイバー風",
+      "resolved": "Rendering.Cyber",
+      "aliases": [
+        "サイバースタイル",
+        "テック",
+        "ネオテクノ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "rendering"
+      ]
+    },
+    {
+      "key": "ゲーム画風",
+      "resolved": "Rendering.GameArt",
+      "aliases": [
+        "ゲームアート",
+        "ゲーム絵",
+        "ゲームスタイル",
+        "インゲーム"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "rendering"
+      ]
+    },
+    {
+      "key": "花束",
+      "resolved": "Prop.Bouquet",
+      "aliases": [
+        "花たば",
+        "ブーケ",
+        "花の束",
+        "フラワーブーケ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "ランタン",
+      "resolved": "Prop.Lantern",
+      "aliases": [
+        "提灯",
+        "ランプ",
+        "灯籠",
+        "キャンドルランタン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "本",
+      "resolved": "Prop.Book",
+      "aliases": [
+        "書物",
+        "ブック",
+        "読書",
+        "本を持つ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "楽器",
+      "resolved": "Prop.Instrument",
+      "aliases": [
+        "音楽道具",
+        "バイオリン",
+        "ギター",
+        "ピアノ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "カップ",
+      "resolved": "Prop.Cup",
+      "aliases": [
+        "コーヒーカップ",
+        "マグカップ",
+        "ティーカップ",
+        "飲み物カップ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "ケーキ",
+      "resolved": "Prop.Cake",
+      "aliases": [
+        "ケーキ",
+        "スイーツ",
+        "バースデーケーキ",
+        "デコレーションケーキ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "スマートフォン",
+      "resolved": "Prop.Smartphone",
+      "aliases": [
+        "スマホ",
+        "携帯",
+        "スマートデバイス",
+        "スマホ持ち"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "カメラ",
+      "resolved": "Prop.Camera",
+      "aliases": [
+        "一眼レフ",
+        "写真機",
+        "デジカメ",
+        "カメラ持ち"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "ゲームコントローラー",
+      "resolved": "Prop.Controller",
+      "aliases": [
+        "コントローラー",
+        "ゲームパッド",
+        "ゲームデバイス",
+        "コンソール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "テディベア",
+      "resolved": "Prop.TeddyBear",
+      "aliases": [
+        "ぬいぐるみ",
+        "クマのぬいぐるみ",
+        "テディ",
+        "クマちゃん"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "絵筆",
+      "resolved": "Prop.Paintbrush",
+      "aliases": [
+        "筆",
+        "絵描き筆",
+        "ブラシ",
+        "ペインティングブラシ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "タロットカード",
+      "resolved": "Prop.TarotCard",
+      "aliases": [
+        "タロット",
+        "カード",
+        "占いカード",
+        "魔法カード"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "コンビニ",
+      "resolved": "Scene.Convenience",
+      "aliases": [
+        "コンビニ店内",
+        "コンビニエンスストア",
+        "24時間店",
+        "深夜コンビニ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "プール",
+      "resolved": "Scene.Pool",
+      "aliases": [
+        "水泳プール",
+        "スイミングプール",
+        "プールサイド",
+        "夏プール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "遊園地",
+      "resolved": "Scene.Amusement",
+      "aliases": [
+        "テーマパーク",
+        "遊園地",
+        "アミューズメントパーク",
+        "ディズニー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "映画館",
+      "resolved": "Scene.Cinema",
+      "aliases": [
+        "シネマ",
+        "映画シアター",
+        "映画ホール",
+        "スクリーン前"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "書店",
+      "resolved": "Scene.Bookstore",
+      "aliases": [
+        "本屋",
+        "ブックストア",
+        "書籍店",
+        "古本屋"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "台所",
+      "resolved": "Scene.Kitchen",
+      "aliases": [
+        "キッチン",
+        "調理場",
+        "料理場",
+        "炊事場"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "音楽スタジオ",
+      "resolved": "Scene.Studio",
+      "aliases": [
+        "レコーディングスタジオ",
+        "音楽室",
+        "スタジオ収録",
+        "バンド練習"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "墓地",
+      "resolved": "Scene.Cemetery",
+      "aliases": [
+        "墓場",
+        "お墓",
+        "グレイブヤード",
+        "霊園"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "神殿",
+      "resolved": "Scene.Sanctum",
+      "aliases": [
+        "聖堂",
+        "神の間",
+        "神秘的な場所",
+        "聖なる場"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "秘密基地",
+      "resolved": "Scene.SecretBase",
+      "aliases": [
+        "基地",
+        "ベース",
+        "隠れ家",
+        "シークレットルーム"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "scene"
+      ]
+    },
+    {
+      "key": "抱っこ",
+      "resolved": "Pose.Holding",
+      "aliases": [
+        "だっこ",
+        "抱きかかえる",
+        "抱える",
+        "ホールディング"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "ハイタッチ",
+      "resolved": "Pose.HighFive",
+      "aliases": [
+        "ハイファイブ",
+        "パチン",
+        "手を合わせる",
+        "ハイ5"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "くるくる回る",
+      "resolved": "Pose.Spinning",
+      "aliases": [
+        "スピン",
+        "回転",
+        "ターン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "片手挙げ",
+      "resolved": "Pose.OneHandUp",
+      "aliases": [
+        "アッパーハンド",
+        "片手上げ",
+        "挙手"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "ひざまずく",
+      "resolved": "Pose.Kneeling",
+      "aliases": [
+        "ひざ立ち",
+        "ニーリング",
+        "膝をつく",
+        "膝立ち"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "寄りかかる",
+      "resolved": "Pose.Leaning",
+      "aliases": [
+        "もたれる",
+        "リーン",
+        "壁に寄る",
+        "体を傾ける"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "クロスレッグ",
+      "resolved": "Pose.CrossLegged",
+      "aliases": [
+        "あぐら",
+        "脚を組む",
+        "胡坐",
+        "クロスレッグ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "pose"
+      ]
+    },
+    {
+      "key": "ぽかん顔",
+      "resolved": "Expression.Blank",
+      "aliases": [
+        "ぼんやり顔",
+        "空白表情",
+        "ポカン",
+        "茫然自失"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "焦り顔",
+      "resolved": "Expression.Flustered",
+      "aliases": [
+        "あせり顔",
+        "焦る",
+        "パニック顔",
+        "どうしよう顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "嬉し泣き",
+      "resolved": "Expression.JoyfulTears",
+      "aliases": [
+        "うれし泣き",
+        "感涙",
+        "感激の涙",
+        "嬉し泣き顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "冷笑",
+      "resolved": "Expression.Sneer",
+      "aliases": [
+        "見下す笑い",
+        "嘲笑",
+        "冷ややかな笑い",
+        "スニアー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "勝利の笑み",
+      "resolved": "Expression.VictorySmile",
+      "aliases": [
+        "勝ち笑い",
+        "勝者の笑顔",
+        "やった顔",
+        "勝利笑顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "怯える顔",
+      "resolved": "Expression.Scared",
+      "aliases": [
+        "怖がる顔",
+        "ビビリ顔",
+        "おびえ顔",
+        "恐怖顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "砂",
+      "resolved": "Effect.Sand",
+      "aliases": [
+        "砂嵐",
+        "砂粒",
+        "砂エフェクト",
+        "砂漠の砂"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "鱗模様",
+      "resolved": "Effect.ScalePattern",
+      "aliases": [
+        "うろこ模様",
+        "スケールパターン",
+        "龍の鱗",
+        "鱗紋"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "霜",
+      "resolved": "Effect.Frost",
+      "aliases": [
+        "霜模様",
+        "氷の結晶",
+        "フロスト",
+        "霜エフェクト"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "流星",
+      "resolved": "Effect.ShootingStar",
+      "aliases": [
+        "流れ星",
+        "流星群",
+        "シューティングスター",
+        "星が流れる"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "風のエフェクト",
+      "resolved": "Effect.Wind",
+      "aliases": [
+        "風",
+        "風エフェクト",
+        "ウィンド",
+        "そよ風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "毒",
+      "resolved": "Effect.Poison",
+      "aliases": [
+        "毒ガス",
+        "ポイズン",
+        "毒の霧",
+        "毒エフェクト"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "聖なる光",
+      "resolved": "Effect.HolyLight",
+      "aliases": [
+        "聖光",
+        "ホーリーライト",
+        "神聖光",
+        "天の光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "闇",
+      "resolved": "Effect.Darkness",
+      "aliases": [
+        "暗闇",
+        "闇エフェクト",
+        "ダークネス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "北欧",
+      "resolved": "Culture.Nordic",
+      "aliases": [
+        "北欧スタイル",
+        "スカンジナビア",
+        "バイキング風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "ケルト",
+      "resolved": "Culture.Celtic",
+      "aliases": [
+        "ケルト文化",
+        "アイリッシュ",
+        "スコティッシュ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "東欧",
+      "resolved": "Culture.EasternEuropean",
+      "aliases": [
+        "東ヨーロッパ",
+        "バルカン",
+        "スラブ",
+        "ロシア風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "オリエンタル",
+      "resolved": "Culture.Oriental",
+      "aliases": [
+        "東洋的",
+        "オリエント",
+        "アジア的",
+        "東の文化"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "カリブ",
+      "resolved": "Culture.Caribbean",
+      "aliases": [
+        "カリビアン",
+        "島文化",
+        "トロピカル文化",
+        "サマー文化"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "culture"
+      ]
+    },
+    {
+      "key": "ゴム",
+      "resolved": "Material.Rubber",
+      "aliases": [
+        "ラバー",
+        "ゴム素材",
+        "弾性素材",
+        "伸縮素材"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "プラスチック",
+      "resolved": "Material.Plastic",
+      "aliases": [
+        "プラ",
+        "合成素材",
+        "ポリ素材",
+        "プラスチック製"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "布",
+      "resolved": "Material.Cloth",
+      "aliases": [
+        "布地",
+        "ファブリック",
+        "テキスタイル",
+        "生地"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "骨",
+      "resolved": "Material.Bone",
+      "aliases": [
+        "骨素材",
+        "スケルトン",
+        "ボーン",
+        "骨格"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "羽根素材",
+      "resolved": "Material.Feather",
+      "aliases": [
+        "鳥の羽根",
+        "フェザー素材",
+        "軽い素材",
+        "羽毛"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "material"
+      ]
+    },
+    {
+      "key": "仮面",
+      "resolved": "Accessories.Mask",
+      "aliases": [
+        "マスク",
+        "仮面",
+        "仮装マスク",
+        "能面"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "腰带",
+      "resolved": "Accessories.Belt",
+      "aliases": [
+        "ベルト",
+        "ウエストベルト",
+        "バックル付き",
+        "腰ベルト"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "ブローチ",
+      "resolved": "Accessories.Brooch",
+      "aliases": [
+        "ブローチ",
+        "服飾品",
+        "胸飾り",
+        "ラペルピン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "弁護士",
+      "resolved": "Profession.Lawyer",
+      "aliases": [
+        "弁護士",
+        "ロイヤー",
+        "法律家",
+        "弁護士さん"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "モデル",
+      "resolved": "Profession.Model",
+      "aliases": [
+        "ファッションモデル",
+        "モデル",
+        "スーパーモデル",
+        "写真モデル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "プログラマー",
+      "resolved": "Profession.Programmer",
+      "aliases": [
+        "コーダー",
+        "エンジニア",
+        "プログラマー",
+        "デベロッパー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "農家",
+      "resolved": "Profession.Farmer",
+      "aliases": [
+        "農業",
+        "農民",
+        "ファーマー",
+        "農場主"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "海賊キャプテン",
+      "resolved": "Profession.PirateCaptain",
+      "aliases": [
+        "船長",
+        "キャプテン",
+        "海の覇者",
+        "船長さん"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "profession"
+      ]
+    },
+    {
+      "key": "後悔",
+      "resolved": "Emotion.Regret",
+      "aliases": [
+        "悔い",
+        "リグレット",
+        "悔やみ",
+        "後悔の念"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "好奇心",
+      "resolved": "Emotion.Curious",
+      "aliases": [
+        "キュリアス",
+        "知りたがり",
+        "探究心",
+        "好奇旺盛"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "誇り",
+      "resolved": "Emotion.Pride",
+      "aliases": [
+        "プライド",
+        "自尊心",
+        "誇り高き",
+        "自信"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "愛情",
+      "resolved": "Emotion.Love",
+      "aliases": [
+        "ラブ",
+        "愛",
+        "愛おしい",
+        "恋心"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "感謝",
+      "resolved": "Emotion.Gratitude",
+      "aliases": [
+        "グラティチュード",
+        "感謝の気持ち",
+        "ありがとう",
+        "謝意"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "復讐心",
+      "resolved": "Emotion.Revenge",
+      "aliases": [
+        "リベンジ",
+        "仇",
+        "怨念",
+        "復讐"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "憧れ",
+      "resolved": "Emotion.Admiration",
+      "aliases": [
+        "アドミレーション",
+        "あこがれ",
+        "憧憬",
+        "尊敬"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "水中の光",
+      "resolved": "Lighting.Underwater",
+      "aliases": [
+        "水中光",
+        "海底照明",
+        "水光",
+        "海中の輝き"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "星光",
+      "resolved": "Lighting.Starlight",
+      "aliases": [
+        "星の光",
+        "スターライト",
+        "星明かり",
+        "星々の光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "オーロラ",
+      "resolved": "Lighting.Aurora",
+      "aliases": [
+        "オーロラ光",
+        "北極光",
+        "極光",
+        "南極光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "夕焼けの光",
+      "resolved": "Lighting.Dusk",
+      "aliases": [
+        "黄昏光",
+        "夕暮れ照明",
+        "ダスクライト",
+        "夕暮れの光"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "蛍光",
+      "resolved": "Lighting.Bioluminescent",
+      "aliases": [
+        "発光生物",
+        "生物発光",
+        "ホタル光",
+        "ビオルミネセント"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "lighting"
+      ]
+    },
+    {
+      "key": "ふくよかな体型",
+      "resolved": "Body.Plump",
+      "aliases": [
+        "ぷくぷく体",
+        "丸み体型",
+        "チャビー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "body"
+      ]
+    },
+    {
+      "key": "華奢な体",
+      "resolved": "Skin.Delicate",
+      "aliases": [
+        "華奢",
+        "細い体",
+        "繊細な体"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "body"
+      ]
+    },
+    {
+      "key": "インスタント写真",
+      "resolved": "Camera.Polaroid",
+      "aliases": [
+        "ポラロイド",
+        "チェキ",
+        "インスタントフォト",
+        "チェキ風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "フィルムカメラ風",
+      "resolved": "Camera.Film",
+      "aliases": [
+        "フィルム写真",
+        "アナログ写真",
+        "フィルムグレイン",
+        "レトロ写真"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "モーションブラー",
+      "resolved": "Camera.MotionBlur",
+      "aliases": [
+        "動きぼかし",
+        "モーションブラー",
+        "残像",
+        "動体ぶれ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "camera"
+      ]
+    },
+    {
+      "key": "ショルダー出し",
+      "resolved": "Clothing.OffShoulder",
+      "aliases": [
+        "オフショルダー",
+        "肩出し",
+        "肩が見える",
+        "ショルダーレス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "ホルターネック",
+      "resolved": "Clothing.Halter",
+      "aliases": [
+        "首かけ",
+        "ホルター",
+        "首紐",
+        "ネックホルター"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "ミニドレス",
+      "resolved": "Clothing.MiniDress",
+      "aliases": [
+        "ミニ丈",
+        "短いドレス",
+        "ミニ",
+        "ショートドレス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "ロングドレス",
+      "resolved": "Clothing.LongDress",
+      "aliases": [
+        "マキシ丈",
+        "床まで",
+        "フロアレングス",
+        "ロング丈"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "タキシード",
+      "resolved": "Clothing.Tuxedo",
+      "aliases": [
+        "燕尾服",
+        "礼服",
+        "フォーマル服",
+        "正装"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "clothing"
+      ]
+    },
+    {
+      "key": "平静",
+      "resolved": "Emotion.Calm",
+      "aliases": [
+        "落ち着いた",
+        "カーム",
+        "静かな心"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "興奮",
+      "resolved": "Emotion.Excited",
+      "aliases": [
+        "エキサイト",
+        "興奮状態",
+        "テンション高い",
+        "ワクワク感"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "困惑",
+      "resolved": "Emotion.Confused",
+      "aliases": [
+        "戸惑い",
+        "コンフューズ",
+        "どうしたらいい",
+        "困り果て"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "懐疑",
+      "resolved": "Emotion.Skeptical",
+      "aliases": [
+        "疑い",
+        "スケプティカル",
+        "半信半疑",
+        "疑問顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "安堵",
+      "resolved": "Emotion.Relief",
+      "aliases": [
+        "ほっとする",
+        "リリーフ",
+        "ほっとした"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "emotion"
+      ]
+    },
+    {
+      "key": "ドーム",
+      "resolved": "Place.Dome",
+      "aliases": [
+        "大ドーム",
+        "球場",
+        "アリーナ",
+        "ドーム施設"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "宮殿",
+      "resolved": "Place.Palace",
+      "aliases": [
+        "宮廷",
+        "パレス",
+        "王宮",
+        "宮殿内"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "洋館",
+      "resolved": "Place.Mansion",
+      "aliases": [
+        "マンション",
+        "洋風邸宅",
+        "大邸宅",
+        "屋敷"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "橋",
+      "resolved": "Place.Bridge",
+      "aliases": [
+        "ブリッジ",
+        "橋の上",
+        "吊り橋",
+        "歩道橋"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "place"
+      ]
+    },
+    {
+      "key": "旗",
+      "resolved": "Prop.Flag",
+      "aliases": [
+        "フラッグ",
+        "国旗",
+        "旗を持つ",
+        "ハタ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "壺",
+      "resolved": "Prop.Vase",
+      "aliases": [
+        "花瓶",
+        "ツボ",
+        "水瓶",
+        "古壺"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "ロウソク",
+      "resolved": "Prop.Candle",
+      "aliases": [
+        "蝋燭",
+        "キャンドル",
+        "火のロウソク",
+        "白ロウソク"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "砂時計",
+      "resolved": "Prop.Hourglass",
+      "aliases": [
+        "砂時計",
+        "タイマー",
+        "時の砂",
+        "スナイドグラス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "鍵",
+      "resolved": "Prop.Key",
+      "aliases": [
+        "キー",
+        "古い鍵",
+        "秘密の鍵",
+        "黄金の鍵"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "手紙",
+      "resolved": "Prop.Letter",
+      "aliases": [
+        "レター",
+        "封書",
+        "ラブレター",
+        "メモ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "太陽",
+      "resolved": "Effect.Sun",
+      "aliases": [
+        "お日さま",
+        "サン",
+        "日輪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "月",
+      "resolved": "Effect.Moon",
+      "aliases": [
+        "満月",
+        "ムーン",
+        "三日月",
+        "銀月"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "星",
+      "resolved": "Effect.Star",
+      "aliases": [
+        "スター",
+        "星々",
+        "ほし"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "虹",
+      "resolved": "Effect.Rainbow",
+      "aliases": [
+        "七色の弧",
+        "アーチ虹"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "effect"
+      ]
+    },
+    {
+      "key": "ポートレート写真",
+      "resolved": "Rendering.PhotoPortrait",
+      "aliases": [
+        "プロ写真",
+        "本格写真",
+        "フォトポートレート",
+        "写真撮影"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "rendering"
+      ]
+    },
+    {
+      "key": "カリカチュア",
+      "resolved": "Rendering.Caricature",
+      "aliases": [
+        "戯画",
+        "風刺画",
+        "デフォルメ",
+        "誇張イラスト"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "rendering"
+      ]
+    },
+    {
+      "key": "縦横比",
+      "resolved": "Composition.AspectRatio",
+      "aliases": [
+        "アスペクト比",
+        "画面比率",
+        "縦横",
+        "フォーマット比"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "パースペクティブ",
+      "resolved": "Composition.Perspective",
+      "aliases": [
+        "遠近法",
+        "透視図",
+        "パース",
+        "奥行き構図"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "composition"
+      ]
+    },
+    {
+      "key": "サビ猫",
+      "resolved": "Creature.CalicoCat",
+      "aliases": [
+        "サビ",
+        "三毛猫",
+        "カラーキャット",
+        "混色猫"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "鹿",
+      "resolved": "Creature.Deer",
+      "aliases": [
+        "シカ",
+        "鹿角",
+        "牡鹿",
+        "バンビ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "馬",
+      "resolved": "Creature.Horse",
+      "aliases": [
+        "ウマ",
+        "ホース",
+        "駿馬"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "creature"
+      ]
+    },
+    {
+      "key": "睡蓮",
+      "resolved": "Prop.Lotus",
+      "aliases": [
+        "ハス",
+        "蓮の花",
+        "ロータス",
+        "スイレン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "prop"
+      ]
+    },
+    {
+      "key": "漆黒",
+      "resolved": "Color.JetBlack",
+      "aliases": [
+        "漆黒の",
+        "真っ黒",
+        "ジェットブラック",
+        "深い黒"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "純白",
+      "resolved": "Color.PureWhite",
+      "aliases": [
+        "真っ白",
+        "純粋な白",
+        "ピュアホワイト",
+        "雪白"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "深紅",
+      "resolved": "Color.Crimson",
+      "aliases": [
+        "クリムゾン",
+        "深い赤",
+        "深紅の",
+        "緋赤"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
+    },
+    {
+      "key": "薄紫",
+      "resolved": "Color.Lavender",
+      "aliases": [
+        "ラベンダー",
+        "淡紫",
+        "薄い紫",
+        "ライラック"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "color"
+      ]
     }
   ]
 }
