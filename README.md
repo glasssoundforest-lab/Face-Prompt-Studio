@@ -1,158 +1,41 @@
 # Face Prompt Studio
 
-Stable Diffusion / ComfyUI 向け顔プロンプト最適化フレームワーク。
+**Stable Diffusion / ComfyUI 向け顔プロンプト最適化・管理フレームワーク**
 
-タグの正規化・矛盾検出・スコアリング・テンプレート展開をまとめて行う
-プロダクションレディなプロンプト管理プラットフォームです。
-
-ComfyUI はアダプターの一つに過ぎない、長期拡張可能な
-Clean Architecture を採用しています。
+[![CI](https://github.com/glasssoundforest-lab/Face-Prompt-Studio/actions/workflows/ci.yml/badge.svg)](https://github.com/glasssoundforest-lab/Face-Prompt-Studio/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-brightgreen)
+![Tests](https://img.shields.io/badge/tests-1250%20PASS-brightgreen)
 
 ---
 
-## ステータス
+## 概要
 
-**v1.9.0** — WebSocket リアルタイム更新完了（2026-07-02）
+Face Prompt Studio（FPS）は Stable Diffusion / ComfyUI 向けの顔プロンプト（face prompt）最適化・管理フレームワークです。
+
+**設計方針:**
+- **Clean Architecture** — `fps-core` はアダプター依存ゼロ
+- **ComfyUI はアダプターの一つ**（差し替え可能）
+- **辞書・ルールはすべて JSON で定義**（Python 修正不要）
+- **WebSocket リアルタイム更新**（v1.9〜）
+- **パーソナライゼーション基盤**（v2.0〜）
+
+---
+
+## 現在のバージョン: v2.0.0
+
+**v2.0.0** — パーソナライゼーション基盤 完了（2026-07-02）
 
 | 指標 | 値 |
 |---|---|
-| テスト | **1212 PASS / 0 FAILED** |
-| REST API | **39 エンドポイント**（+4） |
+| テスト | **1250 PASS / 0 FAILED** |
+| REST API | **48 エンドポイント**（HTTP 39 + WS 4 + Profile 9） |
 | 辞書キー総数 | **2793キー**（英語 + 日本語） |
 | 日本語エントリ | **1002件**（41カテゴリ） |
 | ComfyUI ノード | **11種** |
 | テンプレート | **5種**（組み込み） |
-| Python ファイル | 132本 |
-
----
-
-## v1.9.0 新機能
-
-### ① WebSocket 3チャンネル
-
-| チャンネル | URL | 配信内容 |
-|---|---|---|
-| pipeline | `WS /ws/pipeline` | コンパイル開始・ステージ進捗・完了・キャッシュヒット |
-| history  | `WS /ws/history`  | 新規履歴エントリ（接続直後は最新5件スナップショット） |
-| events   | `WS /ws/events`   | 全 EventBus イベント（type フィルタ可） |
-
-```javascript
-// コンパイル進捗をリアルタイム受信
-const ws = new WebSocket("ws://localhost:8420/ws/pipeline");
-ws.onmessage = (e) => {
-  const { type, data } = JSON.parse(e.data);
-  if (type === "stage.after_run") console.log("✓", data.stage);
-  if (type === "pipeline.after_compile") console.log("完了");
-};
-
-// 新規履歴を自動受信
-const wsH = new WebSocket("ws://localhost:8420/ws/history");
-wsH.onmessage = (e) => {
-  const msg = JSON.parse(e.data);
-  if (msg.type === "history.recorded") appendEntry(msg.data);
-};
-```
-
-### ② EventBus 統合強化
-
-- `CliContext.event_bus` プロパティ追加（スレッドセーフ遅延初期化）
-- `PipelineManager` に EventBus を自動注入（`context.event_bus`）
-- `compile` エンドポイントが `history.recorded` を emit
-- `optimize` エンドポイントが `optimizer.analyzed` を emit
-- 新 EventType: `HISTORY_RECORDED` / `HISTORY_DELETED` / `OPTIMIZER_ANALYZED` / `WS_CLIENT_*`
-
-### ③ Web UI リアルタイム化
-
-- **接続インジケーター** — ナビバー右端に WS 接続状態（🟢接続中 / 🟡接続中 / 🔴エラー）
-- **パイプライン進捗バー** — 画面最上部に細い進捗ライン
-- **ステージトースト** — 各ステージ完了をポップアップ通知
-- **History 自動更新** — 新規エントリが追加されると History タブが自動リフレッシュ
-- **NEW バッジ** — History タブを見ていない間に新規エントリがあればバッジ表示
-- **自動再接続** — 切断後3秒で自動リトライ
-
-### ④ `GET /ws/stats`（WS 接続数監視）
-
-```
-GET /ws/stats → {"connections": {"pipeline": 2, "history": 1}, "total": 3}
-```
-
----
-
-## v1.8.0 新機能
-
-### ① バックアップ REST API（+4エンドポイント）
-
-```
-POST   /backup               # バックアップ作成（target: all|dictionary|rules|presets）
-GET    /backup               # バックアップ一覧
-DELETE /backup/{id}          # バックアップ削除
-POST   /backup/{id}/restore  # リストア
-```
-
-### ② History タブ強化
-
-- **キーワード検索** — プロンプト内容でリアルタイム絞り込み
-- **スコアフィルタ** — 60点以上・80点以上など閾値指定
-- **お気に入りフィルタ** — ⭐ のみ表示
-- **CSV/JSONエクスポート** — フィルタ済みデータをダウンロード
-- **統計パネル** — 件数・平均スコア・頻出タグ Top20（`GET /history/stats`）
-
-### ③ Dashboard タブ（新設）
-
-- 辞書キー数・日本語エントリ数・プリセット数・履歴件数・バックアップ数
-- 平均スコアのリアルタイム表示
-- 頻出タグ Top10 バーグラフ
-- 最近の変換アクティビティ
-
----
-
-## v1.7.0 新機能
-
-### ① PresetManager CRUD
-
-```python
-from preset.manager import PresetManager
-from preset.models import Preset, PresetSource, PresetTag
-
-pm = PresetManager(system_dir="fps-data/presets/system",
-                   user_dir="fps-data/presets/user")
-pm.load()
-
-# 新規作成
-preset = Preset(
-    id="my_anime",
-    name="アニメ風",
-    tags=[PresetTag("anime_style"), PresetTag("colorful")],
-    source=PresetSource.USER,
-)
-pm.save(preset)
-
-# 部分更新（★v1.7）
-pm.update("my_anime", name="アニメ風 v2",
-          tags=[PresetTag("anime_style"), PresetTag("soft_light")])
-
-# タグ追記（★v1.7）
-pm.add_tags("my_anime", [PresetTag("detailed_eyes")])
-
-# 削除
-pm.delete("my_anime")
-```
-
-### ② REST API Preset CRUD（+4エンドポイント）
-
-```
-POST   /presets                    # 新規作成（201 Created）
-PUT    /presets/{id}               # 部分更新
-DELETE /presets/{id}               # 削除（200）
-POST   /presets/{id}/tags/add      # タグ追記
-```
-
-### ③ CliContext に template_manager 統合（技術的負債4 解消）
-
-```python
-ctx = CliContext()
-tm = ctx.template_manager   # 遅延初期化・スレッドセーフ
-```
+| Python ファイル | **145本** |
+| Web UI タブ | **7タブ**（Editor/Optimize/Presets/History/Backup/Profile/Dashboard） |
 
 ---
 
@@ -164,37 +47,141 @@ tm = ctx.template_manager   # 遅延初期化・スレッドセーフ
 | v0.8.0 | Phase 4 — AI Adapter Layer（A1111/NovelAI/Input/Plugin/Event） |
 | v1.0.0 | 正式リリース |
 | v1.1.0 | テスト完全グリーン化 / cache・backup 実装 / CI 整備 |
-| v1.2.0 | Knowledge Browser 強化 / ComfyUI テンプレートノード / 日本語辞書拡充 |
+| v1.2.0 | Knowledge Browser 強化 / ComfyUI テンプレートノード |
 | v1.5.0 | AI スコアリング強化（combination_checker / QualityScore 5スコア体制） |
 | v1.6.0 | 日本語辞書大規模拡充（228 → 517件、21カテゴリ） |
-| **v1.7.0** | **Preset エディタ Web UI / PresetManager CRUD / CliContext 統合** |
-| **v1.8.0** | **バックアップ Web UI / History 強化（検索・エクスポート・統計）/ ダッシュボード** |
-| **v1.9.0** | **WebSocket リアルタイム更新（pipeline / history / events 3チャンネル）** |
+| v1.7.0 | Preset エディタ Web UI / PresetManager CRUD / CliContext 統合 |
+| v1.8.0 | バックアップ Web UI / History 強化（検索・エクスポート・統計）/ ダッシュボード |
+| v1.9.0 | WebSocket リアルタイム更新（pipeline / history / events 3チャンネル） |
+| **v2.0.0** | **パーソナライゼーション基盤（UserProfileManager / 推奨 / スコアトレンド）** |
 
 ---
 
-## 機能一覧
+## v2.0.0 新機能
 
-### Core（fps-core）
+### ① UserProfileManager（`fps-core/user/` 新設）
 
-| モジュール | 概要 |
-|---|---|
-| `dictionary/` | タグ辞書管理（CRUD対応、日本語517件） |
-| `preset/` | プリセット管理（★v1.7 CRUD追加） |
-| `optimizer/` | 品質分析・スコアリング（5スコア体制） |
-| `pipeline/` | プロンプトコンパイルパイプライン（10ステージ） |
-| `template/` | プロンプトテンプレートエンジン |
-| `history/` | 変換履歴・差分比較 |
-| `cache/` | LRU + TTL キャッシュ |
-| `backup/` | バックアップ管理 |
+```python
+from user.manager import UserProfileManager
 
-### REST API（28エンドポイント）
+upm = UserProfileManager(profile_dir=Path("fps-data/user"))
+upm.load()
+
+# 履歴から学習
+upm.learn(history_entries)
+
+# 推奨タグ Top20
+recs = upm.recommend(20)
+for r in recs:
+    print(f"{r.tag}: {r.count}回 (重み{r.avg_weight:.2f})")
+
+# プロファイルをタグリストに適用（除外・強調を自動反映）
+result_tags = upm.apply_profile(["masterpiece", "bad_quality", "soft_light"])
+
+# スタイルルール追加（常に除外/追加するタグ）
+from user.models import StyleRule
+upm.add_style_rule(StyleRule(
+    id="my_quality",
+    name="品質重視",
+    always_include=["masterpiece", "best_quality"],
+    always_exclude=["bad_quality", "low_res"],
+))
+
+# タグ重み設定（0.0 = 除外, 1.0 = 標準, 3.0 = 最大強調）
+upm.set_tag_weight("watermark", weight=0.0)   # 常に除外
+upm.set_tag_weight("soft_light", weight=2.0)  # 強調
+
+# スコアトレンド（日別集計）
+trends = upm.build_score_trends(history_entries, days=30)
+```
+
+### ② REST API — Profile エンドポイント（+9本）
+
+| Method | Path | 内容 |
+|---|---|---|
+| GET | `/profile` | プロファイル概要・頻出タグ・スタイルルール |
+| POST | `/profile/learn` | 履歴から学習 + スコアトレンド更新 |
+| GET | `/profile/recommendations` | 推奨タグリスト |
+| GET | `/profile/score-trend` | スコア傾向（日別グラフデータ） |
+| PUT | `/profile/tags/{tag}/weight` | タグ重み設定 |
+| DELETE | `/profile/tags/{tag}/weight` | タグ重み削除 |
+| POST | `/profile/rules` | スタイルルール追加 |
+| DELETE | `/profile/rules/{id}` | スタイルルール削除 |
+| DELETE | `/profile/reset` | プロファイル完全リセット |
+
+### ③ Web UI — Profile タブ（新設）
+
+- **推奨タグ Top20** — 頻度・重みスコアリングで選出。クリックでエディタに挿入
+- **スコアトレンドグラフ** — 日別平均スコアの折れ線グラフ（14/30/60/90日選択）
+- **スタイルルール管理** — 常時 include/exclude ルールの追加・削除
+- **タグ重み一覧** — 手動設定された重み・除外タグの確認
+- **「履歴から学習」ボタン** — ワンクリックで全履歴を学習
+
+---
+
+## v1.9.0 新機能（WebSocket リアルタイム更新）
+
+### WebSocket 3チャンネル
+
+| チャンネル | URL | 配信内容 |
+|---|---|---|
+| pipeline | `WS /ws/pipeline` | ステージ進捗・完了・エラー・キャッシュヒット |
+| history | `WS /ws/history` | 新規履歴エントリのリアルタイムプッシュ |
+| events | `WS /ws/events` | 全 EventBus イベント（type フィルタ可） |
+
+```javascript
+const ws = new WebSocket("ws://localhost:8420/ws/pipeline");
+ws.onmessage = (e) => {
+  const { type, data } = JSON.parse(e.data);
+  if (type === "stage.after_run") console.log("✓", data.stage);
+  if (type === "pipeline.after_compile") console.log("完了");
+};
+```
+
+Web UI に自動統合済み：接続インジケーター・進捗バー・ステージトースト・History 自動更新
+
+---
+
+## クイックスタート
+
+```bash
+# インストール
+pip install -e fps-core
+pip install -e "fps-adapters[rest]"
+
+# REST API サーバー起動（WebSocket 対応）
+uvicorn fps-adapters.rest.app:app --reload --port 8420
+
+# Web UI（7タブ）
+open http://localhost:8420/
+```
+
+## テスト実行
+
+```bash
+cd fps
+python -m pytest fps-tools/tests/unit/ --no-cov -q
+# → 1250 passed
+```
+
+---
+
+## REST API 全エンドポイント（48本）
+
+### コア
 
 | Method | Path | 概要 |
 |---|---|---|
-| GET | `/health` | ヘルスチェック |
-| POST | `/compile` | プロンプトコンパイル |
-| POST | `/optimize` | 最適化分析 |
+| GET | `/health` | ヘルスチェック（v2.0.0） |
+| POST | `/compile` | プロンプトコンパイル + 履歴自動記録 |
+| POST | `/optimize` | 最適化分析 + optimizer.analyzed emit |
+| POST | `/validate` | 辞書/ルール/プリセット検証 |
+| GET | `/dashboard` | 全統計ダッシュボード |
+
+### 辞書（9本）
+
+| Method | Path | 概要 |
+|---|---|---|
 | GET | `/dictionary/search` | タグ検索 |
 | GET | `/dictionary/stats` | 辞書統計 |
 | GET | `/dictionary/categories` | カテゴリ一覧 |
@@ -204,35 +191,116 @@ tm = ctx.template_manager   # 遅延初期化・スレッドセーフ
 | POST | `/dictionary/user/entries` | エントリ追加 |
 | PUT | `/dictionary/user/entries/{key}` | 部分更新 |
 | DELETE | `/dictionary/user/entries/{key}` | 削除 |
-| GET | `/presets` | プリセット一覧 |
-| **POST** | **`/presets`** | **新規作成 ★v1.7** |
-| POST | `/presets/{id}/apply` | プリセット適用 |
-| **PUT** | **`/presets/{id}`** | **部分更新 ★v1.7** |
-| **DELETE** | **`/presets/{id}`** | **削除 ★v1.7** |
-| **POST** | **`/presets/{id}/tags/add`** | **タグ追記 ★v1.7** |
-| **POST** | **`/backup`** | **バックアップ作成 ★v1.8** |
-| **GET** | **`/backup`** | **一覧 ★v1.8** |
-| **DELETE** | **`/backup/{id}`** | **削除 ★v1.8** |
-| **POST** | **`/backup/{id}/restore`** | **リストア ★v1.8** |
-| **GET** | **`/history/stats`** | **統計 ★v1.8** |
-| **GET** | **`/history/export`** | **CSV/JSONエクスポート ★v1.8** |
-| **GET** | **`/dashboard`** | **ダッシュボード ★v1.8** |
-| **WS** | **`/ws/pipeline`** | **コンパイル進捗ストリーム ★v1.9** |
-| **WS** | **`/ws/history`** | **新規履歴プッシュ ★v1.9** |
-| **WS** | **`/ws/events`** | **全イベントサブスクライブ ★v1.9** |
-| GET | `/ws/stats` | WS 接続数 ★v1.9 |
-| GET | `/history` | 履歴一覧 |
-| GET | `/history/{id}` | 履歴詳細 |
+
+### プリセット（5本）
+
+| Method | Path | 概要 |
+|---|---|---|
+| GET | `/presets` | 一覧（source フィールド付き） |
+| POST | `/presets` | 新規作成（201） |
+| POST | `/presets/{id}/apply` | 適用 |
+| PUT | `/presets/{id}` | 部分更新 |
+| DELETE | `/presets/{id}` | 削除 |
+| POST | `/presets/{id}/tags/add` | タグ追記 |
+
+### 履歴（8本）
+
+| Method | Path | 概要 |
+|---|---|---|
+| GET | `/history` | 一覧 |
+| GET | `/history/stats` | 統計（頻出タグ・スコア分布） |
+| GET | `/history/export` | CSV/JSONエクスポート |
+| GET | `/history/{id}` | 詳細 |
 | POST | `/history/{id}/favorite` | お気に入りトグル |
 | PUT | `/history/{id}/label` | ラベル設定 |
 | GET | `/history/{id1}/diff/{id2}` | 差分比較 |
 | DELETE | `/history/{id}` | 削除 |
-| POST | `/validate` | バリデーション |
-| GET | `/templates` | テンプレート一覧 |
+
+### バックアップ（4本）
+
+| Method | Path | 概要 |
+|---|---|---|
+| POST | `/backup` | バックアップ作成 |
+| GET | `/backup` | 一覧 |
+| DELETE | `/backup/{id}` | 削除 |
+| POST | `/backup/{id}/restore` | リストア |
+
+### テンプレート（3本）
+
+| Method | Path | 概要 |
+|---|---|---|
+| GET | `/templates` | 一覧 |
 | POST | `/templates/{id}/render` | テンプレート展開 |
 | POST | `/templates/render` | 直接展開 |
 
-### ComfyUI ノード（11種）
+### プロファイル（9本 ★v2.0）
+
+| Method | Path | 概要 |
+|---|---|---|
+| GET | `/profile` | プロファイル概要 |
+| POST | `/profile/learn` | 履歴から学習 |
+| GET | `/profile/recommendations` | 推奨タグ |
+| GET | `/profile/score-trend` | スコアトレンド |
+| PUT | `/profile/tags/{tag}/weight` | タグ重み設定 |
+| DELETE | `/profile/tags/{tag}/weight` | タグ重み削除 |
+| POST | `/profile/rules` | スタイルルール追加 |
+| DELETE | `/profile/rules/{id}` | スタイルルール削除 |
+| DELETE | `/profile/reset` | プロファイルリセット |
+
+### WebSocket（3本 + 1本 ★v1.9）
+
+| Method | Path | 概要 |
+|---|---|---|
+| WS | `/ws/pipeline` | コンパイル進捗ストリーム |
+| WS | `/ws/history` | 新規履歴プッシュ |
+| WS | `/ws/events` | 全イベントサブスクライブ |
+| GET | `/ws/stats` | WS 接続数確認 |
+
+---
+
+## リポジトリ構造
+
+```
+fps/
+├── fps-core/                    Pure Python core（アダプター依存ゼロ）
+│   ├── cache/                   LRUCache + TTL（v1.1）
+│   ├── backup/                  BackupManager（v1.1）
+│   ├── config/                  ConfigManager
+│   ├── dictionary/              DictionaryManager（CRUD, 日本語1002件）
+│   ├── events/                  EventBus（14種 EventType + v1.9/v2.0 追加）
+│   ├── history/                 HistoryManager（CRUD + diff）
+│   ├── optimizer/               OptimizerManager + combination_checker（v1.5）
+│   ├── pipeline/                PipelineManager（10ステージ + EventBus統合）
+│   ├── preset/                  PresetManager（CRUD, v1.7）
+│   ├── rules/                   RuleManager
+│   ├── template/                TemplateManager
+│   └── user/                    ★v2.0 UserProfileManager（学習/推奨/スタイルルール）
+│
+├── fps-adapters/
+│   ├── cli/
+│   │   └── context.py           CliContext（全 Manager + event_bus + user_profile）
+│   ├── comfyui/nodes/           ComfyUI ノード（11種）
+│   └── rest/
+│       ├── app.py               FastAPI（48エンドポイント）
+│       ├── models.py            Pydantic スキーマ（全バージョン累積）
+│       └── ws.py                ★v1.9 WebSocket ブリッジ
+│
+├── fps-gui/web/
+│   └── index.html               SPA（7タブ: Editor/Optimize/Presets/History/Backup/Profile/Dashboard）
+│
+├── fps-data/
+│   ├── dictionaries/system/synonyms/japanese_tags.json  （1002件/41カテゴリ）
+│   ├── presets/system/          組み込みプリセット
+│   ├── presets/user/            ユーザープリセット
+│   ├── rules/
+│   └── user/profile.json        ★v2.0 ユーザープロファイル
+│
+└── fps-tools/tests/unit/        1250件 PASS
+```
+
+---
+
+## ComfyUI ノード（11種）
 
 | ノード | 概要 |
 |---|---|
@@ -247,66 +315,6 @@ tm = ctx.template_manager   # 遅延初期化・スレッドセーフ
 | FacePromptBackupNode | バックアップ・リストア |
 | FacePromptGroupControlNode | グループ重み一括制御 |
 | FacePromptTemplateNode | テンプレート展開 |
-
----
-
-## クイックスタート
-
-```bash
-# インストール
-pip install -e fps-core
-pip install -e "fps-adapters[rest]"
-
-# REST API サーバー起動（ポート 8420）
-uvicorn fps-adapters.rest.app:app --reload --port 8420
-
-# Web UI
-open http://localhost:8420/
-```
-
-## テスト実行
-
-```bash
-cd fps
-python -m pytest fps-tools/tests/unit/ --no-cov -q
-# → 1152 passed
-```
-
----
-
-## リポジトリ構造
-
-```
-fps/
-├── fps-core/                    Pure Python core（アダプター依存ゼロ）
-│   ├── cache/                   LRUCache + TTL
-│   ├── backup/                  BackupManager
-│   ├── config/                  ConfigManager
-│   ├── dictionary/              DictionaryManager（CRUD対応）
-│   ├── optimizer/               OptimizerManager + combination_checker
-│   ├── preset/                  PresetManager（★v1.7 update/add_tags追加）
-│   ├── pipeline/                PipelineManager（10ステージ）
-│   └── template/                TemplateManager
-│
-├── fps-adapters/
-│   ├── cli/
-│   │   └── context.py           CliContext（★v1.7 template_manager追加）
-│   ├── comfyui/nodes/           ComfyUI ノード（11種）
-│   └── rest/
-│       ├── app.py               FastAPI（★v1.7 Preset CRUD追加、28エンドポイント）
-│       └── models.py            Pydantic スキーマ（★v1.7 Preset CRUD スキーマ追加）
-│
-├── fps-gui/web/
-│   └── index.html               Web UI SPA
-│
-├── fps-data/
-│   ├── dictionaries/system/synonyms/japanese_tags.json  （517件）
-│   ├── presets/system/          組み込みプリセット
-│   ├── presets/user/            ユーザープリセット（★v1.7 CRUD対象）
-│   └── rules/
-│
-└── fps-tools/tests/unit/        1152件 PASS
-```
 
 ---
 
