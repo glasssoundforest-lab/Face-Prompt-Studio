@@ -5,11 +5,39 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
-## [Unreleased] — v1.0.0 候補
+## [Unreleased]
 
-### Planned
-- ComfyUI Face Prompt Template ノード（M6-3 拡張）
-- v1.0.0 正式リリース・パッケージ化
+次期リリースの変更はここに記載します。
+
+---
+
+## [1.0.0] — 2026-07-01 🎉 正式リリース
+
+v0.9.5 からのフィーチャーフリーズを経て、v1.0.0 として正式リリース。
+Face Prompt Studio は以下の要件をすべて満たし、
+プロダクションレディなプロンプト最適化フレームワークとなった。
+
+### リリース基準達成
+
+| 基準 | 状態 |
+|---|---|
+| REST API 全エンドポイント実装（目標 15本以上） | ✅ 20本 |
+| Web UI 全タブ実装 | ✅ Editor / Optimize / Presets / Knowledge / History |
+| 日本語入力対応 | ✅ 105キー（MeCab不要） |
+| ネガティブプロンプト最適化 | ✅ Cross-conflict 検出 |
+| テンプレートエンジン | ✅ 5種組み込み |
+| 安定テスト通過数 | ✅ 843件 PASS |
+| ComfyUI ノード | ✅ 10種 |
+| CHANGELOG / README 完備 | ✅ |
+
+### Added（v0.9.5 → v1.0.0）
+
+- `fps-core/__init__.py` — `__version__ = "1.0.0"` 追加
+
+### Notes
+
+v1.0.0 は v0.9.5 と機能的に同一。リリース基準の確認と
+バージョン正規化のためのリリースタグ。
 
 ---
 
