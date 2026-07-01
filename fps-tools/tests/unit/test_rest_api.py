@@ -333,3 +333,169 @@ class TestDictionarySynonyms:
     def test_synonyms_unknown_key_returns_404(self, client: TestClient):
         r = client.get("/dictionary/synonyms?key=__not_a_real_key_xyz__")
         assert r.status_code == 404
+
+
+# ─────────────────────────────────────────────────────────────
+# M5-4 History Timeline エンドポイントテスト (+20件)
+# ─────────────────────────────────────────────────────────────
+
+
+@pytest.fixture(scope="module")
+def history_entry_id(client: TestClient) -> str:  # noqa: ARG001
+    """HistoryManager に直接エントリを記録してIDを返す（cache依存を回避）"""
+    from rest.app import get_context
+
+    ctx = get_context()
+    entry = ctx.history_manager.record(
+        input_prompt="masterpiece, blue_eyes",
+        output_prompt="Quality.High, Eyes.Blue",
+        tag_count=2,
+        overall_score=82.5,
+    )
+    return entry.id
+
+
+class TestHistoryGet:
+    """GET /history/{id} (5件)"""
+
+    def test_get_entry_status_200(self, client: TestClient, history_entry_id: str):
+        r = client.get(f"/history/{history_entry_id}")
+        assert r.status_code == 200
+
+    def test_get_entry_schema(self, client: TestClient, history_entry_id: str):
+        body = client.get(f"/history/{history_entry_id}").json()
+        for f in ("id", "input_prompt", "output_prompt", "tag_count",
+                  "overall_score", "created_at", "favorite", "label"):
+            assert f in body
+
+    def test_get_entry_id_matches(self, client: TestClient, history_entry_id: str):
+        body = client.get(f"/history/{history_entry_id}").json()
+        assert body["id"] == history_entry_id
+
+    def test_get_entry_not_found_returns_404(self, client: TestClient):
+        r = client.get("/history/__no_such_id_xyz__")
+        assert r.status_code == 404
+
+    def test_get_entry_has_output_prompt(self, client: TestClient, history_entry_id: str):
+        body = client.get(f"/history/{history_entry_id}").json()
+        assert isinstance(body["output_prompt"], str)
+
+
+class TestHistoryFavorite:
+    """POST /history/{id}/favorite (4件)"""
+
+    def test_toggle_favorite_status_200(self, client: TestClient, history_entry_id: str):
+        r = client.post(f"/history/{history_entry_id}/favorite")
+        assert r.status_code == 200
+
+    def test_toggle_favorite_schema(self, client: TestClient, history_entry_id: str):
+        body = client.post(f"/history/{history_entry_id}/favorite").json()
+        assert "id" in body
+        assert "favorite" in body
+        assert isinstance(body["favorite"], bool)
+
+    def test_toggle_favorite_toggles_state(self, client: TestClient, history_entry_id: str):
+        r1 = client.post(f"/history/{history_entry_id}/favorite").json()["favorite"]
+        r2 = client.post(f"/history/{history_entry_id}/favorite").json()["favorite"]
+        assert r1 != r2
+
+    def test_toggle_favorite_not_found_returns_404(self, client: TestClient):
+        r = client.post("/history/__no_such_id_xyz__/favorite")
+        assert r.status_code == 404
+
+
+class TestHistoryLabel:
+    """PUT /history/{id}/label (4件)"""
+
+    def test_set_label_status_200(self, client: TestClient, history_entry_id: str):
+        r = client.put(f"/history/{history_entry_id}/label", json={"label": "test_label"})
+        assert r.status_code == 200
+
+    def test_set_label_schema(self, client: TestClient, history_entry_id: str):
+        body = client.put(f"/history/{history_entry_id}/label", json={"label": "hello"}).json()
+        assert "id" in body
+        assert "label" in body
+
+    def test_set_label_value_persisted(self, client: TestClient, history_entry_id: str):
+        client.put(f"/history/{history_entry_id}/label", json={"label": "persist_check"})
+        body = client.get(f"/history/{history_entry_id}").json()
+        assert body["label"] == "persist_check"
+
+    def test_set_label_not_found_returns_404(self, client: TestClient):
+        r = client.put("/history/__no_such_id_xyz__/label", json={"label": "x"})
+        assert r.status_code == 404
+
+
+class TestHistoryDiff:
+    """GET /history/{id1}/diff/{id2} (4件)"""
+
+    @pytest.fixture(scope="class")
+    def two_entry_ids(self, client: TestClient):  # noqa: ARG002
+        """2件のエントリを直接記録して返す"""
+        from rest.app import get_context
+
+        ctx = get_context()
+        e1 = ctx.history_manager.record(
+            input_prompt="masterpiece, blue_eyes",
+            output_prompt="Quality.High, Eyes.Blue",
+            tag_count=2,
+            overall_score=80.0,
+        )
+        e2 = ctx.history_manager.record(
+            input_prompt="masterpiece, red_hair, smile",
+            output_prompt="Quality.High, Hair.Red, Expression.Smile",
+            tag_count=3,
+            overall_score=88.0,
+        )
+        return e1.id, e2.id
+
+    def test_diff_status_200(self, client: TestClient, two_entry_ids):
+        id1, id2 = two_entry_ids
+        r = client.get(f"/history/{id1}/diff/{id2}")
+        assert r.status_code == 200
+
+    def test_diff_schema(self, client: TestClient, two_entry_ids):
+        id1, id2 = two_entry_ids
+        body = client.get(f"/history/{id1}/diff/{id2}").json()
+        for f in ("entry_id_1", "entry_id_2", "added_tags",
+                  "removed_tags", "unchanged_tags", "score_delta", "has_changes"):
+            assert f in body
+
+    def test_diff_ids_match(self, client: TestClient, two_entry_ids):
+        id1, id2 = two_entry_ids
+        body = client.get(f"/history/{id1}/diff/{id2}").json()
+        assert body["entry_id_1"] == id1
+        assert body["entry_id_2"] == id2
+
+    def test_diff_not_found_returns_404(self, client: TestClient):
+        r = client.get("/history/__no_id_1__/diff/__no_id_2__")
+        assert r.status_code == 404
+
+
+class TestHistoryDelete:
+    """DELETE /history/{id} (3件)"""
+
+    def test_delete_not_found_returns_404(self, client: TestClient):
+        r = client.delete("/history/__no_such_id_to_delete__")
+        assert r.status_code == 404
+
+    def test_delete_status_200(self, client: TestClient):
+        from rest.app import get_context
+
+        ctx = get_context()
+        entry = ctx.history_manager.record(
+            input_prompt="delete_me", output_prompt="delete_me_out", tag_count=1, overall_score=50.0
+        )
+        r = client.delete(f"/history/{entry.id}")
+        assert r.status_code == 200
+
+    def test_delete_schema(self, client: TestClient):
+        from rest.app import get_context
+
+        ctx = get_context()
+        entry = ctx.history_manager.record(
+            input_prompt="delete_me_2", output_prompt="delete_me_out_2", tag_count=1, overall_score=50.0
+        )
+        body = client.delete(f"/history/{entry.id}").json()
+        assert "id" in body
+        assert body["deleted"] is True

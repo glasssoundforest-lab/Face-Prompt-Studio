@@ -41,13 +41,19 @@ except ImportError:
 from .models import (  # noqa: E402
     CategoryListResponse,
     CompileResponse,
+    DeleteHistoryResponse,
     DictionaryEntryItem,
     DictionaryLookupResponse,
     DictionaryStatsResponse,
+    DiffResponse,
     EntriesResponse,
+    FavoriteToggleResponse,
     HealthResponse,
+    HistoryDetailResponse,
     HistoryEntryResponse,
     HistoryListResponse,
+    LabelUpdateRequest,
+    LabelUpdateResponse,
     OptimizationIssueResponse,
     OptimizeResponse,
     PresetListResponse,
@@ -358,6 +364,100 @@ if _FASTAPI_AVAILABLE:
             weight=result.weight,
             category=result.category,  # type: ignore[arg-type]
         )
+
+    # ── M5-4 History Timeline ────────────────────────────────────
+
+    @app.get(
+        "/history/{entry_id}",
+        response_model=HistoryDetailResponse,
+        summary="Get a single history entry",
+        tags=["history"],
+    )
+    def get_history_entry(entry_id: str) -> HistoryDetailResponse:
+        """ID で履歴エントリを 1 件取得する。存在しない場合は 404。"""
+        ctx = get_context()
+        entry = ctx.history_manager.get(entry_id)
+        if entry is None:
+            raise HTTPException(status_code=404, detail=f"History entry '{entry_id}' not found")
+        return HistoryDetailResponse(
+            id=entry.id,
+            input_prompt=entry.input_prompt,
+            output_prompt=entry.output_prompt,
+            output_negative=entry.output_negative,
+            tag_count=entry.tag_count,
+            overall_score=entry.overall_score,
+            created_at=entry.created_at_str,
+            favorite=entry.favorite,
+            label=entry.label,
+        )
+
+    @app.post(
+        "/history/{entry_id}/favorite",
+        response_model=FavoriteToggleResponse,
+        summary="Toggle favorite on a history entry",
+        tags=["history"],
+    )
+    def toggle_history_favorite(entry_id: str) -> FavoriteToggleResponse:
+        """お気に入りをトグルする。存在しない場合は 404。"""
+        ctx = get_context()
+        try:
+            new_state = ctx.history_manager.toggle_favorite(entry_id)
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=404, detail=f"History entry '{entry_id}' not found"
+            ) from exc
+        return FavoriteToggleResponse(id=entry_id, favorite=new_state)
+
+    @app.put(
+        "/history/{entry_id}/label",
+        response_model=LabelUpdateResponse,
+        summary="Set label on a history entry",
+        tags=["history"],
+    )
+    def update_history_label(entry_id: str, body: LabelUpdateRequest) -> LabelUpdateResponse:
+        """履歴エントリにラベルを設定する。存在しない場合は 404。"""
+        ctx = get_context()
+        ok = ctx.history_manager.set_label(entry_id, body.label)
+        if not ok:
+            raise HTTPException(status_code=404, detail=f"History entry '{entry_id}' not found")
+        return LabelUpdateResponse(id=entry_id, label=body.label)
+
+    @app.get(
+        "/history/{entry_id_1}/diff/{entry_id_2}",
+        response_model=DiffResponse,
+        summary="Compare two history entries",
+        tags=["history"],
+    )
+    def diff_history_entries(entry_id_1: str, entry_id_2: str) -> DiffResponse:
+        """2つの履歴エントリ間のタグ差分・スコア差分を返す。"""
+        ctx = get_context()
+        try:
+            diff = ctx.history_manager.compare(entry_id_1, entry_id_2)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        return DiffResponse(
+            entry_id_1=entry_id_1,
+            entry_id_2=entry_id_2,
+            added_tags=diff.added_tags,
+            removed_tags=diff.removed_tags,
+            unchanged_tags=diff.unchanged_tags,
+            score_delta=diff.score_delta,
+            has_changes=diff.has_changes,
+        )
+
+    @app.delete(
+        "/history/{entry_id}",
+        response_model=DeleteHistoryResponse,
+        summary="Delete a history entry",
+        tags=["history"],
+    )
+    def delete_history_entry(entry_id: str) -> DeleteHistoryResponse:
+        """履歴エントリを削除する。存在しない場合は 404。"""
+        ctx = get_context()
+        deleted = ctx.history_manager.delete(entry_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"History entry '{entry_id}' not found")
+        return DeleteHistoryResponse(id=entry_id, deleted=True)
 
 else:
     app = None  # type: ignore[assignment]

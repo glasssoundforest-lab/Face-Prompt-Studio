@@ -135,3 +135,52 @@ if _PYDANTIC_AVAILABLE:
         resolved: str
         weight: float
         category: str
+
+    # ── M5-4 History Timeline ─────────────────────────────────────
+
+    class HistoryDetailResponse(BaseModel):
+        """GET /history/{id} レスポンス"""
+
+        id: str
+        input_prompt: str
+        output_prompt: str
+        output_negative: str
+        tag_count: int
+        overall_score: float
+        created_at: str
+        favorite: bool
+        label: str
+
+    class FavoriteToggleResponse(BaseModel):
+        """POST /history/{id}/favorite レスポンス"""
+
+        id: str
+        favorite: bool
+
+    class LabelUpdateRequest(BaseModel):
+        """PUT /history/{id}/label リクエスト"""
+
+        label: str
+
+    class LabelUpdateResponse(BaseModel):
+        """PUT /history/{id}/label レスポンス"""
+
+        id: str
+        label: str
+
+    class DiffResponse(BaseModel):
+        """GET /history/{id1}/diff/{id2} レスポンス"""
+
+        entry_id_1: str
+        entry_id_2: str
+        added_tags: list[str]
+        removed_tags: list[str]
+        unchanged_tags: list[str]
+        score_delta: float
+        has_changes: bool
+
+    class DeleteHistoryResponse(BaseModel):
+        """DELETE /history/{id} レスポンス"""
+
+        id: str
+        deleted: bool
