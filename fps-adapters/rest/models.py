@@ -45,6 +45,8 @@ if _PYDANTIC_AVAILABLE:
         balance_score: float
         redundancy_score: float
         negative_coverage_score: float = 0.0  # ★M6-1
+        combination_score: float = 100.0       # ★v1.5
+        token_score: float = 100.0             # ★v1.5
 
     class OptimizationIssueResponse(BaseModel):
         type: str

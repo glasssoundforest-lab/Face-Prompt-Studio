@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from .combination_checker import check_style_combinations, check_token_budget
 from .conflict_detector import detect_conflicts, detect_cross_conflicts
 from .models import OptimizationResult
 from .quality_scorer import calculate_negative_coverage_score, calculate_quality_score
@@ -69,7 +70,15 @@ class OptimizerManager:
             cross_conflicts = detect_cross_conflicts(tags, neg)
             neg_redundancies = detect_negative_redundancy(neg)
 
-        issues = conflicts + redundancies + cross_conflicts + neg_redundancies
+        # ★v1.5: スタイル組み合わせ + トークンバジェット
+        style_issues, combination_score = check_style_combinations(tags)
+        token_issues, token_score = check_token_budget(tags)
+
+        issues = (
+            conflicts + redundancies
+            + cross_conflicts + neg_redundancies
+            + style_issues + token_issues          # ★v1.5
+        )
 
         score = calculate_quality_score(tags, issues=issues)
 
@@ -77,9 +86,25 @@ class OptimizerManager:
         neg_coverage = calculate_negative_coverage_score(neg)
         score.negative_coverage_score = neg_coverage
 
+        # ★v1.5: combination / token スコアを上書き（二重計算を防ぐ）
+        score.combination_score = combination_score
+        score.token_score = token_score
+
         recommendations = generate_recommendations(tags, issues, score)
 
-        # M6-1: ネガティブプロンプト関連の推奨事項を追加
+        # ★v1.5: スタイル・トークン関連の推奨事項
+        if style_issues:
+            conflicts_count = sum(1 for i in style_issues if i.severity.value in ("error", "warning"))
+            if conflicts_count:
+                recommendations.append(
+                    f"スタイル一貫性の問題が {conflicts_count} 件検出されました。"
+                    "スタイルタグを統一するとモデルへの指示が明確になります。"
+                )
+        if token_issues:
+            recommendations.append(
+                next(i.message for i in token_issues)
+                + " " + next(i.suggestion for i in token_issues)
+            )
         if neg:
             if cross_conflicts:
                 recommendations.append(

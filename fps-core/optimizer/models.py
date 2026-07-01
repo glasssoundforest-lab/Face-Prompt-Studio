@@ -15,11 +15,13 @@ class IssueSeverity(StrEnum):
 
 
 class IssueType(StrEnum):
-    CONFLICT = "conflict"          # 同一カテゴリの排他的属性が複数
-    REDUNDANT = "redundant"        # 意味的に重複するタグ
+    CONFLICT = "conflict"              # 同一カテゴリの排他的属性が複数
+    REDUNDANT = "redundant"            # 意味的に重複するタグ
     MISSING_COVERAGE = "missing_coverage"  # 重要カテゴリが未指定
     WEIGHT_IMBALANCE = "weight_imbalance"  # 重みの著しい偏り
-    CROSS_CONFLICT = "cross_conflict"      # ★M6-1 positive/negative クロス矛盾
+    CROSS_CONFLICT = "cross_conflict"  # ★M6-1 positive/negative クロス矛盾
+    STYLE_CONFLICT = "style_conflict"  # ★v1.5 スタイル一貫性の問題
+    TOKEN_BUDGET = "token_budget"      # ★v1.5 トークン数バジェット警告
 
 
 @dataclass(slots=True)
@@ -42,7 +44,9 @@ class QualityScore:
     balance_score: float        # 0-100: 重みバランス
     redundancy_score: float     # 0-100: 非冗長性（100 = 冗長なし）
     overall_score: float        # 0-100: 総合スコア
-    negative_coverage_score: float = 0.0  # ★M6-1 ネガティブプロンプト網羅度
+    negative_coverage_score: float = 0.0   # ★M6-1 ネガティブプロンプト網羅度
+    combination_score: float = 100.0       # ★v1.5 スタイル組み合わせスコア
+    token_score: float = 100.0             # ★v1.5 トークンバジェットスコア
 
     def to_dict(self) -> dict[str, float]:
         return {
@@ -51,6 +55,8 @@ class QualityScore:
             "redundancy_score": round(self.redundancy_score, 1),
             "overall_score": round(self.overall_score, 1),
             "negative_coverage_score": round(self.negative_coverage_score, 1),
+            "combination_score": round(self.combination_score, 1),
+            "token_score": round(self.token_score, 1),
         }
 
 
