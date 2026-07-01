@@ -1,169 +1,220 @@
 # Face Prompt Studio
 
-Prompt Compiler Framework for Stable Diffusion / ComfyUI — 顔プロンプト
-（face prompt）の最適化・クリーニング・ルールベース処理に特化した
-プロフェッショナル品質のフレームワーク。
+Stable Diffusion / ComfyUI 向け顔プロンプト最適化フレームワーク。
 
-ComfyUI はアダプターの一つに過ぎない、ロングタームで拡張可能な
-アーキテクチャを採用しています。
+タグの正規化・矛盾検出・スコアリング・テンプレート展開をまとめて行う
+プロダクションレディなプロンプト管理プラットフォームです。
+
+ComfyUI はアダプターの一つに過ぎない、長期拡張可能な
+Clean Architecture を採用しています。
+
+---
 
 ## ステータス
 
-**v0.8.0** — Phase 4 AI Adapter Layer 完了
+**v1.6.0** — 日本語辞書大規模拡充 完了（2026-07-01）
 
-- 708 unit tests / 225 compat tests — 全て PASS（合計933件）
-- Coverage 90%（閾値 85%）
-- Ruff / Black / mypy 全クリア
+| 指標 | 値 |
+|---|---|
+| テスト | **1122 PASS / 0 FAILED** |
+| REST API | **24 エンドポイント** |
+| 辞書キー総数 | **2793キー**（英語 + 日本語） |
+| 日本語エントリ | **517件**（21カテゴリ） |
+| ComfyUI ノード | **11種** |
+| テンプレート | **5種**（組み込み） |
+| Python ファイル | 130本 |
 
-## 特徴
+---
 
-- **顔特化辞書システム** — 24カテゴリ・1169キー（eyes / hair / expression /
-  makeup / fantasy_parts / age / ethnicity など）
-- **同義語対応** — WD14 / JoyCaption / Florence2 / Qwen2-VL / InternVL /
-  MiniCPM-V 主要キャプションモデルの出力タグを自動正規化
-- **品質最適化** — 矛盾検出・冗長性検出・品質スコアリング・改善提案
-- **変換履歴** — プロンプト変換結果の記録・検索・差分比較
-- **10ステージパイプライン** — Parser → Normalizer → Blacklist →
-  Categorizer → RuleEngine → Optimizer → Exporter
-- **JSON駆動ルールエンジン** — Python修正不要でタグの追加/削除/重み変更
-- **ComfyUI ノード8種** — Cleaner / Compiler / Debug / Preset / RuleEditor / CategoryFilter / Optimizer / History
-- **Clean Architecture** — core はアダプター依存ゼロ、拡張容易
+## 機能一覧
 
-## リポジトリ構造
+### Core Pipeline（10ステージ）
+Parser → Normalizer → Blacklist → Categorizer → RuleEngine → Optimizer → Exporter
+
+- **顔特化辞書** — 英語1169キー + 日本語517キー（MeCab不要）
+- **同義語対応** — WD14 / JoyCaption / Florence2 / Qwen2-VL 対応
+- **JSON駆動ルールエンジン** — Python 修正不要
+
+### Optimizer（v1.5 AI強化）
+
+| スコア | 内容 | 重み |
+|---|---|---|
+| coverage_score | 重要カテゴリ網羅度 | 0.25 |
+| balance_score | 重みバランス | 0.20 |
+| redundancy_score | 非冗長性 | 0.25 |
+| **combination_score** | ★スタイル一貫性 | 0.20 |
+| **token_score** | ★トークンバジェット | 0.10 |
+
+- **矛盾検出** — 18グループの排他チェック
+- **スタイル組み合わせチェック** ★v1.5 — 非推奨8ペア / 推奨5ペア
+- **トークンバジェット警告** ★v1.5 — CLIP 75トークン上限
+- **ネガティブプロンプト最適化** — cross-conflict 検出
+
+### 日本語辞書（v1.6 大幅拡充）★
+
+517件、21カテゴリ完全対応。MeCab 不要のキーワードマッチ方式。
+
+```
+目(40) / スタイル(46) / ファンタジー(62) / 衣装(45) / 表情(41)
+髪(38) / アクセサリー(33) / メイク(25) / 年齢(23) / 肌(22)
+体型(20) / 顔型(16) / 眉(16) / 民族(16) / 口(14) / 歯(11)
+品質(10) / まつ毛(10) / 鼻(10) / 眼鏡(10) / ピアス(9)
+```
+
+対応例: `「萌え」「ギャル」「VTuber風」「九尾」「天狗」「凛々しい」「中性的」`
+
+### GUI Studio（REST API + Web UI）
+
+- **REST API 24本** — FastAPI + Pydantic v2
+- **Web UI SPA** — Editor / Optimize / Presets / Knowledge / History
+- **Knowledge Browser** ★v1.2 — ユーザー辞書 CRUD（4エンドポイント）
+- **History Timeline** — SVGグラフ・差分比較・お気に入り
+
+### テンプレートエンジン
+
+5種の組み込みテンプレート（`face_basic` / `face_detailed` / `fantasy_character` / `negative_basic` / `style_transfer`）
+
+### ComfyUI ノード 11種 ★v1.3
+
+`FacePromptCleaner` / `FacePromptCompiler` / `FacePromptDebug` /
+`FacePromptPreset` / `FacePromptRuleEditor` / `FacePromptCategoryFilter` /
+`FacePromptOptimizer` / `FacePromptHistory` / `FacePromptBackup` /
+`FacePromptGroupControl` / **`FacePromptTemplate`**
+
+---
+
+## REST API エンドポイント（24本）
+
+| Method | Path | 概要 |
+|---|---|---|
+| GET | `/health` | ヘルスチェック |
+| POST | `/compile` | プロンプトコンパイル |
+| POST | `/optimize` | 最適化（ネガティブ対応） |
+| POST | `/validate` | バリデーション |
+| GET | `/dictionary/search` | タグ検索 |
+| GET | `/dictionary/stats` | 辞書統計 |
+| GET | `/dictionary/categories` | カテゴリ一覧 |
+| GET | `/dictionary/entries` | エントリ検索 |
+| GET | `/dictionary/synonyms` | 同義語取得 |
+| GET | `/dictionary/user/entries` | ★ユーザー辞書一覧 |
+| POST | `/dictionary/user/entries` | ★ユーザー辞書追加 |
+| PUT | `/dictionary/user/entries/{key}` | ★ユーザー辞書更新 |
+| DELETE | `/dictionary/user/entries/{key}` | ★ユーザー辞書削除 |
+| GET | `/presets` | プリセット一覧 |
+| POST | `/presets/{id}/apply` | プリセット適用 |
+| GET | `/history` | 履歴一覧 |
+| GET | `/history/{id}` | 履歴詳細 |
+| POST | `/history/{id}/favorite` | お気に入りトグル |
+| PUT | `/history/{id}/label` | ラベル設定 |
+| GET | `/history/{id1}/diff/{id2}` | 差分比較 |
+| DELETE | `/history/{id}` | 削除 |
+| GET | `/templates` | テンプレート一覧 |
+| POST | `/templates/{id}/render` | テンプレート展開 |
+| POST | `/templates/render` | 直接展開 |
+
+---
+
+## クイックスタート
+
+```bash
+# REST API サーバー起動
+uvicorn fps-adapters.rest.app:app --reload --port 8420
+
+# Web UI
+open http://localhost:8420/
+
+# 英語プロンプト
+curl -X POST "http://localhost:8420/compile?prompt=masterpiece,blue_eyes,long_hair"
+
+# 日本語プロンプト
+curl -X POST "http://localhost:8420/compile?prompt=高品質,青い目,長い髪,萌え"
+
+# スタイル組み合わせチェック付き最適化
+curl -X POST "http://localhost:8420/optimize?prompt=masterpiece,anime_style,photorealistic"
+
+# テンプレート展開
+curl -X POST "http://localhost:8420/templates/face_basic/render" \
+  -H "Content-Type: application/json" \
+  -d '{"variables":{"quality":"masterpiece","eye_color":"blue_eyes","hair_color":"blonde","hair_length":"long","expression":"smile"}}'
+```
+
+---
+
+## プロジェクト構造
 
 ```
 fps/
 ├── fps-core/          Pure Python core（アダプター依存ゼロ）
+│   ├── cache/         CacheManager / LRUCache          ★v1.1
+│   ├── backup/        BackupManager                    ★v1.1
 │   ├── config/        ConfigManager
+│   ├── dictionary/    DictionaryManager（CRUD対応）    ★v1.2
+│   ├── events/        EventBus（14種）
 │   ├── fps_logging/   FPSLogger
-│   ├── dictionary/    DictionaryManager
-│   ├── rules/         RuleManager
+│   ├── history/       HistoryManager
+│   ├── optimizer/     OptimizerManager
+│   │   ├── combination_checker.py  ★v1.5 スタイル/トークン
+│   │   ├── conflict_detector.py
+│   │   ├── quality_scorer.py       ★v1.5 5スコア体制
+│   │   └── redundancy_detector.py
+│   ├── pipeline/      PipelineManager（10ステージ）
+│   ├── plugins/       PluginRegistry
 │   ├── preset/        PresetManager
-│   ├── cache/         CacheManager
-│   ├── backup/        BackupManager
-│   ├── pipeline/      PipelineManager（10ステージ・イベント発火対応）
-│   ├── optimizer/     OptimizerManager（品質スコア・矛盾検出）
-│   ├── history/       HistoryManager（変換履歴・差分比較）
-│   ├── plugins/       PluginManager（動的プラグインロード）
-│   └── events/        EventBus（パイプラインフック）
-├── fps-adapters/      アダプター（core から独立）
-│   ├── comfyui/       ComfyUI Adapter + カスタムノード8種
-│   ├── a1111/         AUTOMATIC1111 WebUI Adapter
-│   ├── novelai/       NovelAI Adapter
-│   └── input/         入力モデル前処理（WD14/JoyCaption/Florence2）
-├── fps-data/          辞書・ルール・プリセットデータ
-│   └── dictionaries/system/
-│       ├── (17 顔特化カテゴリ).json
-│       └── synonyms/  WD14 / JoyCaption / 表記揺れ対応
-└── fps-tools/
-    └── tests/
-        ├── unit/         390 tests
-        ├── compat/       146 tests
-        └── performance/  27 tests
+│   ├── rules/         RuleManager
+│   └── template/      TemplateManager                  ★M6-3
+│
+├── fps-adapters/
+│   ├── a1111/         AUTOMATIC1111 アダプター
+│   ├── comfyui/       ComfyUI ノード 11種              ★v1.3
+│   ├── novelai/       NovelAI アダプター
+│   ├── input/         WD14 / JoyCaption / Florence2
+│   └── rest/          FastAPI 24エンドポイント          ★v1.2
+│
+├── fps-gui/web/       SPA Web UI（5タブ）
+│
+├── fps-data/
+│   ├── dictionaries/system/
+│   │   ├── *.json     英語辞書（24カテゴリ）
+│   │   └── synonyms/
+│   │       ├── japanese_tags.json  ★v1.6 517件
+│   │       └── wd14_tags.json 他
+│   └── rules/
+│       └── style_combinations.json  ★v1.5
+│
+└── fps-tools/tests/unit/   34ファイル / 1122件 PASS
 ```
 
-## クイックスタート
+---
 
-### インストール
+## 開発
 
 ```bash
-git clone https://github.com/glasssoundforest-lab/Face-Prompt-Studio.git fps
-cd fps
-pip install pytest pytest-cov pyyaml ruff black mypy --break-system-packages
+# テスト（全件）
+python -m pytest fps-tools/tests/unit/ --no-cov -q
+
+# Lint
+ruff check fps-core/ fps-adapters/ fps-tools/
+
+# 型チェック
+mypy fps-core/ fps-adapters/ --ignore-missing-imports
 ```
 
-### 動作確認
+---
 
-```bash
-python main.py              # smoke + unit テスト
-python main.py --compat     # + 互換性テスト
-python main.py --perf       # + 性能テスト（測定結果表示）
-python main.py --all        # 全テスト + lint + format + typecheck
-```
+## タグ履歴
 
-### Python から使う
+| タグ | 内容 |
+|---|---|
+| v1.6.0 | 日本語辞書 228→517件（★今ここ） |
+| v1.5.0 | AI スコアリング強化（スタイル/トークン） |
+| v1.2.0 | KB強化+テンプレートノード+日本語228件 |
+| v1.1.0 | テスト完全グリーン化（1032件） |
+| v1.0.0 | 正式リリース |
+| v0.9.5 | Phase 5+6 完了 |
+| v0.8.0 | Phase 4 AI Adapter Layer |
 
-```python
-import sys
-sys.path.insert(0, "fps-core")
-sys.path.insert(0, "fps-adapters")
-
-from dictionary.manager import DictionaryManager
-from pipeline.manager import PipelineManager
-from comfyui.adapter import ComfyUIAdapter
-
-dm = DictionaryManager(
-    system_dir="fps-data/dictionaries/system",
-    user_dir="fps-data/dictionaries/user",
-)
-dm.load()
-
-pm = PipelineManager()
-pm.set_context(dictionary_manager=dm)
-
-result = pm.compile("(quality:high:1.5), blue_eyes, elf_ears, [bad hands]")
-print(result.prompt)     # "Quality.High, Eyes.Blue, Fantasy.ElfEars"
-print(result.negative)   # "bad_hands"
-
-adapter = ComfyUIAdapter(api_version="v1")
-output = adapter.convert(result)
-```
-
-### ComfyUI への導入
-
-```
-ComfyUI/custom_nodes/Face-Prompt-Studio/   ← このリポジトリを clone
-```
-
-起動すると `FacePromptStudio` カテゴリに以下のノードが追加されます。
-
-- **Face Prompt Cleaner** — プロンプトクリーニング、17カテゴリスイッチ
-- **Face Prompt Compiler** — DSLフルコンパイル、プリセット適用
-- **Face Prompt Debug** — 変換差分・辞書統計表示
-- **Face Prompt Preset** — プリセット選択・複数マージ
-- **Face Prompt Rule Editor** — ルール確認・テスト・一時無効化
-- **Face Prompt Category Filter** — カテゴリベースのタグ抽出/除外
-- **Face Prompt Optimizer** — 品質スコア・矛盾検出・改善提案
-- **Face Prompt History** — 変換履歴記録・差分比較
-
-## DSL 構文
-
-```
-(category:value)          カテゴリ指定         例: (quality:high)
-(category:value:weight)   重み付きカテゴリ     例: (eyes:blue:1.5)
-[tag]                      ネガティブプロンプト 例: [bad hands]
-{category:value}          制約                 例: {style:anime}
-word                       プレーンタグ（辞書解決） 例: masterpiece
-```
-
-## 設計方針
-
-- **Clean Architecture** — `fps-core` は `fps-adapters` に一切依存しない
-- **SOLID** / Adapter pattern / Plugin system
-- **JSON/YAML configurable**（JSON優先）/ Hot reload
-- **user 辞書は絶対にシステム更新で上書きされない**
-
-## 開発フェーズ
-
-| Phase | 内容 | 状態 |
-|---|---|---|
-| 1 | Foundation | ✅ 完了（v0.5.0） |
-| 2 | Face Prompt Cleaner 強化 | ✅ 完了（v0.6.0） |
-| 3 | Prompt Optimizer | ✅ 完了（v0.7.0） |
-| 4 | AI Adapter Layer | ✅ 完了（v0.8.0） |
-| 5 | GUI Studio | 計画中 |
-
-## コーディング規約
-
-Python 3.11+ / Type hints / PEP8 / Black / Ruff / mypy（strict）/
-pytest / `slots=True` dataclass / Docstrings
+---
 
 ## ライセンス
 
-TBD
-
-## コントリビューション
-
-`feature/**` ブランチで開発し、`develop` へ PR を送ってください。
-PR テンプレートのチェックリストに従い、`python main.py --all` が
-全て PASS することを確認してください。
+MIT License — © 2026 glasssoundforest-lab

@@ -3,10 +3,12 @@ fps-core/optimizer/quality_scorer.py — Quality Scorer
 
 プロンプトの品質を0〜100でスコアリングする。
 
-スコア構成:
+スコア構成（v1.5更新）:
   - coverage_score   : 重要カテゴリ（quality/eyes/hair等）の網羅度
   - balance_score    : タグ間の重みバランス（極端な偏りがないか）
   - redundancy_score : 非冗長性（100 = 重複なし）
+  - combination_score: ★v1.5 スタイル組み合わせ一貫性
+  - token_score      : ★v1.5 トークンバジェット余裕度
   - overall_score    : 上記の加重平均
 """
 
@@ -15,6 +17,7 @@ from __future__ import annotations
 import statistics
 from typing import Any
 
+from .combination_checker import check_style_combinations, check_token_budget
 from .conflict_detector import detect_conflicts
 from .models import OptimizationIssue, QualityScore
 
@@ -28,11 +31,13 @@ IMPORTANT_CATEGORIES = [
     "skin",
 ]
 
-# スコア合成の重み
+# スコア合成の重み（v1.5: combination / token を追加）
 WEIGHTS = {
-    "coverage": 0.35,
-    "balance": 0.30,
-    "redundancy": 0.35,
+    "coverage":    0.25,
+    "balance":     0.20,
+    "redundancy":  0.25,
+    "combination": 0.20,   # ★v1.5
+    "token":       0.10,   # ★v1.5
 }
 
 
@@ -94,11 +99,11 @@ def calculate_quality_score(
     タグリストから総合品質スコアを算出する。
 
     Args:
-        tags:   [{"tag": str, "category": str, "weight": float}, ...]
+        tags:   [{\"tag\": str, \"category\": str, \"weight\": float}, ...]
         issues: 事前計算済みの問題リスト（省略時は内部で矛盾検出のみ実行）
 
     Returns:
-        QualityScore
+        QualityScore（v1.5: combination_score / token_score を含む）
     """
     if issues is None:
         issues = detect_conflicts(tags)
@@ -107,10 +112,16 @@ def calculate_quality_score(
     balance = calculate_balance_score(tags)
     redundancy = calculate_redundancy_score(issues)
 
+    # ★v1.5: スタイル組み合わせスコア + トークンスコア
+    _, combination = check_style_combinations(tags)
+    _, token = check_token_budget(tags)
+
     overall = round(
-        coverage * WEIGHTS["coverage"]
-        + balance * WEIGHTS["balance"]
-        + redundancy * WEIGHTS["redundancy"],
+        coverage    * WEIGHTS["coverage"]
+        + balance   * WEIGHTS["balance"]
+        + redundancy * WEIGHTS["redundancy"]
+        + combination * WEIGHTS["combination"]
+        + token     * WEIGHTS["token"],
         2,
     )
 
@@ -119,4 +130,37 @@ def calculate_quality_score(
         balance_score=balance,
         redundancy_score=redundancy,
         overall_score=overall,
+        combination_score=combination,
+        token_score=token,
     )
+
+
+# ── M6-1 ネガティブプロンプト品質評価 ────────────────────────────
+
+# ネガティブプロンプトとして推奨されるカテゴリ（代表タグの resolved prefix）
+RECOMMENDED_NEGATIVE_PREFIXES: list[str] = [
+    "Quality.Low",
+    "Quality.Bad",
+    "Body.BadHands",
+    "Body.BadAnatomy",
+    "Style.Blur",
+    "Style.Watermark",
+]
+
+
+def calculate_negative_coverage_score(negative_tags: list[dict]) -> float:
+    """ネガティブプロンプトの網羅度をスコア化する（0-100）。"""
+    if not negative_tags:
+        return 0.0
+
+    neg_resolved = {
+        t.get("meta", {}).get("resolved") or t.get("resolved") or t.get("tag", "")
+        for t in negative_tags
+    }
+
+    covered_prefixes = set()
+    for prefix in RECOMMENDED_NEGATIVE_PREFIXES:
+        if any(r.startswith(prefix.split(".")[0]) for r in neg_resolved):
+            covered_prefixes.add(prefix)
+
+    return round(len(covered_prefixes) / len(RECOMMENDED_NEGATIVE_PREFIXES) * 100, 2)

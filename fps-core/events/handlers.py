@@ -95,3 +95,78 @@ class StageTimingHandler:
     def reset(self) -> None:
         self._start_times.clear()
         self._durations.clear()
+
+
+class AutoBackupHandler:
+    """
+    破壊的操作の前後イベントを購読して自動バックアップを実行するハンドラー。
+
+    EventType.DICTIONARY_RELOADED / 'dictionary.before_save' /
+    'rule.before_save' 等、任意のイベントに紐づけて使う汎用ハンドラー。
+    BackupManager をラップし、イベント発火のたびにバックアップを作成する。
+
+    使い方:
+        from backup.manager import BackupManager
+        from backup.models import BackupTarget
+
+        bm = BackupManager(backup_dir="backup", source_dirs={...})
+        bm.setup()
+
+        auto_backup = AutoBackupHandler(bm, target=BackupTarget.DICTIONARY)
+        bus.on("dictionary.before_save", auto_backup)
+        # 以後 dictionary.before_save が発火するたびに自動バックアップされる
+    """
+
+    def __init__(
+        self,
+        backup_manager: Any,
+        target: Any,
+        min_interval_sec: float = 5.0,
+    ) -> None:
+        """
+        Args:
+            backup_manager:   BackupManager インスタンス
+            target:           バックアップ対象（BackupTarget）
+            min_interval_sec: 連続イベントでの過剰バックアップを防ぐ
+                               最小実行間隔（秒）。0 で間隔制限なし。
+        """
+        self._backup_manager = backup_manager
+        self._target = target
+        self._min_interval = min_interval_sec
+        self._last_run: float = 0.0
+        self._backup_count = 0
+        self._error_count = 0
+        self._last_error: str = ""
+
+    def __call__(self, event: Event) -> None:
+        now = _time.monotonic()
+        if self._min_interval > 0 and (now - self._last_run) < self._min_interval:
+            logger.debug("AutoBackupHandler: skipped (within min_interval)")
+            return
+
+        try:
+            result = self._backup_manager.backup(self._target)
+            self._last_run = now
+            if result.success:
+                self._backup_count += 1
+                logger.info(
+                    "Auto backup created: target=%s entries=%d (triggered by %s)",
+                    self._target,
+                    result.entry_count,
+                    event.type,
+                )
+            else:
+                self._error_count += 1
+                self._last_error = "; ".join(result.errors)
+                logger.error("Auto backup failed: %s", self._last_error)
+        except Exception as e:
+            self._error_count += 1
+            self._last_error = str(e)
+            logger.error("AutoBackupHandler error: %s", e)
+
+    def statistics(self) -> dict[str, Any]:
+        return {
+            "backup_count": self._backup_count,
+            "error_count": self._error_count,
+            "last_error": self._last_error,
+        }

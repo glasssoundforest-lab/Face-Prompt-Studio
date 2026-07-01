@@ -1,0 +1,583 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║          Face Prompt Studio — Master Snapshot v1.6.0                       ║
+║          作成日: 2026-07-01                                                  ║
+║          リポジトリ: glasssoundforest-lab/Face-Prompt-Studio                 ║
+║          ブランチ: develop                                                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 1  プロジェクト概要
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Face Prompt Studio（FPS）は Stable Diffusion / ComfyUI 向けの顔プロンプト
+（face prompt）最適化・管理フレームワーク。
+
+設計方針:
+  - Clean Architecture — fps-core はアダプター依存ゼロ
+  - ComfyUI はアダプターの一つ（差し替え可能）
+  - 辞書・ルールはすべて JSON で定義（Python 修正不要）
+  - テスト駆動開発（1122件 PASS）
+
+現在バージョン: v1.6.0（2026-07-01）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 2  バージョン履歴
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  v0.5.0  Phase 1 — Dictionary / Rule / Pipeline コア実装
+  v0.6.0  Phase 2 — Optimizer / Preset / History 基礎
+  v0.7.0  Phase 3 — ComfyUI ノード初期実装（5種）
+  v0.8.0  Phase 4 — AI Adapter Layer（A1111/NovelAI/Input/Plugin/Event）
+            テスト: 933件 PASS
+  v0.9.5  Phase 5+6 — GUI Studio + Optimizer拡張 + 多言語 + テンプレート
+            テスト: 843件安定 PASS
+  v1.0.0  正式リリース（v0.9.5 機能凍結 + ドキュメント整備）
+  v1.1.0  テスト完全グリーン化
+            fps-core/cache/ + fps-core/backup/ 実装
+            .gitignore 修正 / GitHub Actions CI 整備
+            テスト: 843 → 1032件 PASS（+189件）
+  v1.2.0  Knowledge Browser 強化 + ComfyUI テンプレートノード + 日本語拡充
+            DictionaryManager CRUD / REST 4エンドポイント追加
+            FacePromptTemplateNode（11番目の ComfyUI ノード）
+            日本語辞書: 105 → 228件
+            テスト: 1032 → 1072件 PASS（+40件）
+  v1.5.0  AI スコアリング強化
+            combination_checker.py 新設（スタイル/トークン検出）
+            QualityScore 5スコア体制（combination + token 追加）
+            WEIGHTS 再設計（5項目、合計1.0）
+            テスト: 1072 → 1122件 PASS（+50件）
+  v1.6.0  日本語辞書大規模拡充（★現在）
+            228 → 517件（+289件、21カテゴリ網羅）
+            テスト: 1122件 PASS（閾値更新）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 3  指標サマリー（v1.6.0 時点）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  テスト PASS           1122件（0 FAILED / 0 ERRORS）
+  REST API              24エンドポイント
+  辞書キー総数          2793キー（英語 + 日本語 同義語含む）
+  日本語エントリ         517件（21カテゴリ）
+  英語辞書対応率         26.8%（517 / 1930）
+  ComfyUI ノード         11種
+  テンプレート           5種（組み込み）
+  Python ファイル        130本
+  JSON ファイル          36本
+  テストファイル         34ファイル
+  GitHub Actions jobs   5（test / lint / typecheck / coverage / version-check）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 4  リポジトリ構造
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+fps/
+├── fps-core/                    Pure Python core（アダプター依存ゼロ）
+│   ├── __init__.py              __version__ = "1.6.0"
+│   ├── cache/                   ★v1.1 新設
+│   │   ├── __init__.py
+│   │   ├── lru_cache.py         LRUCache（LRU + TTL + スレッドセーフ）
+│   │   ├── key_builder.py       build_key / build_prompt_key / build_lookup_key
+│   │   ├── manager.py           CacheManager（名前空間別、from_config()）
+│   │   └── models.py            CacheEntry / CacheStats
+│   ├── backup/                  ★v1.1 新設
+│   │   ├── __init__.py
+│   │   ├── exceptions.py        BackupNotFoundError / BackupRestoreError
+│   │   ├── manager.py           BackupManager（ファイルコピー方式）
+│   │   └── models.py            BackupTarget / BackupEntry / BackupResult
+│   ├── config/                  ConfigManager
+│   ├── dictionary/              DictionaryManager
+│   │   ├── manager.py           ★v1.2 add/update/delete/list_user_entries()追加
+│   │   ├── validator.py         Unicode キー対応（ひらがな・カタカナ・漢字）
+│   │   └── [loader/merger/models/watcher/exceptions].py
+│   ├── events/                  EventBus（14種 EventType）
+│   ├── fps_logging/             FPSLogger
+│   ├── history/                 HistoryManager
+│   │   ├── history_manager.py   record/get/delete/toggle_favorite/set_label
+│   │   ├── diff_viewer.py       compare() → DiffResult
+│   │   └── models.py            HistoryEntry / DiffResult
+│   ├── optimizer/               OptimizerManager
+│   │   ├── combination_checker.py ★v1.5 新設
+│   │   │     check_style_combinations() → (issues, combination_score)
+│   │   │     check_token_budget()       → (issues, token_score)
+│   │   │     estimate_token_count()     → int
+│   │   │     reload_rules()
+│   │   ├── conflict_detector.py   detect_conflicts / detect_cross_conflicts
+│   │   ├── manager.py             analyze(tags, negative_tags=None)
+│   │   ├── models.py              ★v1.5 STYLE_CONFLICT/TOKEN_BUDGET 追加
+│   │   │                          QualityScore: 7フィールド
+│   │   ├── quality_scorer.py      ★v1.5 WEIGHTS 5項目体制
+│   │   ├── recommender.py
+│   │   └── redundancy_detector.py
+│   ├── pipeline/                PipelineManager（10ステージ）
+│   ├── plugins/                 PluginRegistry（トポロジカルソート）
+│   ├── preset/                  PresetManager
+│   ├── rules/                   RuleManager（JSON駆動）
+│   └── template/                TemplateManager ★M6-3
+│       ├── manager.py           render() / render_body() / statistics()
+│       └── models.py            Template / TemplateVariable / RenderResult
+│
+├── fps-adapters/
+│   ├── a1111/                   AUTOMATIC1111 WebUI アダプター
+│   ├── comfyui/                 ComfyUI アダプター
+│   │   └── nodes/
+│   │       ├── __init__.py      NODE_CLASS_MAPPINGS（11種）
+│   │       ├── face_prompt_backup.py
+│   │       ├── face_prompt_category_filter.py
+│   │       ├── face_prompt_cleaner.py
+│   │       ├── face_prompt_compiler.py
+│   │       ├── face_prompt_group_control.py
+│   │       ├── face_prompt_history.py
+│   │       ├── face_prompt_optimizer.py
+│   │       ├── face_prompt_preset.py
+│   │       ├── face_prompt_rule_editor.py
+│   │       ├── face_prompt_template.py  ★v1.3 新設
+│   │       ├── debug_output.py
+│   │       └── node_base.py
+│   ├── input/                   WD14 / JoyCaption / Florence2 アダプター
+│   ├── novelai/                 NovelAI アダプター
+│   └── rest/                    FastAPI REST API ★v1.2 24エンドポイント
+│       ├── app.py
+│       └── models.py            Pydantic v2 全スキーマ
+│
+├── fps-gui/web/index.html       SPA（Editor/Optimize/Presets/Knowledge/History）
+│                                ★v1.2 ユーザー辞書編集UI + Optimizer連携ビュー
+│
+├── fps-data/
+│   ├── dictionaries/
+│   │   ├── system/              英語辞書（31ファイル、24カテゴリ）
+│   │   │   └── synonyms/
+│   │   │       ├── japanese_tags.json  ★v1.6 517件（21カテゴリ）
+│   │   │       └── [wd14/joycaption/florence2/qwen2vl 等]
+│   │   └── user/                ユーザーカスタム辞書（custom.json）
+│   ├── presets/                 プリセット JSON
+│   ├── rules/
+│   │   └── style_combinations.json  ★v1.5 新設
+│   └── templates/system/        テンプレート JSON
+│
+├── .github/workflows/ci.yml     ★v1.1 CI（5 jobs、PYTHONPATH 修正済み）
+└── fps-tools/tests/unit/        34ファイル / 1122件 PASS
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 5  REST API 全エンドポイント（24本）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Method  Path                                  追加Ver  概要
+  ──────  ────────────────────────────────────  ───────  ────────────────────
+  GET     /                                     M5-0     Web UI
+  GET     /health                               M5-0     ヘルスチェック
+  POST    /compile                              M5-0     プロンプトコンパイル
+  POST    /optimize                             M5-0     最適化分析
+                ?negative_prompt=               M6-1     ネガティブ対応
+  GET     /dictionary/search                    M5-0     タグ検索
+  GET     /dictionary/stats                     M5-0     辞書統計
+  GET     /dictionary/categories                M5-3     カテゴリ一覧
+  GET     /dictionary/entries                   M5-3     エントリ検索
+  GET     /dictionary/synonyms                  M5-3     同義語取得
+  GET     /dictionary/user/entries              v1.2★    ユーザー辞書一覧
+  POST    /dictionary/user/entries              v1.2★    エントリ追加（201）
+  PUT     /dictionary/user/entries/{key}        v1.2★    部分更新
+  DELETE  /dictionary/user/entries/{key}        v1.2★    削除
+  GET     /presets                              M5-0     プリセット一覧
+  POST    /presets/{id}/apply                   M5-0     プリセット適用
+  GET     /history                              M5-0     履歴一覧
+  GET     /history/{id}                         M5-4     履歴詳細
+  POST    /history/{id}/favorite                M5-4     お気に入りトグル
+  PUT     /history/{id}/label                   M5-4     ラベル設定
+  GET     /history/{id1}/diff/{id2}             M5-4     差分比較
+  DELETE  /history/{id}                         M5-4     削除
+  POST    /validate                             M5-0     バリデーション
+  GET     /templates                            M6-3     テンプレート一覧
+  POST    /templates/{id}/render                M6-3     テンプレート展開
+  POST    /templates/render                     M6-3     直接展開
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 6  ComfyUI ノード一覧（11種）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  クラス名                        追加Ver   概要
+  ──────────────────────────────  ───────   ──────────────────────────────────
+  FacePromptCleanerNode           v0.7      プロンプトクリーニング
+  FacePromptCompilerNode          v0.7      辞書引きコンパイル
+  FacePromptDebugNode             v0.7      デバッグ出力
+  FacePromptPresetNode            v0.7      プリセット適用
+  FacePromptRuleEditorNode        v0.7      ルール編集・適用
+  FacePromptCategoryFilterNode    v0.8      カテゴリフィルタリング
+  FacePromptOptimizerNode         v0.8      品質最適化
+  FacePromptHistoryNode           v0.8      履歴記録・参照
+  FacePromptBackupNode            v0.9      バックアップ・リストア
+  FacePromptGroupControlNode      M5-1      グループ重み一括制御
+  FacePromptTemplateNode          v1.3★     テンプレート展開
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 7  Optimizer 実装詳細（v1.5 更新後）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  7-1. IssueType（7種）
+    CONFLICT          同一排他グループ内の矛盾
+    REDUNDANT         意味的重複
+    MISSING_COVERAGE  重要カテゴリ未指定
+    WEIGHT_IMBALANCE  重みの著しい偏り
+    CROSS_CONFLICT    ★M6-1 positive/negative クロス矛盾
+    STYLE_CONFLICT    ★v1.5 スタイル一貫性の問題
+    TOKEN_BUDGET      ★v1.5 トークン数バジェット警告
+
+  7-2. QualityScore（7フィールド）
+    coverage_score         重要カテゴリ網羅度（0-100）
+    balance_score          重みバランス（0-100）
+    redundancy_score       非冗長性（0-100）
+    overall_score          総合スコア（0-100）
+    negative_coverage_score ★M6-1 ネガティブ網羅度（default=0.0）
+    combination_score      ★v1.5 スタイル組み合わせ（default=100.0）
+    token_score            ★v1.5 トークンバジェット余裕度（default=100.0）
+
+  7-3. WEIGHTS（v1.5 5項目体制）
+    coverage:    0.25
+    balance:     0.20
+    redundancy:  0.25
+    combination: 0.20  ★v1.5
+    token:       0.10  ★v1.5
+    合計: 1.00
+
+  7-4. style_combinations.json ルール定義
+    incompatible_pairs (8種):
+      photorealistic_vs_anime    WARNING -15点
+      watercolor_vs_3d           WARNING -15点
+      sketch_vs_colorful         INFO    -5点
+      high_vs_low_quality        ERROR   -30点
+      frontal_vs_profile         WARNING -15点
+      smile_vs_angry             INFO    -5点
+      ukiyoe_vs_modern           INFO    -5点
+      vampire_vs_angel           INFO    -5点
+
+    recommended_pairs (5種):
+      quality_with_face_detail   +3.0点
+      anime_with_colorful_hair   +5.0点
+      fantasy_with_special_eyes  +4.0点
+      photorealistic_with_skin   +3.0点
+      ukiyoe_with_fantasy        +5.0点
+
+    token_budget:
+      max_tokens: 75 / warn: 80% / critical: 100%
+      trim: accessories, clothing, body, age
+      protected: quality, eyes, hair, expression
+
+  7-5. combination_checker.py 関数
+    check_style_combinations(tags) → (issues, score)
+    check_token_budget(tags)       → (issues, score)
+    estimate_token_count(tags)     → int（単語長ベース推定）
+    reload_rules()                 → None（キャッシュクリア）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 8  Cache / Backup 実装詳細（v1.1 新設）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  8-1. CacheManager API
+    get(namespace, key)        → value | None
+    set(namespace, key, value, ttl=None)
+    has(namespace, key)        → bool
+    delete(namespace, key)     → bool
+    clear(namespace=None)
+    get_lookup(tag)            辞書ルックアップ用ショートカット
+    set_lookup(tag, value)
+    get_prompt(prompt)         プロンプトキャッシュ用ショートカット
+    set_prompt(prompt, value)
+    statistics()               → dict（hit_rate 等）
+    evict_expired()            → int（削除件数）
+    from_config(config)        → CacheManager（コンストラクタ）
+
+  8-2. BackupManager API
+    setup()                    バックアップディレクトリ初期化
+    backup(target)             ファイルコピー方式で 1ファイル=1エントリ
+                               entry.id = バックアップファイル名
+                               （例: rules_20260701_075223_abc.json）
+    restore(entry_id)          ファイルを元の場所へコピー復元
+    list_backups(target=None)  新しい順
+    get(entry_id)              → BackupEntry（なければ例外）
+    get_or_none(entry_id)      → BackupEntry | None
+    delete(entry_id)           → bool
+    cleanup()                  max_count 超過分を削除 → int
+    statistics()               → {total_backups/total_bytes/total_kb/by_target}
+
+    BackupResult.errors        後方互換プロパティ（ComfyUI ノード対応）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 9  DictionaryManager CRUD（v1.2 追加）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  add_user_entry(key, resolved, category, aliases=None, weight=1.0)
+    - エイリアス正規化（スペース→アンダースコア）
+    - 既存キーは上書き
+    - custom.json に保存後 reload()
+
+  update_user_entry(key, resolved=None, category=None, aliases=None, weight=None)
+    - 部分更新（None フィールドは変更なし）
+    - 存在しない場合 False を返す
+
+  delete_user_entry(key) → bool
+    - 存在しない場合 False
+    - entries が空になったら custom.json を削除（バリデーター回避）
+
+  list_user_entries() → list[dict]
+
+  保存先: fps-data/dictionaries/user/custom.json
+  REST API:
+    GET    /dictionary/user/entries
+    POST   /dictionary/user/entries     (201)
+    PUT    /dictionary/user/entries/{key}
+    DELETE /dictionary/user/entries/{key}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 10  日本語辞書（v1.6 大規模拡充）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ファイル: fps-data/dictionaries/system/synonyms/japanese_tags.json
+  方式: キーワードマッチ（MeCab 等の形態素解析不要）
+  Unicode キー対応（ひらがな・カタカナ・漢字）
+
+  エントリ数推移:
+    v0.9.5: 105件
+    v1.2.0: 228件
+    v1.6.0: 517件（★現在）
+
+  カテゴリ別エントリ数（v1.6.0）:
+    fantasy      62件  （九尾/天狗/河童/騎士/侍/召喚師/龍神/魔王 等）
+    style        46件  （サイバーパンク/萌え/ギャル/VTuber風/病み系/森ガール 等）
+    clothing     45件  （ゴシックロリータ/袴/振袖/コルセット/チャイナドレス 等）
+    expression   41件  （大笑い/無表情/凛々しい/儚い/もじもじ/清楚/妖艶 等）
+    eyes         40件  （まぶしそう/上目遣い/潤んだ瞳/半開きの目/見開いた目 等）
+    hair         38件  （お下げ/刈り上げ/ハーフアップ/グラデーション髪 等）
+    accessories  33件  （王冠/ターバン/ヘッドドレス/葉の冠 等）
+    makeup       25件  （頬紅/ゴシックメイク/涙袋メイク/コリアンメイク 等）
+    age          23件  （赤ちゃん顔/中学生/高校生/30代/老人/中年 等）
+    skin         22件  （えくぼ/傷跡/ガラス肌/毛穴のない肌/アルビノ 等）
+    body         20件  （アスリート体型/猫背/曲線美/豊満/低身長 等）
+    eyebrows     16件  （金色の眉/黒い眉/つながり眉/太眉/細い眉 等）
+    face_shape   16件  （頬骨が高い/Vライン/童顔/面長顔 等）
+    ethnicity    16件  （東アジア系/地中海系/北欧系/南アジア系/ケルト系 等）
+    mouth        14件  （光沢リップ/キューピッドボウ/ぽかんとした口 等）
+    teeth        11件  （すきっ歯/尖った歯/吸血鬼の牙/乱杭歯 等）
+    quality      10件  （普通品質/神絵/ラフスケッチ/超高解像度 等）
+    eyelashes    10件  （太いまつ毛/まつ毛パーマ/束まつ毛 等）
+    nose         10件  （鷹鼻/上向き鼻/広い鼻/鼻が高い 等）
+    glasses      10件  （眼鏡をかけた/丸眼鏡/モノクル/ハートレンズ 等）
+    piercing      9件  （耳ピアス/軟骨ピアス/舌ピアス/インダストリアル 等）
+
+  SD コミュニティ特有の日本語表現:
+    かわいい / かっこいい / 美しい / 萌え / エモい
+    ギャル / 量産型 / 病み系 / 地雷系 / 森ガール
+    VTuber風 / アイドル / コスプレ / 中性的 / ボーイッシュ
+    清楚 / 妖艶 / 凛々しい / 天真爛漫 / もじもじ
+
+  日本固有ファンタジー表現:
+    九尾の狐 / 天狗 / 河童 / 座敷童 / 付喪神
+    龍神 / 雷神 / 水神 / 樹霊 / 鬼
+
+  使用例:
+    dm.lookup("青い目")     → Eyes.Blue
+    dm.lookup("九尾")       → Fantasy.KitsuneNineTails
+    dm.lookup("ゴシックロリータ") → Clothing.GothicLolita
+    dm.lookup("サイバーパンク")   → Style.Cyberpunk
+    dm.lookup("神絵")       → Quality.High
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 11  テスト状況（v1.6.0）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  合計: 1122件 PASS / 0 FAILED / 0 ERRORS
+
+  テストファイル別件数（主要）:
+    test_v1_5_ai_scoring.py         50件  ★v1.5
+    test_m6_optimizer.py            40件  （M6-1 ネガティブ最適化）
+    test_m6_template.py             40件  （M6-3 テンプレートエンジン）
+    test_v1_2_user_dict.py          25件  ★v1.2
+    test_comfyui_template_node.py   15件  ★v1.3
+    test_m6_japanese.py             20件  （閾値 >= 500 に更新）★v1.6
+    test_pipeline_cache.py          17件  ★v1.1
+    test_auto_backup.py             11件  ★v1.1
+    test_rest_api.py                76件
+    test_optimizer.py               各種
+    test_cache.py / test_backup.py  各種  ★v1.1
+
+  v1.0.0 → v1.6.0 テスト推移:
+    v1.0.0  843件（安定）
+    v1.1.0  1032件（+189件：cache/backup）
+    v1.2.0  1072件（+40件：user_dict + template_node）
+    v1.5.0  1122件（+50件：ai_scoring）
+    v1.6.0  1122件（変化なし、閾値更新のみ）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 12  技術的負債（v1.6.0 時点の残課題）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  【負債1】日本語辞書カバレッジ不足（継続）
+    現状: 517件 / 英語1169キーに対して 44% 程度
+    目標: 1000件以上（100% 対応）
+    対応: v1.6 継続作業（JSON追記のみ）
+
+  【負債2】Web UI のリアルタイム非対応
+    現状: 外部変更は手動リフレッシュ必要
+    対応予定: v1.9 WebSocket
+
+  【負債3】Preset エディタ未実装
+    現状: プリセットは JSON 直接編集が必要
+    対応予定: v1.7 Preset エディタ Web UI
+
+  【負債4】TemplateManager が CliContext に未統合
+    現状: REST API では _get_template_manager() ヘルパーでシングルトン管理
+    対応: v1.7 以降で CliContext にプロパティ追加推奨
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 13  今後の開発ロードマップ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ═══════════════════════
+  v1.6 継続（日本語辞書拡充）
+  ═══════════════════════
+  目標: 517件 → 1000件以上（英語辞書との完全対応）
+  残課題: 英語辞書の残り約57%を日本語化
+  作業: japanese_tags.json への追記のみ
+  優先度: 中（随時追加可能）
+
+  ═══════════════════════
+  v1.7 — Preset エディタ Web UI
+  ═══════════════════════
+  実装内容:
+    REST API 追加:
+      POST   /presets                  （新規作成）
+      PUT    /presets/{id}             （編集）
+      DELETE /presets/{id}            （削除）
+      POST   /presets/{id}/tags/add   （タグ追記）
+    Web UI Presets タブ強化:
+      新規作成フォーム
+      タグリスト編集
+      History から「プリセットとして保存」
+      プリセット比較
+    PresetManager に save()/update()/delete() 追加
+
+  工数: 2〜3セッション / 優先度: 中
+
+  ═══════════════════════
+  v1.9 — WebSocket リアルタイム更新
+  ═══════════════════════
+  実装内容:
+    WS /ws/history   → 新規履歴のストリーム配信
+    WS /ws/optimizer → 最適化進捗リアルタイム
+    Web UI: fetch ポーリング → WebSocket 切り替え
+    EventBus との統合
+
+  工数: 3〜4セッション / 優先度: 低
+
+  ═══════════════════════
+  v2.0 — パーソナライゼーション基盤
+  ═══════════════════════
+  実装内容:
+    使用頻度学習（History データから頻出タグを抽出）
+    パーソナルルール（ユーザーごとの除去・重みルール）
+    スタイルプロファイル（プリセットの拡張形）
+    スコア傾向分析（時系列グラフ）
+    UserProfileManager（fps-core/user/ 新設）
+
+  工数: 5〜8セッション / 優先度: 低（中長期）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 14  優先度マトリクス
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  バージョン   項目                     効果              工数    優先度
+  ──────────   ───────────────────────  ────────────────  ──────  ────────
+  v1.6継続     日本語辞書 1000件化       リーチ↑           小      ★★中
+  v1.7         Presetエディタ            UX↑ 使いやすさ    中      ★★中
+  v1.9         WebSocketリアルタイム     リアルタイム性↑   中      ★低
+  v2.0         パーソナライゼーション    差別化・長期価値   大      ★低
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 15  重要な実装メモ（次セッション引き継ぎ）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ■ テスト実行コマンド（全件一発）
+    cd /home/claude/fps
+    python -m pytest fps-tools/tests/unit/ --no-cov -q
+    → 1122 passed, 2 warnings （既知の警告は class-scoped fixture 関連）
+
+  ■ REST API サーバー起動
+    uvicorn fps-adapters.rest.app:app --reload --port 8420
+    Web UI: http://localhost:8420/
+
+  ■ DictionaryManager CRUD 注意事項
+    - add_user_entry() はキーとエイリアスを正規化（スペース→アンダースコア）
+    - delete_user_entry() は entries が空になると custom.json を削除
+      （バリデーター「entries が空」エラー回避のため）
+    - all_keys() は公開 API 未実装。
+      内部では dm._index を with dm._lock: で保護してアクセス中
+
+  ■ combination_checker のルールキャッシュ
+    _rules_cache はモジュールグローバル変数
+    テスト間で共有されるため、テストの autouse fixture で reload_rules() を呼ぶこと
+    （test_v1_5_ai_scoring.py の @pytest.fixture(autouse=True) 参照）
+
+  ■ QualityScore の後方互換性
+    QualityScore は slots=True dataclass で positional 4引数で構築できる
+    （5〜7番目のフィールドは全て default 値あり）
+    既存テスト・ノードは追加フィールドなしで動作する
+
+  ■ Web UI の showTab() 関数
+    Knowledge ('kb') と History ('history') タブは
+    main 要素を隠してフルWidth パネルを表示する方式
+    新しいフルWidthタブを追加する場合は showTab() の条件分岐を拡張する
+
+  ■ GitHub Actions CI
+    .github/workflows/ci.yml
+    PYTHONPATH=fps-core:fps-adapters を全ジョブに設定済み
+    5 jobs: test (3.11 + 3.12 matrix) / lint / typecheck / coverage / version-check
+
+  ■ BackupEntry.id の形式
+    entry.id = バックアップファイル名
+    （例: rules_20260701_075223_123456_abc12345.json）
+    ComfyUI ノードのレポートに表示される ID をそのまま restore_id に使用可能
+
+  ■ 次セッション推奨着手
+    1. v1.6 日本語辞書 1000件化（JSON追記のみ、随時可能）
+    2. v1.7 Preset エディタ（REST + Web UI）
+    3. v1.9 WebSocket（依存: FastAPI WS 追加）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Section 16  git コミット履歴（v1.0.0 以降）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  09d1505  chore(release): v1.6.0 バージョン更新
+  953500d  feat(v1.6): 日本語辞書大規模拡充 228 → 517件
+  3d65058  chore(release): v1.5.0 バージョン更新
+  6a4d0a3  feat(v1.5): AI スコアリング強化
+  bb96541  chore(release): v1.2.0 バージョン更新
+  dfd6b8b  feat(v1.2+v1.3+v1.6): KB強化 + テンプレートノード + 日本語辞書拡充
+  5eb2d07  chore(release): v1.1.0 バージョン更新
+  de5f3fd  feat(v1.1): テスト完全グリーン化 — cache/backup 実装 + CI 整備
+  0c7c4dc  Merge release/v1.0.0 into develop
+  5a1bf32  chore(release): v1.0.0 正式リリース
+  5bc03f0  chore(release): v0.9.5 ドキュメント更新
+  c51a416  feat(M6): Optimizer拡張 + 多言語対応 + テンプレートエンジン
+  0809123  feat(M5-4): Prompt History Timeline 実装
+  57a399f  feat(M5-3): Knowledge Browser 実装
+  677369e  feat(M5-2): Prompt Editor Panel Web UI 実装
+  d3a5fb6  feat(M5-1): ComfyUI GUI 強化 — カテゴリグループ化
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  EOF — FPS_MasterSnapshot_v1_6_0.txt
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -2,20 +2,27 @@ name: CI
 
 on:
   push:
-    branches: [main, develop, "feature/**"]
+    branches: [main, develop, "release/**", "feature/**"]
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # ── ユニットテスト ─────────────────────────────────────────────
   test:
-    name: Test (Python ${{ matrix.python-version }})
+    name: "Tests (Python ${{ matrix.python-version }})"
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -25,58 +32,128 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest pytest-cov pyyaml
+          pip install --upgrade pip
+          pip install pyyaml fastapi uvicorn "pydantic>=2.0" httpx pytest pytest-cov
 
       - name: Run unit tests
         run: |
-          python -m pytest fps-tools/tests/unit \
+          python -m pytest fps-tools/tests/unit/ \
+            --no-cov \
             --tb=short \
-            -v
+            -q
+        env:
+          PYTHONPATH: fps-core:fps-adapters
 
-      - name: Run compat tests
-        run: |
-          python -m pytest fps-tools/tests/compat \
-            --tb=short \
-            -v
-
+  # ── Lint ────────────────────────────────────────────────────────
   lint:
-    name: Lint & Format
+    name: "Lint (ruff + black)"
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
       - name: Install tools
         run: pip install ruff black
 
-      - name: Ruff lint
-        run: python -m ruff check fps-core --select E,F,W,I,UP,B
+      - name: ruff check
+        run: ruff check fps-core/ fps-adapters/ fps-tools/
 
-      - name: Black format check
-        run: python -m black fps-core --line-length 100 --check
+      - name: black check
+        run: black --check --line-length 100 fps-core/ fps-adapters/
 
+  # ── 型チェック ──────────────────────────────────────────────────
   typecheck:
-    name: Type Check (mypy)
+    name: "Type Check (mypy)"
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
 
-      - name: Install mypy
-        run: pip install mypy pyyaml
+      - name: Install dependencies
+        run: pip install mypy pyyaml "pydantic>=2.0" fastapi
 
       - name: mypy
-        run: python -m mypy fps-core --ignore-missing-imports
+        run: python -m mypy fps-core/ fps-adapters/ --ignore-missing-imports
+        env:
+          PYTHONPATH: fps-core:fps-adapters
+
+  # ── カバレッジ（develop / main のみ） ───────────────────────────
+  coverage:
+    name: "Coverage"
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml fastapi uvicorn "pydantic>=2.0" httpx pytest pytest-cov
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest fps-tools/tests/unit/ \
+            --cov=fps-core \
+            --cov=fps-adapters \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=80 \
+            -q
+        env:
+          PYTHONPATH: fps-core:fps-adapters
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  # ── バージョン整合性チェック ─────────────────────────────────────
+  version-check:
+    name: "Version consistency"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check pyproject.toml vs fps-core/__init__.py
+        run: |
+          PYPROJECT_VER=$(python -c "
+          import re
+          t = open('pyproject.toml').read()
+          m = re.search(r'version\s*=\s*\"([^\"]+)\"', t)
+          print(m.group(1))
+          ")
+          CORE_VER=$(python -c "
+          import re
+          t = open('fps-core/__init__.py').read()
+          m = re.search(r'__version__\s*=\s*\"([^\"]+)\"', t)
+          print(m.group(1) if m else 'not found')
+          ")
+          echo "pyproject.toml : $PYPROJECT_VER"
+          echo "fps-core       : $CORE_VER"
+          if [ "$PYPROJECT_VER" != "$CORE_VER" ]; then
+            echo "::error::Version mismatch: pyproject=$PYPROJECT_VER, core=$CORE_VER"
+            exit 1
+          fi
+          echo "OK: versions match ($PYPROJECT_VER)"

@@ -123,15 +123,15 @@ class FacePromptHistoryNode(FPSNodeBase):
         ]
 
         recent = hm.list_entries(limit=10)
-        for e in recent:
-            star = "★" if e.favorite else " "
-            label_str = f" [{e.label}]" if e.label else ""
+        for entry in recent:
+            star = "★" if entry.favorite else " "
+            label_str = f" [{entry.label}]" if entry.label else ""
             lines.append(
-                f"  {star} {e.created_at_str}  score={e.overall_score:.1f}  "
-                f"tags={e.tag_count}{label_str}"
+                f"  {star} {entry.created_at_str}  score={entry.overall_score:.1f}  "
+                f"tags={entry.tag_count}{label_str}"
             )
-            lines.append(f"      in : {e.input_prompt[:60]}")
-            lines.append(f"      out: {e.output_prompt[:60]}")
+            lines.append(f"      in : {entry.input_prompt[:60]}")
+            lines.append(f"      out: {entry.output_prompt[:60]}")
 
         if not recent:
             lines.append("  (no history yet)")

@@ -1,7 +1,12 @@
 """fps-core.events — EventBus パッケージ"""
 
 from .event_bus import EventBus
-from .handlers import StageTimingHandler, StatsCollectorHandler, logging_handler
+from .handlers import (
+    AutoBackupHandler,
+    StageTimingHandler,
+    StatsCollectorHandler,
+    logging_handler,
+)
 from .models import Event, EventType, HandlerRegistration
 
 __all__ = [
@@ -12,4 +17,5 @@ __all__ = [
     "logging_handler",
     "StatsCollectorHandler",
     "StageTimingHandler",
+    "AutoBackupHandler",
 ]

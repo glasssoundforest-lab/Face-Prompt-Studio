@@ -1,0 +1,118 @@
+{
+  "version": "1.0",
+  "description": "スタイル組み合わせ・トークンバジェット ルール定義 (v1.5)",
+
+  "incompatible_pairs": [
+    {
+      "id": "photorealistic_vs_anime",
+      "resolved_a": ["Style.Photorealistic"],
+      "resolved_b": ["Style.Anime", "Style.Manga", "Style.LightNovel", "Style.Illustration"],
+      "severity": "warning",
+      "message": "写実的スタイルとアニメ/イラストスタイルが混在しています",
+      "suggestion": "どちらかのスタイルに統一することを推奨します。混在するとモデルが方向性を迷い、品質が低下しやすくなります。"
+    },
+    {
+      "id": "watercolor_vs_3d",
+      "resolved_a": ["Style.Watercolor"],
+      "resolved_b": ["Style.ThreeD", "Style.PixelArt", "Style.LowPoly"],
+      "severity": "warning",
+      "message": "水彩画スタイルと 3D/デジタルスタイルが混在しています",
+      "suggestion": "手描き風と CG 風は相性が悪いため、いずれか一方に絞ることを推奨します。"
+    },
+    {
+      "id": "sketch_vs_colorful",
+      "resolved_a": ["Style.Sketch"],
+      "resolved_b": ["Style.DigitalPainting", "Style.OilPainting", "Style.Photorealistic"],
+      "severity": "info",
+      "message": "スケッチ/線画スタイルとカラー描画スタイルが混在しています",
+      "suggestion": "線画と全彩色の組み合わせは不整合が生じる場合があります。意図的なスタイル融合でなければ統一を検討してください。"
+    },
+    {
+      "id": "high_vs_low_quality",
+      "resolved_a": ["Quality.High", "Quality.UltraHD"],
+      "resolved_b": ["Quality.Low", "Quality.Blur", "Quality.Bad"],
+      "severity": "error",
+      "message": "高品質指定と低品質指定が同時に存在します",
+      "suggestion": "Quality.High と Quality.Low は互いに打ち消し合います。どちらか一方を除去してください。"
+    },
+    {
+      "id": "frontal_vs_profile",
+      "resolved_a": ["FaceAngle.Frontal", "FaceAngle.ThreeQuarter"],
+      "resolved_b": ["FaceAngle.Profile", "FaceAngle.BackView"],
+      "severity": "warning",
+      "message": "正面/斜め顔と横顔/背面が同時に指定されています",
+      "suggestion": "カメラアングルは 1 方向のみ指定することを推奨します。"
+    },
+    {
+      "id": "smile_vs_angry",
+      "resolved_a": ["Expression.Smile", "Expression.Grin"],
+      "resolved_b": ["Expression.Angry", "Expression.Fear"],
+      "severity": "info",
+      "message": "笑顔と怒り/恐怖の表情が同時に指定されています",
+      "suggestion": "矛盾する表情の組み合わせです。意図的なギャップ表現でなければ統一してください。"
+    },
+    {
+      "id": "ukiyoe_vs_modern",
+      "resolved_a": ["Style.UkiyoE"],
+      "resolved_b": ["Style.Anime", "Style.DigitalPainting", "Style.Photorealistic"],
+      "severity": "info",
+      "message": "浮世絵スタイルとモダンスタイルが混在しています",
+      "suggestion": "伝統的な浮世絵風と現代スタイルの混合は意図的でない限り統一を推奨します。"
+    },
+    {
+      "id": "vampire_vs_angel",
+      "resolved_a": ["Fantasy.Vampire", "Fantasy.Demon"],
+      "resolved_b": ["Fantasy.Angel", "Fantasy.Halo"],
+      "severity": "info",
+      "message": "闇系ファンタジー要素と光系ファンタジー要素が混在しています",
+      "suggestion": "意図的な対比表現でなければ、世界観を統一することを推奨します。"
+    }
+  ],
+
+  "recommended_pairs": [
+    {
+      "id": "quality_with_face_detail",
+      "resolved_a": ["Quality.High", "Quality.UltraHD"],
+      "resolved_b": ["Eyes.Blue", "Eyes.Green", "Hair.Blonde", "Expression.Smile"],
+      "bonus": 3.0,
+      "message": "品質タグと顔パーツの組み合わせは効果的です"
+    },
+    {
+      "id": "anime_with_colorful_hair",
+      "resolved_a": ["Style.Anime"],
+      "resolved_b": ["Hair.Pink", "Hair.Blue", "Hair.Purple", "Hair.Silver"],
+      "bonus": 5.0,
+      "message": "アニメスタイルとカラフルな髪の相性は良好です"
+    },
+    {
+      "id": "fantasy_with_special_eyes",
+      "resolved_a": ["Fantasy.Elf", "Fantasy.Vampire", "Fantasy.Angel"],
+      "resolved_b": ["Eyes.Purple", "Eyes.Red", "Eyes.Silver", "Eyes.Golden"],
+      "bonus": 4.0,
+      "message": "ファンタジーキャラクターと特殊な目の色は好相性です"
+    },
+    {
+      "id": "photorealistic_with_skin",
+      "resolved_a": ["Style.Photorealistic"],
+      "resolved_b": ["Skin.Fair", "Skin.Tan", "Skin.Pale"],
+      "bonus": 3.0,
+      "message": "写実的スタイルと肌の詳細指定は品質向上に効果的です"
+    },
+    {
+      "id": "ukiyoe_with_fantasy",
+      "resolved_a": ["Style.UkiyoE"],
+      "resolved_b": ["Fantasy.Oni", "Fantasy.Spirit"],
+      "bonus": 5.0,
+      "message": "浮世絵スタイルと日本的ファンタジーは世界観の一致が高い組み合わせです"
+    }
+  ],
+
+  "token_budget": {
+    "max_tokens": 75,
+    "warn_threshold": 0.8,
+    "critical_threshold": 1.0,
+    "avg_tokens_per_tag": 1.5,
+    "priority_trim_categories": ["accessories", "clothing", "body", "age"],
+    "protected_categories": ["quality", "eyes", "hair", "expression"]
+  }
+}

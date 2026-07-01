@@ -44,5 +44,7 @@ fps-data/dictionaries/user/*.yaml
 !fps-data/dictionaries/user/.gitkeep
 logs/
 *.log
-cache/
-backup/
+# cache/ - 削除（fps-core/cache は除外しない）
+!fps-core/cache/
+# backup/ - 削除（fps-core/backup は除外しない）
+!fps-core/backup/

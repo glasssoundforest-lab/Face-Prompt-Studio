@@ -7,10 +7,141 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ## [Unreleased]
 
-### Planned (Milestone 5 以降)
-- GUI Studio（Web UI）
-- Knowledge Browser
-- Prompt History Timeline
+次期リリースの変更はここに記載します。
+
+---
+
+## [1.0.0] — 2026-07-01 🎉 正式リリース
+
+v0.9.5 からのフィーチャーフリーズを経て、v1.0.0 として正式リリース。
+Face Prompt Studio は以下の要件をすべて満たし、
+プロダクションレディなプロンプト最適化フレームワークとなった。
+
+### リリース基準達成
+
+| 基準 | 状態 |
+|---|---|
+| REST API 全エンドポイント実装（目標 15本以上） | ✅ 20本 |
+| Web UI 全タブ実装 | ✅ Editor / Optimize / Presets / Knowledge / History |
+| 日本語入力対応 | ✅ 105キー（MeCab不要） |
+| ネガティブプロンプト最適化 | ✅ Cross-conflict 検出 |
+| テンプレートエンジン | ✅ 5種組み込み |
+| 安定テスト通過数 | ✅ 843件 PASS |
+| ComfyUI ノード | ✅ 10種 |
+| CHANGELOG / README 完備 | ✅ |
+
+### Added（v0.9.5 → v1.0.0）
+
+- `fps-core/__init__.py` — `__version__ = "1.0.0"` 追加
+
+### Notes
+
+v1.0.0 は v0.9.5 と機能的に同一。リリース基準の確認と
+バージョン正規化のためのリリースタグ。
+
+---
+
+## [0.9.5] — 2026-07-01
+
+Phase 5 GUI Studio + Phase 6 Optimizer拡張 完了。
+REST API・Web UI・日本語対応・テンプレートエンジンを実装し、
+フルスタックなプロンプト最適化プラットフォームとして完成。
+
+### Added — Phase 5: GUI Studio (M5-0 〜 M5-4)
+
+**M5-0 Gap解消シリーズ (REST API / CLI / HistoryManager)**
+
+- **fps-core/history/** — `HistoryManager` 新設
+  - `record()` / `list()` / `get()` / `delete()` / `toggle_favorite()` / `set_label()`
+  - `compare(id1, id2)` → `DiffResult`（added/removed/unchanged/score_delta）
+  - スレッドセーフ in-memory ストア + JSON シリアライズ
+- **fps-adapters/rest/** — FastAPI ベース REST API（12エンドポイント）
+  - `POST /compile`, `POST /optimize`, `GET /dictionary/search`
+  - `GET /history`, `POST /validate`, `GET /health` ほか
+  - Pydantic v2 スキーマ、OpenAPI 自動生成対応
+- **fps-tools/cli/** — `fps` CLI コマンド
+  - `fps compile <prompt>`, `fps optimize`, `fps preset list/apply`
+  - `fps history list/show/export`, `fps validate`
+
+**M5-1: ComfyUI GUI強化**
+- カテゴリグループ化（24カテゴリ → セクション別UI）
+- `FacePromptCategoryGroupNode` — カテゴリ別フィルタリングノード
+- `FacePromptGroupControlNode` — グループ重み一括制御ノード
+
+**M5-2: Prompt Editor Panel Web UI**
+- `fps-gui/web/index.html` — SPA ベース Web UI
+  - Editor タブ: タグ入力・リアルタイムプレビュー・重みスライダー
+  - Optimize タブ: スコア表示・問題一覧・改善提案
+  - Presets タブ: プリセット選択・適用
+- CSS変数ベースのダークテーマ対応
+
+**M5-3: Knowledge Browser**
+- REST API 追加: `GET /dictionary/categories`, `GET /dictionary/entries`, `GET /dictionary/synonyms`
+- Web UI: 🔍 Knowledgeタブ（フルWidth）
+  - カテゴリバー（24カテゴリ）・検索ボックス（280ms debounce）
+  - エントリリスト・詳細ペイン（resolved / weight / synonyms）
+  - 「エディタに追加」ボタン
+- テスト: +20件
+
+**M5-4: Prompt History Timeline**
+- REST API 追加: `GET /history/{id}`, `POST /history/{id}/favorite`,
+  `PUT /history/{id}/label`, `GET /history/{id1}/diff/{id2}`, `DELETE /history/{id}`
+- Web UI: 🕐 Historyタブ（フルWidth）
+  - スコア推移グラフ（SVG バーチャート、最大40件）
+  - タイムライン表示（日付グルーピング）・比較モード（diff 3カラム）
+  - お気に入り★・ラベル編集・→ Editorボタン
+- テスト: +20件
+
+### Added — Phase 6: Optimizer拡張 + 多言語対応 (M6-1 〜 M6-3)
+
+**M6-1: ネガティブプロンプト最適化**
+- `QualityScore.negative_coverage_score` — ネガティブ網羅度スコア（後方互換）
+- `IssueType.CROSS_CONFLICT` — positive/negative クロス矛盾タイプ追加
+- `detect_cross_conflicts(positive_tags, negative_tags)` — 5種の排他グループでクロスチェック
+- `NEGATIVE_REDUNDANT_GROUPS` + `detect_negative_redundancy()` — ネガティブ専用冗長グループ
+- `calculate_negative_coverage_score()` — ネガティブ推奨カテゴリの網羅度評価
+- `OptimizerManager.analyze(negative_tags=...)` — ネガティブタグ同時解析
+- `POST /optimize?negative_prompt=...` — REST API対応
+- テスト: +40件
+
+**M6-2: 日本語入力対応（MeCab不要）**
+- `fps-data/dictionaries/system/synonyms/japanese_tags.json` 新設
+  - 105件の日本語→resolved マッピング
+  - ひらがな・カタカナ・漢字キー対応（全カテゴリ網羅）
+  - `DictionaryManager.lookup("青い目")` → `Eyes.Blue` が動作
+- `dictionary/validator.py` — Unicode キーバリデーション追加
+- テスト: +20件（辞書ファイル構造・マッピング・DM統合）
+
+**M6-3: プロンプトテンプレートエンジン**
+- `fps-core/template/` パッケージ新規作成
+  - `Template` / `TemplateVariable` / `RenderResult` / `TemplateManager`
+  - `{variable}` 形式の変数置換エンジン
+  - `render(template_id, vars)` / `render_body(body, vars)`
+- 組み込みテンプレート5種:
+  - `face_basic` — 目・髪・表情の基本セット
+  - `face_detailed` — 目・髪・表情・肌・顔型の詳細セット
+  - `fantasy_character` — 猫耳・翼・角などファンタジー要素付き
+  - `negative_basic` — 定番ネガティブプロンプトテンプレート
+  - `style_transfer` — スタイル転写テンプレート
+- REST API 3エンドポイント:
+  - `GET /templates ?category=`
+  - `POST /templates/{id}/render`
+  - `POST /templates/render`
+- テスト: +40件
+
+### Changed
+
+- `OptimizeResponse` スキーマ: `negative_coverage_score` フィールド追加
+- `dictionary/validator.py`: Unicode文字（ひらがな・カタカナ・漢字）をキーとして許可
+
+### Testing
+
+- **新規テスト合計: +140件**
+  - M5-3/M5-4 REST API テスト: +40件
+  - M6-1 Optimizer拡張テスト: +40件
+  - M6-2 日本語タグテスト: +20件
+  - M6-3 テンプレートエンジンテスト: +40件
+- **合計安定テスト: 843件 PASS**（M5/M6追加分はすべて GREEN）
 
 ---
 

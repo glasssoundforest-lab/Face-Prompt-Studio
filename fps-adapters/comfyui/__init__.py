@@ -6,9 +6,11 @@ ComfyUI はこのファイルを読み込んで NODE_CLASS_MAPPINGS / NODE_DISPL
 """
 
 from .nodes.debug_output import FacePromptDebugNode
+from .nodes.face_prompt_backup import FacePromptBackupNode
 from .nodes.face_prompt_category_filter import FacePromptCategoryFilterNode
 from .nodes.face_prompt_cleaner import FacePromptCleanerNode
 from .nodes.face_prompt_compiler import FacePromptCompilerNode
+from .nodes.face_prompt_group_control import FacePromptGroupControlNode
 from .nodes.face_prompt_history import FacePromptHistoryNode
 from .nodes.face_prompt_optimizer import FacePromptOptimizerNode
 from .nodes.face_prompt_preset import FacePromptPresetNode
@@ -23,6 +25,8 @@ NODE_CLASS_MAPPINGS = {
     "FacePromptCategoryFilter": FacePromptCategoryFilterNode,
     "FacePromptOptimizer": FacePromptOptimizerNode,
     "FacePromptHistory": FacePromptHistoryNode,
+    "FacePromptBackup": FacePromptBackupNode,
+    "FacePromptGroupControl": FacePromptGroupControlNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -34,6 +38,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptCategoryFilter": "🎭 Face Prompt Category Filter",
     "FacePromptOptimizer": "🎭 Face Prompt Optimizer",
     "FacePromptHistory": "🎭 Face Prompt History",
+    "FacePromptBackup": "🎭 Face Prompt Backup",
+    "FacePromptGroupControl": "🎭 Face Prompt Group Control",
 }
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]

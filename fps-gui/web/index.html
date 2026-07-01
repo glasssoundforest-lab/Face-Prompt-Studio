@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPS — Prompt Editor</title>
+<style>
+:root {
+  --bg:#0D0D0F; --surface:#161619; --surface2:#1E1E24; --border:#2A2A35;
+  --accent:#F5A623; --accent-lo:rgba(245,166,35,.12);
+  --green:#3DD68C; --red:#FF5370; --blue:#79B8FF;
+  --text:#E8E8F0; --muted:#6B6B80;
+  --mono:'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+  --sans:'Inter','Segoe UI',system-ui,sans-serif;
+  --r:6px; --r-lg:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5;}
+button{cursor:pointer;border:none;font:inherit;}
+input,textarea,select{font:inherit;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);}
+#app{display:grid;grid-template-rows:48px 1fr;height:100vh;}
+header{display:flex;align-items:center;gap:12px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--border);}
+.logo{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.08em;white-space:nowrap;}
+.logo span{color:var(--muted);}
+header nav{display:flex;gap:4px;margin-left:auto;}
+.nav-btn{padding:5px 14px;border-radius:var(--r);font-size:13px;color:var(--muted);background:transparent;transition:background .15s,color .15s;}
+.nav-btn:hover,.nav-btn.active{background:var(--accent-lo);color:var(--accent);}
+.server-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-left:16px;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);}
+.dot.online{background:var(--green);box-shadow:0 0 6px var(--green);}
+.dot.offline{background:var(--red);}
+main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
+.editor-panel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.panel-header{padding:12px 16px 0;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.editor-wrap{flex:1;display:flex;flex-direction:column;padding:12px 16px;gap:10px;}
+#prompt-input{flex:1;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);font-family:var(--mono);font-size:13px;line-height:1.7;resize:none;outline:none;transition:border-color .2s;min-height:120px;}
+#prompt-input:focus{border-color:var(--accent);}
+#prompt-input::placeholder{color:var(--muted);}
+#tag-preview{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);min-height:56px;}
+.tag-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:20px;font-size:12px;font-family:var(--mono);font-weight:500;white-space:nowrap;cursor:default;transition:opacity .15s;border:1px solid transparent;}
+.tag-badge .cat-dot{width:6px;height:6px;border-radius:50%;}
+.tag-badge.quality{background:rgba(245,166,35,.15);border-color:rgba(245,166,35,.3);color:#F5A623;}
+.tag-badge.eyes{background:rgba(121,184,255,.15);border-color:rgba(121,184,255,.3);color:#79B8FF;}
+.tag-badge.hair{background:rgba(61,214,140,.15);border-color:rgba(61,214,140,.3);color:#3DD68C;}
+.tag-badge.style{background:rgba(197,148,255,.15);border-color:rgba(197,148,255,.3);color:#C594FF;}
+.tag-badge.expression{background:rgba(255,185,100,.15);border-color:rgba(255,185,100,.3);color:#FFB964;}
+.tag-badge.default{background:var(--surface);border-color:var(--border);color:var(--text);}
+.tag-badge.negative{background:rgba(255,83,112,.1);border-color:rgba(255,83,112,.3);color:var(--red);}
+.tag-weight{font-size:10px;opacity:.65;}
+#score-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);}
+.score-label{font-size:11px;color:var(--muted);white-space:nowrap;}
+.score-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.score-fill{height:100%;border-radius:3px;transition:width .4s,background .4s;}
+.score-val{font-family:var(--mono);font-size:13px;font-weight:600;min-width:36px;text-align:right;}
+.action-bar{display:flex;gap:8px;padding:0 16px 14px;}
+.btn-primary{padding:8px 20px;border-radius:var(--r);background:var(--accent);color:#000;font-weight:600;font-size:13px;transition:opacity .15s;}
+.btn-primary:hover{opacity:.85;}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-ghost{padding:8px 16px;border-radius:var(--r);background:transparent;color:var(--muted);border:1px solid var(--border);font-size:13px;transition:color .15s,border-color .15s;}
+.btn-ghost:hover{color:var(--text);border-color:var(--text);}
+.adapter-select{padding:7px 10px;border-radius:var(--r);font-size:12px;color:var(--muted);outline:none;}
+.adapter-select:focus{border-color:var(--accent);}
+.result-panel{display:flex;flex-direction:column;overflow:hidden;background:var(--surface);}
+.result-tabs{display:flex;border-bottom:1px solid var(--border);}
+.tab-btn{padding:10px 16px;font-size:12px;font-weight:500;color:var(--muted);background:transparent;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-color:var(--accent);}
+.result-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;}
+.result-body::-webkit-scrollbar{width:5px;}
+.result-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.section-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;}
+.code-block{padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--text);word-break:break-all;position:relative;}
+.copy-btn{position:absolute;top:8px;right:8px;padding:3px 9px;border-radius:4px;font-size:11px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);transition:color .15s;}
+.copy-btn:hover{color:var(--accent);}
+.issue-item{display:flex;gap:8px;padding:9px 12px;background:var(--bg);border-radius:var(--r);border-left:3px solid var(--border);font-size:12px;line-height:1.5;}
+.issue-item.warning{border-color:#F5A623;}
+.issue-item.error{border-color:var(--red);}
+.issue-item.info{border-color:var(--blue);}
+.issue-sev{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;margin-top:2px;}
+.issue-item.warning .issue-sev{color:#F5A623;}
+.issue-item.error .issue-sev{color:var(--red);}
+.issue-item.info .issue-sev{color:var(--blue);}
+.issue-msg{color:var(--text);}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.score-card{padding:10px 12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);}
+.score-card .label{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.score-card .val{font-family:var(--mono);font-size:20px;font-weight:700;}
+.history-item{padding:10px 12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:border-color .15s;}
+.history-item:hover{border-color:var(--accent);}
+.history-meta{display:flex;gap:8px;font-size:10px;color:var(--muted);margin-bottom:4px;}
+.history-preview{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.empty{color:var(--muted);font-size:12px;text-align:center;padding:24px 0;font-style:italic;}
+.spin{display:inline-block;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.preset-list{display:flex;flex-direction:column;gap:6px;}
+.preset-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:border-color .15s;}
+.preset-item:hover{border-color:var(--accent);}
+.preset-name{font-size:13px;font-weight:500;}
+.preset-tags{font-size:11px;color:var(--muted);}
+#toast{position:fixed;bottom:20px;right:20px;padding:9px 16px;border-radius:var(--r);background:var(--surface2);border:1px solid var(--border);font-size:12px;color:var(--text);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none;z-index:100;}
+#toast.show{opacity:1;transform:translateY(0);}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+/* ── v1.2 User Dictionary Editor ───────────────────────── */
+.kb-user-section{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.kb-user-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+.kb-user-form{display:flex;flex-direction:column;gap:8px;}
+.kb-user-row{display:flex;gap:6px;align-items:center;}
+.kb-user-label{font-size:11px;color:var(--muted);min-width:60px;flex-shrink:0;}
+.kb-user-input{flex:1;padding:6px 9px;font-size:12px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);outline:none;transition:border-color .2s;}
+.kb-user-input:focus{border-color:var(--accent);}
+.kb-user-submit{padding:7px 0;width:100%;background:var(--accent);color:#000;border-radius:var(--r);font-size:12px;font-weight:700;margin-top:4px;}
+.kb-user-submit:hover{opacity:.85;}
+.kb-user-delete{padding:5px 10px;border-radius:var(--r);font-size:11px;border:1px solid var(--border);color:var(--red);background:transparent;}
+.kb-user-delete:hover{background:rgba(255,83,112,.08);}
+.kb-user-list{margin-top:12px;}
+.kb-user-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;}
+.kb-user-item-key{flex:1;color:var(--accent);}
+.kb-user-item-res{flex:1;color:var(--muted);}
+.kb-user-item-cat{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--surface2);color:var(--muted);}
+/* ── v1.2 Optimizer連携ビュー ──────────────────────────── */
+.kb-conflict-view{margin-top:12px;}
+.kb-conflict-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.kb-conflict-group{margin-bottom:10px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg);}
+.kb-conflict-group-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.kb-conflict-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.kb-conflict-tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:8px;background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);color:#e0b800;}
+</style>
+#history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
+#history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
+.ht-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;}
+.ht-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:7px;}
+.ht-toolbar-row{display:flex;align-items:center;gap:6px;}
+.ht-search{flex:1;padding:6px 10px;font-size:12px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);outline:none;transition:border-color .2s;}
+.ht-search:focus{border-color:var(--accent);}
+.ht-filter-btn{padding:3px 9px;font-size:11px;border-radius:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);transition:all .12s;}
+.ht-filter-btn:hover{border-color:var(--accent);color:var(--text);}
+.ht-filter-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;}
+.ht-cmp-btn{padding:4px 10px;font-size:11px;border-radius:var(--r);border:1px solid var(--border);color:var(--muted);background:transparent;transition:all .12s;}
+.ht-cmp-btn.on{background:rgba(121,184,255,.15);border-color:var(--blue);color:var(--blue);}
+.ht-timeline{flex:1;overflow-y:auto;}
+.ht-date-group{padding:6px 14px 2px;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;border-top:1px solid var(--border);background:var(--bg);}
+.ht-row{display:flex;align-items:flex-start;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;position:relative;}
+.ht-row:hover{background:var(--surface2);}
+.ht-row.sel{background:var(--accent-lo);}
+.ht-row.cmp1{background:rgba(121,184,255,.1);}
+.ht-row.cmp2{background:rgba(61,214,140,.1);}
+.ht-star{font-size:13px;flex-shrink:0;cursor:pointer;transition:opacity .12s;margin-top:1px;}
+.ht-star:hover{opacity:.7;}
+.ht-info{flex:1;min-width:0;}
+.ht-prompt{font-family:var(--mono);font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ht-meta{display:flex;align-items:center;gap:6px;margin-top:3px;}
+.ht-time{font-size:10px;color:var(--muted);}
+.ht-label{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);}
+.ht-score{font-family:var(--mono);font-size:12px;font-weight:600;flex-shrink:0;}
+.ht-right{display:flex;flex-direction:column;overflow:hidden;background:var(--surface);}
+.ht-right-ph{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;font-style:italic;}
+.ht-graph-bar{border-bottom:1px solid var(--border);padding:12px 20px 8px;background:var(--bg);}
+.ht-graph-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.ht-detail-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:16px;}
+.ht-detail-head{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.ht-detail-id{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.ht-detail-score{font-family:var(--mono);font-size:24px;font-weight:700;}
+.ht-detail-actions{display:flex;gap:6px;}
+.ht-action-btn{padding:5px 12px;border-radius:var(--r);font-size:12px;border:1px solid var(--border);color:var(--muted);background:transparent;transition:all .12s;}
+.ht-action-btn:hover{border-color:var(--accent);color:var(--accent);}
+.ht-action-btn.danger:hover{border-color:var(--red);color:var(--red);}
+.ht-section-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.ht-code{padding:10px 13px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-family:var(--mono);font-size:12px;line-height:1.7;word-break:break-all;position:relative;}
+.ht-copy{position:absolute;top:7px;right:7px;padding:2px 8px;border-radius:4px;font-size:11px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+.ht-copy:hover{color:var(--accent);}
+.ht-label-edit{display:flex;gap:6px;align-items:center;}
+.ht-label-input{flex:1;padding:6px 10px;font-size:12px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);outline:none;}
+.ht-label-input:focus{border-color:var(--accent);}
+.ht-label-save{padding:5px 12px;border-radius:var(--r);font-size:12px;background:var(--accent);color:#000;font-weight:700;}
+.ht-wbar{height:5px;border-radius:3px;background:var(--border);margin-top:5px;overflow:hidden;}
+.ht-wfill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s;}
+/* diff */
+.ht-diff-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.ht-diff-col{padding:10px 12px;border-radius:var(--r);border:1px solid var(--border);}
+.ht-diff-col.added{border-color:rgba(61,214,140,.4);background:rgba(61,214,140,.06);}
+.ht-diff-col.removed{border-color:rgba(255,83,112,.4);background:rgba(255,83,112,.06);}
+.ht-diff-col.unchanged{border-color:var(--border);background:var(--bg);}
+.ht-diff-head{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;}
+.ht-diff-col.added .ht-diff-head{color:var(--green);}
+.ht-diff-col.removed .ht-diff-head{color:var(--red);}
+.ht-diff-col.unchanged .ht-diff-head{color:var(--muted);}
+.ht-diff-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.ht-diff-tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:8px;}
+.added .ht-diff-tag{background:rgba(61,214,140,.12);color:var(--green);}
+.removed .ht-diff-tag{background:rgba(255,83,112,.1);color:var(--red);}
+.unchanged .ht-diff-tag{background:var(--surface2);color:var(--muted);}
+.ht-score-delta{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:14px;font-weight:700;padding:4px 12px;border-radius:var(--r);background:var(--surface2);border:1px solid var(--border);}
+</style>
+#kb-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
+#kb-panel.active{display:grid;grid-template-columns:320px 1fr;gap:0;}
+.kb-left{display:flex;flex-direction:column;gap:0;border-right:1px solid var(--border);overflow:hidden;}
+.kb-toolbar{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+.kb-search-row{display:flex;align-items:center;gap:8px;}
+.kb-search{flex:1;padding:7px 11px;font-size:12px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);outline:none;transition:border-color .2s;}
+.kb-search:focus{border-color:var(--accent);}
+.kb-count{font-size:11px;color:var(--muted);white-space:nowrap;min-width:48px;text-align:right;}
+.kb-cat-bar{display:flex;flex-wrap:wrap;gap:5px;max-height:96px;overflow-y:auto;}
+.kb-cat-btn{padding:3px 9px;font-size:11px;border-radius:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);transition:all .12s;white-space:nowrap;}
+.kb-cat-btn:hover{border-color:var(--accent);color:var(--text);}
+.kb-cat-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;}
+.kb-entry-list{flex:1;overflow-y:auto;}
+.kb-entry-row{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.kb-entry-row:hover{background:var(--surface2);}
+.kb-entry-row.sel{background:var(--accent-lo);}
+.kb-entry-key{flex:1;font-family:var(--mono);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.kb-entry-cat{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);flex-shrink:0;}
+.kb-entry-w{font-size:11px;color:var(--accent);font-family:var(--mono);min-width:32px;text-align:right;flex-shrink:0;}
+.kb-right{display:flex;flex-direction:column;overflow-y:auto;padding:24px 28px;background:var(--surface);}
+.kb-right-ph{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;font-style:italic;}
+.kb-detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:12px;}
+.kb-detail-key{font-family:var(--mono);font-size:22px;color:var(--accent);word-break:break-all;}
+.kb-detail-catbadge{padding:4px 12px;border-radius:12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);flex-shrink:0;}
+.kb-section{margin-bottom:20px;}
+.kb-section-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.kb-section-val{font-family:var(--mono);font-size:14px;color:var(--text);}
+.kb-wbar{height:5px;border-radius:3px;background:var(--border);margin-top:8px;overflow:hidden;}
+.kb-wfill{height:100%;border-radius:3px;background:var(--accent);transition:width .3s;}
+.kb-synonym-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.kb-syn{padding:3px 9px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;transition:all .12s;}
+.kb-syn:hover{border-color:var(--accent);color:var(--text);}
+.kb-add-btn{margin-top:24px;padding:10px 0;width:100%;background:var(--accent);color:#000;border-radius:var(--r);font-size:13px;font-weight:700;transition:opacity .15s;}
+.kb-add-btn:hover{opacity:.85;}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="logo">FPS<span>/ Prompt Editor</span></div>
+  <nav>
+    <button class="nav-btn active" data-tab="editor" onclick="showTab('editor')">Editor</button>
+    <button class="nav-btn" data-tab="optimize" onclick="showTab('optimize')">Optimize</button>
+    <button class="nav-btn" data-tab="presets" onclick="showTab('presets')">Presets</button>
+    <button class="nav-btn" data-tab="history" onclick="showTab('history')">History</button>
+    <button class="nav-btn" data-tab="kb" onclick="showTab('kb')">🔍 Knowledge</button>
+  </nav>
+  <div class="server-status">
+    <div class="dot" id="status-dot"></div>
+    <span id="status-text">connecting…</span>
+  </div>
+</header>
+<main>
+  <div class="editor-panel">
+    <div class="panel-header">Prompt Input</div>
+    <div class="editor-wrap">
+      <textarea id="prompt-input"
+        placeholder="masterpiece, blue_eyes, long_hair, smile&#10;DSL: (quality:high:1.5), [bad hands]"
+        spellcheck="false"
+        oninput="onPromptInput()"></textarea>
+      <div id="tag-preview"><span class="empty">タグを入力するとここに表示されます</span></div>
+      <div id="score-bar">
+        <span class="score-label">Quality</span>
+        <div class="score-track"><div class="score-fill" id="score-fill" style="width:0%;background:var(--muted)"></div></div>
+        <span class="score-val" id="score-val">—</span>
+      </div>
+      <div class="action-bar">
+        <button class="btn-primary" id="compile-btn" onclick="compile()">Compile</button>
+        <select class="adapter-select" id="adapter-sel">
+          <option value="">no adapter</option>
+          <option value="comfyui">ComfyUI</option>
+          <option value="a1111">A1111</option>
+          <option value="novelai">NovelAI</option>
+        </select>
+        <button class="btn-ghost" onclick="clearEditor()">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="result-panel">
+    <div class="result-tabs">
+      <button class="tab-btn active" id="tab-result" onclick="switchResult('result')">Result</button>
+      <button class="tab-btn" id="tab-issues" onclick="switchResult('issues')">Issues<span id="issue-badge"></span></button>
+      <button class="tab-btn" id="tab-score" onclick="switchResult('score')">Score</button>
+    </div>
+    <div class="result-body" id="result-body">
+      <div class="empty">プロンプトを入力して Compile してください</div>
+    </div>
+  </div>
+</main>
+
+<!-- M5-3 Knowledge Browser (full-width overlay) -->
+<div id="kb-panel">
+  <div class="kb-left">
+    <div class="kb-toolbar">
+      <div class="kb-search-row">
+        <input id="kb-search" class="kb-search" type="text" placeholder="タグ名で検索…" oninput="kbOnSearch()">
+        <span id="kb-count" class="kb-count">–</span>
+      </div>
+      <div id="kb-cat-bar" class="kb-cat-bar"></div>
+    </div>
+    <div id="kb-entry-list" class="kb-entry-list">
+      <div class="empty" style="padding:20px 16px">カテゴリを選択するか、タグ名を検索してください</div>
+    </div>
+  </div>
+  <div id="kb-right" class="kb-right">
+    <div class="kb-right-ph">エントリを選択すると詳細を表示します</div>
+  </div>
+</div>
+
+<!-- v1.2 User Dict Editor / Optimizer 連携（KB右下に追加パネル） -->
+<div id="kb-user-panel" style="display:none;padding:20px 24px;border-top:1px solid var(--border);background:var(--bg);">
+  <div class="kb-user-section">
+    <div class="kb-user-title">🖊 ユーザー辞書エントリ追加</div>
+    <div class="kb-user-form">
+      <div class="kb-user-row">
+        <span class="kb-user-label">キー</span>
+        <input class="kb-user-input" id="kbu-key" placeholder="my_tag" />
+      </div>
+      <div class="kb-user-row">
+        <span class="kb-user-label">Resolved</span>
+        <input class="kb-user-input" id="kbu-resolved" placeholder="Category.Value" />
+      </div>
+      <div class="kb-user-row">
+        <span class="kb-user-label">カテゴリ</span>
+        <input class="kb-user-input" id="kbu-category" placeholder="eyes" />
+      </div>
+      <div class="kb-user-row">
+        <span class="kb-user-label">重み</span>
+        <input class="kb-user-input" id="kbu-weight" type="number" value="1.0" step="0.1" min="0.1" max="3.0" style="max-width:80px" />
+      </div>
+      <div class="kb-user-row">
+        <span class="kb-user-label">別名</span>
+        <input class="kb-user-input" id="kbu-aliases" placeholder="alias1, alias2" />
+      </div>
+      <button class="kb-user-submit" onclick="kbuSave()">＋ エントリ追加</button>
+    </div>
+  </div>
+  <div class="kb-user-section" id="kbu-list-wrap">
+    <div class="kb-user-title">ユーザー辞書一覧</div>
+    <div class="kb-user-list" id="kbu-list"><div class="empty" style="padding:8px 0;font-size:12px">なし</div></div>
+  </div>
+  <div class="kb-conflict-view" id="kb-conflict-view">
+    <div class="kb-conflict-title">⚠ 矛盾グループ（Optimizer連携）</div>
+    <div id="kb-conflict-groups"></div>
+  </div>
+</div>
+
+<!-- M5-4 History Timeline (full-width overlay) -->
+<div id="history-panel">
+  <div class="ht-left">
+    <div class="ht-toolbar">
+      <div class="ht-toolbar-row">
+        <input id="ht-search" class="ht-search" type="text" placeholder="プロンプトを検索…" oninput="htOnSearch()">
+      </div>
+      <div class="ht-toolbar-row">
+        <button id="ht-fav-btn" class="ht-filter-btn" onclick="htToggleFavFilter()">★ お気に入り</button>
+        <button id="ht-cmp-toggle" class="ht-cmp-btn" onclick="htToggleCmpMode()">⇄ 比較</button>
+        <span id="ht-count" style="font-size:11px;color:var(--muted);margin-left:auto">–</span>
+      </div>
+    </div>
+    <div id="ht-timeline" class="ht-timeline">
+      <div class="empty" style="padding:20px 16px"><span class="spin">⟳</span> 読み込み中…</div>
+    </div>
+  </div>
+  <div class="ht-right" id="ht-right">
+    <div class="ht-right-ph">エントリを選択すると詳細を表示します</div>
+  </div>
+</div>
+
+</div>
+<div id="toast"></div>
+<script>
+const API='http://127.0.0.1:8420';
+let state={activeTab:'editor',activeResult:'result',compiled:null,optimized:null,presets:[],history:[],online:false,debounce:null};
+const $=id=>document.getElementById(id);
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200);}
+async function api(path,opts={}){
+  const url=new URL(API+path);
+  if(opts.params)Object.entries(opts.params).forEach(([k,v])=>url.searchParams.set(k,v));
+  const r=await fetch(url,{method:opts.method||'GET',headers:{'Content-Type':'application/json'},body:opts.body?JSON.stringify(opts.body):undefined});
+  if(!r.ok)throw new Error(`${r.status}: ${await r.text()}`);
+  return r.json();
+}
+const CAT_CLASS={quality:'quality',style:'quality',eyes:'eyes',eyebrows:'eyes',eyelashes:'eyes',hair:'hair',expression:'expression',skin:'style',face_shape:'style'};
+function catClass(cat){return CAT_CLASS[cat]||'default';}
+function scoreColor(v){if(v>=80)return'var(--green)';if(v>=60)return'#F5A623';return'var(--red)';}
+async function checkHealth(){try{await api('/health');state.online=true;$('status-dot').className='dot online';$('status-text').textContent='API online';}catch{state.online=false;$('status-dot').className='dot offline';$('status-text').textContent='API offline';}}
+async function compile(){
+  const prompt=$('prompt-input').value.trim();if(!prompt)return;
+  $('compile-btn').disabled=true;$('compile-btn').innerHTML='<span class="spin">⟳</span>';
+  try{
+    const adapter=$('adapter-sel').value||undefined;
+    const params={prompt};if(adapter)params.adapter=adapter;
+    const[compiled,optimized]=await Promise.all([api('/compile',{method:'POST',params}),api('/optimize',{method:'POST',params:{prompt}})]);
+    state.compiled=compiled;state.optimized=optimized;
+    renderTagBadges(compiled);renderScoreBar(optimized.score.overall_score);
+    renderIssueBadge(optimized.issues.length);renderCurrentResult();
+  }catch(e){toast('エラー: '+e.message);}
+  finally{$('compile-btn').disabled=false;$('compile-btn').textContent='Compile';}
+}
+function onPromptInput(){clearTimeout(state.debounce);state.debounce=setTimeout(previewTags,280);}
+function previewTags(){
+  const raw=$('prompt-input').value;
+  const tags=raw.split(',').map(t=>t.trim()).filter(Boolean);
+  const preview=$('tag-preview');
+  if(!tags.length){preview.innerHTML='<span class="empty">タグを入力するとここに表示されます</span>';return;}
+  preview.innerHTML=tags.map(tag=>{const neg=tag.startsWith('[')&&tag.endsWith(']');return`<span class="tag-badge ${neg?'negative':'default'}">${escHtml(tag)}</span>`;}).join('');
+}
+function renderTagBadges(compiled){
+  const preview=$('tag-preview');
+  if(!compiled||!compiled.tags||!compiled.tags.length){preview.innerHTML='<span class="empty">タグなし</span>';return;}
+  preview.innerHTML=compiled.tags.map(t=>{
+    const cls=catClass(t.category||'');
+    const w=t.weight!==1.0?`<span class="tag-weight">×${t.weight.toFixed(2)}</span>`:'';
+    return`<span class="tag-badge ${cls}"><span class="cat-dot" style="background:currentColor"></span>${escHtml(t.resolved||t.tag)}${w}</span>`;
+  }).join('');
+}
+function renderScoreBar(score){const pct=Math.round(score);$('score-fill').style.width=pct+'%';$('score-fill').style.background=scoreColor(pct);$('score-val').style.color=scoreColor(pct);$('score-val').textContent=pct;}
+function renderIssueBadge(count){$('issue-badge').textContent=count>0?` (${count})`:'';;}
+function switchResult(tab){
+  state.activeResult=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  $('tab-'+tab).classList.add('active');
+  renderCurrentResult();
+}
+function renderCurrentResult(){
+  const body=$('result-body');const{activeResult,compiled,optimized}=state;
+  if(activeResult==='result'){
+    if(!compiled){body.innerHTML='<div class="empty">まだコンパイルされていません</div>';return;}
+    let html=`<div><div class="section-label">Compiled Prompt</div><div class="code-block">${escHtml(compiled.prompt)||'<span style="color:var(--muted)">空</span>'}<button class="copy-btn" onclick="copyText(this.dataset.v)" data-v="${escAttr(compiled.prompt)}">copy</button></div></div>`;
+    if(compiled.negative)html+=`<div><div class="section-label">Negative Prompt</div><div class="code-block">${escHtml(compiled.negative)}<button class="copy-btn" onclick="copyText(this.dataset.v)" data-v="${escAttr(compiled.negative)}">copy</button></div></div>`;
+    if(compiled.adapter_output)html+=`<div><div class="section-label">Adapter Output</div><div class="code-block" style="font-size:11px">${escHtml(JSON.stringify(compiled.adapter_output,null,2))}</div></div>`;
+    html+=`<div style="font-size:11px;color:var(--muted)">tags: ${compiled.tag_count}</div>`;
+    body.innerHTML=html;
+  } else if(activeResult==='issues'){
+    if(!optimized){body.innerHTML='<div class="empty">まだ分析されていません</div>';return;}
+    const issues=optimized.issues;
+    if(!issues.length){body.innerHTML='<div class="empty">問題は検出されませんでした ✓</div>';return;}
+    body.innerHTML=issues.map(i=>`<div class="issue-item ${i.severity}"><span class="issue-sev">${i.severity}</span><span class="issue-msg">${escHtml(i.message)}</span></div>`).join('')
+      +'<div style="margin-top:6px">'+optimized.recommendations.map(r=>`<div style="font-size:11px;color:var(--muted);padding:3px 0;border-bottom:1px solid var(--border)">・${escHtml(r)}</div>`).join('')+'</div>';
+  } else if(activeResult==='score'){
+    if(!optimized){body.innerHTML='<div class="empty">まだ分析されていません</div>';return;}
+    const s=optimized.score;
+    body.innerHTML='<div class="score-grid">'+[['Overall',s.overall_score],['Coverage',s.coverage_score],['Balance',s.balance_score],['Redundancy',s.redundancy_score]].map(([l,v])=>{const p=Math.round(v);return`<div class="score-card"><div class="label">${l}</div><div class="val" style="color:${scoreColor(p)}">${p}</div></div>`;}).join('')+'</div>';
+  }
+}
+function showTab(tab){
+  state.activeTab=tab;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-tab="${tab}"]`).classList.add('active');
+  const mainEl=document.querySelector('main');
+  const kbEl=$('kb-panel');
+  const htEl=$('history-panel');
+  // 全パネル非表示
+  mainEl.style.display='';kbEl.classList.remove('active');htEl.classList.remove('active');
+  if(tab==='kb'){
+    mainEl.style.display='none';kbEl.classList.add('active');initKb();
+  } else if(tab==='history'){
+    mainEl.style.display='none';htEl.classList.add('active');htLoad();
+  } else {
+    if(tab==='presets')loadPresets();
+    else if(tab==='optimize'&&state.optimized)switchResult('issues');
+    else switchResult('result');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   M5-4  History Timeline
+═══════════════════════════════════════════════════════ */
+const ht={entries:[],filtered:[],favOnly:false,cmpMode:false,cmp1:null,cmp2:null,selId:null,searchTimer:null};
+
+async function htLoad(){
+  const data=await api('/history',{params:{limit:200}});
+  ht.entries=data.entries||[];
+  htApplyFilter();
+  htRenderScoreGraph();
+}
+
+function htOnSearch(){clearTimeout(ht.searchTimer);ht.searchTimer=setTimeout(htApplyFilter,280);}
+
+function htApplyFilter(){
+  const q=($('ht-search').value||'').toLowerCase();
+  ht.filtered=ht.entries.filter(e=>{
+    if(ht.favOnly&&!e.favorite)return false;
+    if(q&&!e.output_prompt.toLowerCase().includes(q)&&!e.input_prompt.toLowerCase().includes(q)&&!e.label.toLowerCase().includes(q))return false;
+    return true;
+  });
+  $('ht-count').textContent=ht.filtered.length+' 件';
+  htRenderTimeline();
+}
+
+function htToggleFavFilter(){
+  ht.favOnly=!ht.favOnly;
+  $('ht-fav-btn').classList.toggle('active',ht.favOnly);
+  htApplyFilter();
+}
+
+function htToggleCmpMode(){
+  ht.cmpMode=!ht.cmpMode;
+  ht.cmp1=null;ht.cmp2=null;
+  $('ht-cmp-toggle').classList.toggle('on',ht.cmpMode);
+  htApplyFilter();
+  if(!ht.cmpMode)$('ht-right').innerHTML='<div class="ht-right-ph">エントリを選択すると詳細を表示します</div>';
+}
+
+/* ── タイムライン描画 ──────────────────────────────────── */
+function htRenderTimeline(){
+  const el=$('ht-timeline');
+  if(!ht.filtered.length){el.innerHTML='<div class="empty" style="padding:20px 16px">履歴なし</div>';return;}
+  // 日付でグルーピング
+  const groups={};
+  ht.filtered.forEach(e=>{
+    const day=e.created_at.split(' ')[0];
+    if(!groups[day])groups[day]=[];
+    groups[day].push(e);
+  });
+  let html='';
+  Object.keys(groups).sort((a,b)=>b.localeCompare(a)).forEach(day=>{
+    html+=`<div class="ht-date-group">${day}</div>`;
+    groups[day].forEach(e=>{
+      const cls=[
+        ht.selId===e.id&&!ht.cmpMode?'sel':'',
+        ht.cmpMode&&ht.cmp1===e.id?'cmp1':'',
+        ht.cmpMode&&ht.cmp2===e.id?'cmp2':'',
+      ].filter(Boolean).join(' ');
+      const sc=Math.round(e.overall_score);
+      html+=`<div class="ht-row ${cls}" onclick="htRowClick('${escAttr(e.id)}')">
+        <span class="ht-star" onclick="event.stopPropagation();htToggleFav('${escAttr(e.id)}')" title="お気に入り">${e.favorite?'★':'☆'}</span>
+        <div class="ht-info">
+          <div class="ht-prompt" title="${escAttr(e.output_prompt)}">${escHtml(e.output_prompt||e.input_prompt)}</div>
+          <div class="ht-meta">
+            <span class="ht-time">${escHtml(e.created_at.split(' ')[1]||'')}</span>
+            ${e.label?`<span class="ht-label">${escHtml(e.label)}</span>`:''}
+          </div>
+        </div>
+        <span class="ht-score" style="color:${scoreColor(sc)}">${sc||'—'}</span>
+      </div>`;
+    });
+  });
+  el.innerHTML=html;
+}
+
+/* ── スコア推移グラフ（SVG） ──────────────────────────── */
+function htRenderScoreGraph(){
+  const entries=[...ht.entries].reverse().slice(-40);// 古い→新しい 最大40件
+  if(!entries.length)return;
+  const W=600,H=60,PAD=4,BAR=Math.max(4,Math.floor((W-PAD*(entries.length-1))/entries.length));
+  const rects=entries.map((e,i)=>{
+    const sc=Math.min(Math.max(e.overall_score,0),100);
+    const barH=Math.max(2,Math.round((sc/100)*(H-4)));
+    const x=i*(BAR+PAD);const y=H-barH;
+    const col=scoreColor(sc);
+    return `<rect x="${x}" y="${y}" width="${BAR}" height="${barH}" fill="${col}" opacity=".8" rx="1"/>`;
+  }).join('');
+  const svg=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="width:100%;height:${H}px">${rects}</svg>`;
+
+  // ht-right の先頭にグラフバーを差し込む（まだdetailが表示されてなければ）
+  const right=$('ht-right');
+  if(!right.querySelector('.ht-graph-bar')){
+    const bar=document.createElement('div');
+    bar.className='ht-graph-bar';
+    bar.innerHTML=`<div class="ht-graph-title">スコア推移（直近 ${entries.length} 件）</div>${svg}`;
+    right.prepend(bar);
+    // placeholder があれば削除
+    const ph=right.querySelector('.ht-right-ph');if(ph)ph.remove();
+    if(!right.querySelector('.ht-detail-body')){
+      const ph2=document.createElement('div');ph2.className='ht-right-ph';
+      ph2.textContent='エントリを選択すると詳細を表示します';
+      right.appendChild(ph2);
+    }
+  }
+}
+
+/* ── 行クリック ────────────────────────────────────────── */
+async function htRowClick(id){
+  if(ht.cmpMode){
+    if(!ht.cmp1){ht.cmp1=id;}
+    else if(!ht.cmp2&&ht.cmp2!==ht.cmp1){ht.cmp2=id;}
+    else{ht.cmp1=id;ht.cmp2=null;}
+    htRenderTimeline();
+    if(ht.cmp1&&ht.cmp2)await htShowDiff();
+    return;
+  }
+  ht.selId=id;
+  htRenderTimeline();
+  await htShowDetail(id);
+}
+
+/* ── お気に入りトグル ─────────────────────────────────── */
+async function htToggleFav(id){
+  try{
+    const res=await api(`/history/${encodeURIComponent(id)}/favorite`,{method:'POST'});
+    const entry=ht.entries.find(e=>e.id===id);
+    if(entry)entry.favorite=res.favorite;
+    htApplyFilter();
+    toast(res.favorite?'★ お気に入り登録':'☆ お気に入り解除');
+  }catch(e){toast('エラー: '+e.message);}
+}
+
+/* ── 詳細パネル ────────────────────────────────────────── */
+async function htShowDetail(id){
+  try{
+    const e=await api(`/history/${encodeURIComponent(id)}`);
+    const sc=Math.round(e.overall_score);
+    const right=$('ht-right');
+    // グラフバーは維持
+    const graph=right.querySelector('.ht-graph-bar');
+    right.innerHTML='';if(graph)right.appendChild(graph);
+    const body=document.createElement('div');body.className='ht-detail-body';
+    body.innerHTML=`
+      <div class="ht-detail-head">
+        <div>
+          <div class="ht-detail-id">${escHtml(e.id)}</div>
+          <div class="ht-detail-score" style="color:${scoreColor(sc)}">${sc||'—'}</div>
+        </div>
+        <div class="ht-detail-actions">
+          <button class="ht-action-btn" onclick="copyText('${escAttr(e.output_prompt)}')">copy</button>
+          <button class="ht-action-btn" onclick="htLoadToEditor('${escAttr(e.output_prompt)}')">→ Editor</button>
+          <button class="ht-action-btn danger" onclick="htDelete('${escAttr(e.id)}')">削除</button>
+        </div>
+      </div>
+      <div>
+        <div class="ht-section-label">Output Prompt</div>
+        <div class="ht-code">${escHtml(e.output_prompt)}<button class="ht-copy" onclick="copyText('${escAttr(e.output_prompt)}')">copy</button></div>
+      </div>
+      ${e.output_negative?`<div><div class="ht-section-label">Negative</div><div class="ht-code">${escHtml(e.output_negative)}</div></div>`:''}
+      <div>
+        <div class="ht-section-label">Input Prompt</div>
+        <div class="ht-code" style="color:var(--muted)">${escHtml(e.input_prompt)}</div>
+      </div>
+      <div>
+        <div class="ht-section-label">Score</div>
+        <div class="ht-wbar"><div class="ht-wfill" style="width:${sc}%;background:${scoreColor(sc)}"></div></div>
+      </div>
+      <div>
+        <div class="ht-section-label">ラベル</div>
+        <div class="ht-label-edit">
+          <input class="ht-label-input" id="ht-label-inp" value="${escAttr(e.label)}" placeholder="ラベルを入力…">
+          <button class="ht-label-save" onclick="htSaveLabel('${escAttr(e.id)}')">保存</button>
+        </div>
+      </div>
+    `;
+    right.appendChild(body);
+  }catch(err){toast('エラー: '+err.message);}
+}
+
+/* ── diff パネル ────────────────────────────────────────── */
+async function htShowDiff(){
+  const id1=ht.cmp1,id2=ht.cmp2;
+  try{
+    const diff=await api(`/history/${encodeURIComponent(id1)}/diff/${encodeURIComponent(id2)}`);
+    const e1=ht.entries.find(e=>e.id===id1);
+    const e2=ht.entries.find(e=>e.id===id2);
+    const right=$('ht-right');
+    const graph=right.querySelector('.ht-graph-bar');
+    right.innerHTML='';if(graph)right.appendChild(graph);
+    const delta=diff.score_delta;
+    const deltaColor=delta>0?'var(--green)':delta<0?'var(--red)':'var(--muted)';
+    const body=document.createElement('div');body.className='ht-detail-body';
+    body.innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:13px;font-weight:600">差分比較</span>
+        <span class="ht-score-delta" style="color:${deltaColor}">
+          ${delta>=0?'+':''}${delta.toFixed(1)} pts
+        </span>
+        ${!diff.has_changes?'<span style="font-size:12px;color:var(--muted)">タグ変化なし</span>':''}
+      </div>
+      <div style="font-size:11px;color:var(--muted)">
+        <span style="color:var(--blue)">▶ ${escHtml(e1?.created_at||id1)}</span>
+        → <span style="color:var(--green)">▶ ${escHtml(e2?.created_at||id2)}</span>
+      </div>
+      <div class="ht-diff-grid">
+        <div class="ht-diff-col added">
+          <div class="ht-diff-head">追加 (${diff.added_tags.length})</div>
+          <div class="ht-diff-tags">${diff.added_tags.map(t=>`<span class="ht-diff-tag">${escHtml(t)}</span>`).join('')||'<span style="color:var(--muted);font-size:11px">なし</span>'}</div>
+        </div>
+        <div class="ht-diff-col removed">
+          <div class="ht-diff-head">削除 (${diff.removed_tags.length})</div>
+          <div class="ht-diff-tags">${diff.removed_tags.map(t=>`<span class="ht-diff-tag">${escHtml(t)}</span>`).join('')||'<span style="color:var(--muted);font-size:11px">なし</span>'}</div>
+        </div>
+        <div class="ht-diff-col unchanged">
+          <div class="ht-diff-head">共通 (${diff.unchanged_tags.length})</div>
+          <div class="ht-diff-tags">${diff.unchanged_tags.slice(0,20).map(t=>`<span class="ht-diff-tag">${escHtml(t)}</span>`).join('')}${diff.unchanged_tags.length>20?`<span class="ht-diff-tag">…+${diff.unchanged_tags.length-20}</span>`:''}</div>
+        </div>
+      </div>
+    `;
+    right.appendChild(body);
+  }catch(err){toast('diff エラー: '+err.message);}
+}
+
+/* ── 削除 ───────────────────────────────────────────────── */
+async function htDelete(id){
+  if(!confirm('この履歴を削除しますか？'))return;
+  try{
+    await api(`/history/${encodeURIComponent(id)}`,{method:'DELETE'});
+    ht.entries=ht.entries.filter(e=>e.id!==id);
+    htApplyFilter();htRenderScoreGraph();
+    $('ht-right').innerHTML='<div class="ht-right-ph">削除しました</div>';
+    toast('履歴を削除しました');
+  }catch(err){toast('削除エラー: '+err.message);}
+}
+
+/* ── ラベル保存 ─────────────────────────────────────────── */
+async function htSaveLabel(id){
+  const label=$('ht-label-inp').value.trim();
+  try{
+    await api(`/history/${encodeURIComponent(id)}/label`,{method:'PUT',body:{label}});
+    const entry=ht.entries.find(e=>e.id===id);
+    if(entry)entry.label=label;
+    htApplyFilter();
+    toast('ラベルを保存しました');
+  }catch(err){toast('エラー: '+err.message);}
+}
+
+/* ── エディタに読み込む ─────────────────────────────────── */
+function htLoadToEditor(prompt){
+  $('prompt-input').value=prompt;
+  showTab('editor');
+  previewTags();
+  toast('エディタに読み込みました');
+}
+
+/* ═══════════════════════════════════════════════════════
+   M5-3 Knowledge Browser
+═══════════════════════════════════════════════════════ */
+const kb={cats:[],activeCat:null,selKey:null,timer:null,initialized:false};
+
+// ── v1.2 User Dictionary Editor ──────────────────────────
+async function initKb(){
+  if(kb.initialized)return;
+  kb.initialized=true;
+  try{
+    const data=await api('/dictionary/categories');
+    kb.cats=data.categories||[];
+    renderKbCatBar();
+  }catch(e){console.error('[KB]',e);}
+  // ユーザー辞書パネルを表示してロード
+  $('kb-user-panel').style.display='block';
+  await kbuLoad();
+  await kbLoadConflictGroups();
+}
+
+function renderKbCatBar(){
+  const bar=$('kb-cat-bar');
+  const all=`<button class="kb-cat-btn ${kb.activeCat===null?'active':''}" onclick="kbSetCat(null)">すべて</button>`;
+  const btns=kb.cats.map(c=>`<button class="kb-cat-btn ${kb.activeCat===c?'active':''}" onclick="kbSetCat('${c}')">${c}</button>`).join('');
+  bar.innerHTML=all+btns;
+}
+
+async function kbSetCat(cat){
+  kb.activeCat=cat;
+  renderKbCatBar();
+  await kbLoadEntries();
+}
+
+function kbOnSearch(){
+  clearTimeout(kb.timer);
+  kb.timer=setTimeout(kbLoadEntries,280);
+}
+
+async function kbLoadEntries(){
+  const search=$('kb-search').value.trim();
+  const params=new URLSearchParams({limit:200});
+  if(kb.activeCat)params.set('category',kb.activeCat);
+  if(search)params.set('search',search);
+  try{
+    const data=await api('/dictionary/entries?'+params);
+    renderKbEntryList(data.entries||[],data.total||0);
+  }catch(e){console.error('[KB]',e);}
+}
+
+function renderKbEntryList(entries,total){
+  $('kb-count').textContent=total+' 件';
+  const list=$('kb-entry-list');
+  if(!entries.length){list.innerHTML='<div class="empty" style="padding:20px 16px">該当なし</div>';return;}
+  list.innerHTML=entries.map(e=>`
+    <div class="kb-entry-row${kb.selKey===e.key?' sel':''}" onclick="kbSelEntry('${escAttr(e.key)}')">
+      <span class="kb-entry-key" title="${escAttr(e.key)}">${escHtml(e.key)}</span>
+      <span class="kb-entry-cat">${escHtml(e.category)}</span>
+      <span class="kb-entry-w">${e.weight.toFixed(1)}</span>
+    </div>`).join('');
+}
+
+async function kbSelEntry(key){
+  kb.selKey=key;
+  // ハイライト更新
+  document.querySelectorAll('.kb-entry-row').forEach(r=>r.classList.toggle('sel',r.onclick?.toString().includes(`'${key}'`)));
+  try{
+    const d=await api('/dictionary/synonyms?key='+encodeURIComponent(key));
+    renderKbDetail(d);
+  }catch(e){$('kb-right').innerHTML='<div class="kb-right-ph">エントリが見つかりません</div>';}
+}
+
+function renderKbDetail(d){
+  const pct=Math.min(d.weight/2.0,1.0)*100;
+  const syns=d.synonyms.length
+    ?d.synonyms.map(s=>`<span class="kb-syn" onclick="kbAddToEditor('${escAttr(s)}')" title="エディタに追加">${escHtml(s)}</span>`).join('')
+    :'<span style="color:var(--muted);font-size:12px">なし</span>';
+  $('kb-right').innerHTML=`
+    <div class="kb-detail-head">
+      <div class="kb-detail-key">${escHtml(d.key)}</div>
+      <div class="kb-detail-catbadge">${escHtml(d.category)}</div>
+    </div>
+    <div class="kb-section">
+      <div class="kb-section-label">Resolved</div>
+      <div class="kb-section-val">${escHtml(d.resolved)}</div>
+    </div>
+    <div class="kb-section">
+      <div class="kb-section-label">Weight <span style="color:var(--accent)">${d.weight.toFixed(2)}</span></div>
+      <div class="kb-wbar"><div class="kb-wfill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="kb-section">
+      <div class="kb-section-label">Synonyms (${d.synonyms.length})</div>
+      <div class="kb-synonym-list">${syns}</div>
+    </div>
+    <button class="kb-add-btn" onclick="kbAddToEditor('${escAttr(d.key)}')">+ このタグをエディタに追加</button>
+  `;
+}
+
+function kbAddToEditor(tag){
+  const ed=$('prompt-input');
+  const cur=ed.value.trim();
+  ed.value=cur?cur+', '+tag:tag;
+  showTab('editor');
+  previewTags();
+  toast('"'+tag+'" をエディタに追加しました');
+}
+
+/* ── v1.2 ユーザー辞書 CRUD ────────────────────────────── */
+async function kbuLoad(){
+  try{
+    const data=await api('/dictionary/user/entries');
+    renderKbuList(data.entries||[]);
+  }catch(e){console.error('[KBU]',e);}
+}
+
+function renderKbuList(entries){
+  const list=$('kbu-list');
+  if(!entries.length){list.innerHTML='<div class="empty" style="padding:8px 0;font-size:12px">なし</div>';return;}
+  list.innerHTML=entries.map(e=>`
+    <div class="kb-user-item">
+      <span class="kb-user-item-key">${escHtml(e.key)}</span>
+      <span class="kb-user-item-res">${escHtml(e.resolved)}</span>
+      <span class="kb-user-item-cat">${escHtml(e.category)}</span>
+      <button class="kb-user-delete" onclick="kbuDelete('${escAttr(e.key)}')">削除</button>
+    </div>
+  `).join('');
+}
+
+async function kbuSave(){
+  const key=$('kbu-key').value.trim();
+  const resolved=$('kbu-resolved').value.trim();
+  const category=$('kbu-category').value.trim();
+  const weight=parseFloat($('kbu-weight').value)||1.0;
+  const aliasStr=$('kbu-aliases').value.trim();
+  const aliases=aliasStr?aliasStr.split(',').map(s=>s.trim()).filter(Boolean):[];
+
+  if(!key||!resolved||!category){toast('キー・Resolved・カテゴリは必須です');return;}
+  try{
+    await api('/dictionary/user/entries',{method:'POST',body:{key,resolved,category,aliases,weight}});
+    $('kbu-key').value='';$('kbu-resolved').value='';$('kbu-category').value='';$('kbu-aliases').value='';
+    await kbuLoad();
+    toast(`"${key}" を追加しました`);
+  }catch(e){toast('追加エラー: '+e.message);}
+}
+
+async function kbuDelete(key){
+  if(!confirm(`"${key}" を削除しますか？`))return;
+  try{
+    await api(`/dictionary/user/entries/${encodeURIComponent(key)}`,{method:'DELETE'});
+    await kbuLoad();
+    toast(`"${key}" を削除しました`);
+  }catch(e){toast('削除エラー: '+e.message);}
+}
+
+/* ── v1.2 Optimizer連携: 矛盾グループ可視化 ──────────────── */
+const CONFLICT_GROUPS = {
+  'eyes_color':    ['Eyes.Blue','Eyes.Green','Eyes.Brown','Eyes.Red','Eyes.Golden','Eyes.Purple','Eyes.Silver','Eyes.Black'],
+  'hair_color':    ['Hair.Blonde','Hair.Black','Hair.Silver','Hair.Brown','Hair.Red','Hair.Pink','Hair.Purple','Hair.Blue','Hair.Green'],
+  'hair_length':   ['Hair.Long','Hair.Short','Hair.Medium','Hair.VeryLong'],
+  'skin_tone':     ['Skin.Fair','Skin.Tan','Skin.Dark','Skin.Olive','Skin.Pale'],
+  'face_shape':    ['FaceShape.Oval','FaceShape.Round','FaceShape.Square','FaceShape.Heart','FaceShape.Long'],
+  'quality_level': ['Quality.High','Quality.Medium','Quality.Low'],
+  'makeup_intensity': ['Makeup.Heavy','Makeup.Light'],
+};
+
+async function kbLoadConflictGroups(){
+  const el=$('kb-conflict-groups');
+  // 現在のプロンプトから使用中の resolved 値を取得
+  const prompt=($('prompt-input')?.value||'').trim();
+  if(!prompt){el.innerHTML='<div style="font-size:12px;color:var(--muted)">エディタにプロンプトを入力すると矛盾チェックができます</div>';return;}
+
+  // 簡易チェック: EXCLUSIVE_GROUPSを静的に定義してローカルで矛盾を検出
+  const html=Object.entries(CONFLICT_GROUPS).map(([name,values])=>{
+    const tags=values.map(v=>`<span class="kb-conflict-tag">${escHtml(v)}</span>`).join('');
+    return `<div class="kb-conflict-group"><div class="kb-conflict-group-name">${escHtml(name)}</div><div class="kb-conflict-tags">${tags}</div></div>`;
+  }).join('');
+  el.innerHTML=html||'<div style="font-size:12px;color:var(--muted)">矛盾なし</div>';
+}
+async function loadPresets(){
+  const body=$('result-body');
+  body.innerHTML='<div class="empty"><span class="spin">⟳</span> loading…</div>';
+  try{
+    const data=await api('/presets');
+    state.presets=data.presets;
+    body.innerHTML='<div class="preset-list">'+data.presets.map(p=>`<div class="preset-item" onclick="applyPreset('${escAttr(p.id)}')"><div><div class="preset-name">${escHtml(p.name)}</div><div class="preset-tags">${p.tag_count} tags · ${escHtml(p.description||'—')}</div></div></div>`).join('')+'</div>';
+  }catch{body.innerHTML='<div class="empty">API に接続できません</div>';}
+}
+async function applyPreset(id){
+  try{const compiled=await api(`/presets/${id}/apply`,{method:'POST'});state.compiled=compiled;$('prompt-input').value=compiled.prompt;renderTagBadges(compiled);showTab('editor');toast(`プリセット適用: ${id}`);}
+  catch(e){toast('エラー: '+e.message);}
+}
+async function loadHistory(){
+  const body=$('result-body');
+  body.innerHTML='<div class="empty"><span class="spin">⟳</span> loading…</div>';
+  try{
+    const data=await api('/history',{params:{limit:30}});
+    state.history=data.entries;
+    if(!data.entries.length){body.innerHTML='<div class="empty">履歴なし</div>';return;}
+    body.innerHTML=data.entries.map(e=>`<div class="history-item" onclick="loadHistoryEntry('${escAttr(e.output_prompt)}')" ><div class="history-meta"><span>${escHtml(e.created_at)}</span><span style="color:${scoreColor(e.overall_score)}">⚡ ${Math.round(e.overall_score)}</span>${e.favorite?'<span style="color:#F5A623">★</span>':''}${e.label?`<span>${escHtml(e.label)}</span>`:''}</div><div class="history-preview">${escHtml(e.output_prompt)}</div></div>`).join('');
+  }catch{body.innerHTML='<div class="empty">API に接続できません</div>';}
+}
+function loadHistoryEntry(prompt){$('prompt-input').value=prompt;showTab('editor');previewTags();}
+function clearEditor(){$('prompt-input').value='';$('tag-preview').innerHTML='<span class="empty">タグを入力するとここに表示されます</span>';$('score-fill').style.width='0%';$('score-fill').style.background='var(--muted)';$('score-val').textContent='—';$('score-val').style.color='';state.compiled=null;state.optimized=null;$('issue-badge').textContent='';renderCurrentResult();}
+async function copyText(text){await navigator.clipboard.writeText(text);toast('コピーしました');}
+function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escAttr(s){return String(s??'').replace(/'/g,"\\'").replace(/\n/g,' ');}
+checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
+</script>
+</body>
+</html>
