@@ -354,6 +354,57 @@ class UserProfileManager:
             p.created_at = datetime.fromisoformat(data["created_at"])
         return p
 
+
+    # ══════════════════════════════════════════════════════════════
+    # ★ v2.1 — 設定管理（自動学習モードなど）
+    # ══════════════════════════════════════════════════════════════
+
+    _DEFAULT_SETTINGS: "dict[str, Any]" = {
+        "auto_learn": False,          # compile 後に自動学習するか
+        "auto_learn_interval": 10,    # 何件 compile ごとに学習するか
+        "apply_profile_default": False,  # compile 時にデフォルトで適用するか
+        "recommendation_threshold": 2,   # 推奨タグの最低出現回数
+    }
+
+    def load_settings(self) -> "dict[str, Any]":
+        """設定ファイル（settings.json）を読み込む。"""
+        settings_path = self._dir / "settings.json"
+        if not settings_path.exists():
+            return dict(self._DEFAULT_SETTINGS)
+        try:
+            return {**self._DEFAULT_SETTINGS,
+                    **json.loads(settings_path.read_text(encoding="utf-8"))}
+        except Exception:
+            return dict(self._DEFAULT_SETTINGS)
+
+    def save_settings(self, settings: "dict[str, Any]") -> "dict[str, Any]":
+        """設定ファイルを保存する。不明なキーは無視する。"""
+        self._dir.mkdir(parents=True, exist_ok=True)
+        merged = {**self._DEFAULT_SETTINGS}
+        for k, v in settings.items():
+            if k in self._DEFAULT_SETTINGS:
+                merged[k] = v
+        path = self._dir / "settings.json"
+        path.write_text(json.dumps(merged, ensure_ascii=False, indent=2),
+                        encoding="utf-8")
+        return merged
+
+    def get_settings(self) -> "dict[str, Any]":
+        """現在の設定を返す（ファイルから読み込み）。"""
+        return self.load_settings()
+
+    def should_auto_learn(self, compile_count: int) -> bool:
+        """
+        現在の compile_count で自動学習を実行すべきか判定する。
+
+        auto_learn=True かつ compile_count が interval の倍数のとき True。
+        """
+        s = self.load_settings()
+        if not s.get("auto_learn", False):
+            return False
+        interval = max(1, int(s.get("auto_learn_interval", 10)))
+        return compile_count > 0 and compile_count % interval == 0
+
     def __repr__(self) -> str:
         return (f"UserProfileManager(tags={len(self._profile.tag_frequencies)}, "
                 f"rules={len(self._profile.style_rules)}, loaded={self._loaded})")
