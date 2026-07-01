@@ -11,7 +11,11 @@ FastAPI ベースの REST API。CLI と同じ CliContext を再利用するこ�
   GET  /dictionary/search         辞書検索
   GET  /dictionary/stats          辞書統計
   GET  /presets                   プリセット一覧
+  POST /presets                   ★v1.7 プリセット新規作成
   POST /presets/{preset_id}/apply プリセット適用
+  PUT  /presets/{preset_id}       ★v1.7 プリセット部分更新
+  DELETE /presets/{preset_id}     ★v1.7 プリセット削除
+  POST /presets/{preset_id}/tags/add ★v1.7 タグ追記
   GET  /history                   変換履歴一覧
   POST /validate                  辞書/ルール/プリセット検証
 
@@ -21,6 +25,7 @@ FastAPI ベースの REST API。CLI と同じ CliContext を再利用するこ�
 
 from __future__ import annotations
 
+import json as json_module
 import sys
 from pathlib import Path
 
@@ -31,7 +36,7 @@ if str(_ADAPTERS) not in sys.path:
     sys.path.insert(0, str(_ADAPTERS))
 
 try:
-    from fastapi import FastAPI, HTTPException, Query
+    from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 
     _FASTAPI_AVAILABLE = True
 except ImportError:
@@ -56,8 +61,14 @@ from .models import (  # noqa: E402
     LabelUpdateResponse,
     OptimizationIssueResponse,
     OptimizeResponse,
+    PresetCreateRequest,
+    PresetDeleteResponse,
+    PresetDetailResponse,
     PresetListResponse,
     PresetSummary,
+    PresetTagItem,
+    PresetTagsAddRequest,
+    PresetUpdateRequest,
     QualityScoreResponse,
     RenderRequest,
     RenderResponse,
@@ -71,6 +82,27 @@ from .models import (  # noqa: E402
     UserEntryResponse,
     UserEntryUpdateRequest,
     ValidationResponse,
+    BackupCreateRequest,
+    BackupCreateResponse,
+    BackupDeleteResponse,
+    BackupEntryResponse,
+    BackupListResponse,
+    BackupRestoreResponse,
+    DashboardResponse,
+    HistoryExportResponse,
+    HistoryStatsResponse,
+    TagFrequency,
+    TagWeightItem,
+    StyleRuleItem,
+    TagFreqItem,
+    ScoreTrendItem,
+    ProfileResponse,
+    ProfileLearnResponse,
+    ProfileRecommendResponse,
+    ProfileScoreTrendResponse,
+    SetTagWeightRequest,
+    AddStyleRuleRequest,
+    ProfileResetResponse,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -79,7 +111,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="0.9.0",
+        version="2.0.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -93,6 +125,15 @@ if _FASTAPI_AVAILABLE:
         @app.get("/", include_in_schema=False)
         def serve_ui() -> FileResponse:
             return FileResponse(str(_GUI_DIR / "index.html"))
+
+
+    from .ws import manager as ws_manager, setup_event_bridge
+
+    @app.on_event("startup")
+    async def on_startup() -> None:
+        """アプリ起動時に EventBus ↔ WebSocket ブリッジを初期化する。"""
+        ctx = get_context()
+        setup_event_bridge(ctx.event_bus)
 
     _ctx: CliContext | None = None
 
@@ -111,7 +152,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="0.9.0",
+            version="2.0.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -145,6 +186,22 @@ if _FASTAPI_AVAILABLE:
         if adapter:
             adapter_output = _convert_with_adapter(result, adapter)
 
+        # v1.9: history に記録して WebSocket に emit
+        try:
+            ctx.history_manager.record(
+                input_prompt=prompt,
+                output_prompt=result.prompt,
+                output_negative=result.negative,
+                tag_count=result.tag_count,
+                overall_score=0.0,
+            )
+            ctx.event_bus.emit(
+                "history.recorded",
+                {"input": prompt, "output": result.prompt, "tag_count": result.tag_count},
+                source="compile",
+            )
+        except Exception:
+            pass
         return CompileResponse(
             success=result.success,
             prompt=result.prompt,
@@ -188,6 +245,16 @@ if _FASTAPI_AVAILABLE:
 
         opt_result = ctx.optimizer_manager.analyze(pos_tags, negative_tags=neg_tags or None)
 
+        # v1.9: optimizer.analyzed を emit
+        try:
+            ctx.event_bus.emit(
+                "optimizer.analyzed",
+                {"overall_score": opt_result.score.overall_score,
+                 "issue_count": len(opt_result.issues)},
+                source="optimize",
+            )
+        except Exception:
+            pass
         return OptimizeResponse(
             score=QualityScoreResponse(**opt_result.score.to_dict()),
             issues=[
@@ -229,6 +296,18 @@ if _FASTAPI_AVAILABLE:
 
     # ── Presets ──────────────────────────────────────────────
 
+    def _preset_to_detail(p) -> PresetDetailResponse:
+        """Preset オブジェクトを PresetDetailResponse に変換する"""
+        return PresetDetailResponse(
+            id=p.id,
+            name=p.name,
+            description=p.description,
+            tags=[PresetTagItem(tag=t.tag, category=t.category, weight=t.weight) for t in p.tags],
+            negative_tags=[PresetTagItem(tag=t.tag, category=t.category, weight=t.weight) for t in p.negative_tags],
+            tag_count=p.tag_count,
+            source=str(p.source),
+        )
+
     @app.get("/presets", response_model=PresetListResponse)
     def list_presets() -> PresetListResponse:
         ctx = get_context()
@@ -240,10 +319,29 @@ if _FASTAPI_AVAILABLE:
                     name=p.name,
                     description=p.description,
                     tag_count=p.tag_count,
+                    source=str(p.source),
                 )
                 for p in presets
             ]
         )
+
+    @app.post("/presets", response_model=PresetDetailResponse, status_code=201)
+    def create_preset(body: PresetCreateRequest) -> PresetDetailResponse:
+        """★v1.7 ユーザープリセット新規作成"""
+        ctx = get_context()
+        from preset.models import Preset, PresetSource, PresetTag  # type: ignore[import]
+        if ctx.preset_manager.exists(body.id):
+            raise HTTPException(status_code=409, detail=f"Preset '{body.id}' already exists")
+        preset = Preset(
+            id=body.id,
+            name=body.name,
+            description=body.description,
+            tags=[PresetTag(tag=t.tag, category=t.category, weight=t.weight) for t in body.tags],
+            negative_tags=[PresetTag(tag=t.tag, category=t.category, weight=t.weight) for t in body.negative_tags],
+            source=PresetSource.USER,
+        )
+        ctx.preset_manager.save(preset)
+        return _preset_to_detail(ctx.preset_manager.get(body.id))
 
     @app.post("/presets/{preset_id}/apply", response_model=CompileResponse)
     def apply_preset(preset_id: str) -> CompileResponse:
@@ -262,6 +360,53 @@ if _FASTAPI_AVAILABLE:
             tag_count=result.tag_count,
             errors=result.errors,
         )
+
+    @app.put("/presets/{preset_id}", response_model=PresetDetailResponse)
+    def update_preset(preset_id: str, body: PresetUpdateRequest) -> PresetDetailResponse:
+        """★v1.7 プリセット部分更新"""
+        ctx = get_context()
+        from preset.models import PresetTag  # type: ignore[import]
+        if not ctx.preset_manager.exists(preset_id):
+            raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
+        try:
+            tags = [PresetTag(tag=t.tag, category=t.category, weight=t.weight) for t in body.tags] if body.tags is not None else None
+            neg_tags = [PresetTag(tag=t.tag, category=t.category, weight=t.weight) for t in body.negative_tags] if body.negative_tags is not None else None
+            updated = ctx.preset_manager.update(
+                preset_id,
+                name=body.name,
+                description=body.description,
+                tags=tags,
+                negative_tags=neg_tags,
+            )
+        except Exception as e:
+            raise HTTPException(status_code=403, detail=str(e))
+        return _preset_to_detail(updated)
+
+    @app.delete("/presets/{preset_id}", response_model=PresetDeleteResponse)
+    def delete_preset(preset_id: str) -> PresetDeleteResponse:
+        """★v1.7 プリセット削除"""
+        ctx = get_context()
+        try:
+            deleted = ctx.preset_manager.delete(preset_id)
+        except Exception as e:
+            raise HTTPException(status_code=403, detail=str(e))
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
+        return PresetDeleteResponse(id=preset_id, deleted=True)
+
+    @app.post("/presets/{preset_id}/tags/add", response_model=PresetDetailResponse)
+    def add_tags_to_preset(preset_id: str, body: PresetTagsAddRequest) -> PresetDetailResponse:
+        """★v1.7 プリセットにタグを追記する"""
+        ctx = get_context()
+        from preset.models import PresetTag  # type: ignore[import]
+        if not ctx.preset_manager.exists(preset_id):
+            raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
+        try:
+            tags = [PresetTag(tag=t.tag, category=t.category, weight=t.weight) for t in body.tags]
+            updated = ctx.preset_manager.add_tags(preset_id, tags, negative=body.negative)
+        except Exception as e:
+            raise HTTPException(status_code=403, detail=str(e))
+        return _preset_to_detail(updated)
 
     # ── History ──────────────────────────────────────────────
 
@@ -336,7 +481,6 @@ if _FASTAPI_AVAILABLE:
         ctx = get_context()
         dm = ctx.dictionary_manager
 
-        # 内部インデックスから重複なしのエントリリストを構築
         with dm._lock:
             raw_index: dict = dict(dm._index)
 
@@ -347,11 +491,9 @@ if _FASTAPI_AVAILABLE:
                 seen.add(entry.key)
                 unique_entries.append(entry)
 
-        # カテゴリフィルタ
         if category:
             unique_entries = [e for e in unique_entries if e.category == category]
 
-        # テキスト検索（key / resolved に対して部分一致）
         if search:
             q = search.lower()
             unique_entries = [
@@ -585,18 +727,9 @@ if _FASTAPI_AVAILABLE:
     # ── M6-3 Template Engine ─────────────────────────────────────
 
     def _get_template_manager():  # noqa: ANN201
-        """TemplateManager をシングルトンで取得する"""
+        """TemplateManager を CliContext 経由で取得する（★v1.7 CliContext 委譲）"""
         ctx = get_context()
-        if not hasattr(ctx, "_template_manager") or ctx._template_manager is None:
-            import sys
-            tm_path = str(_ROOT / "fps-core")
-            if tm_path not in sys.path:
-                sys.path.insert(0, tm_path)
-            from template.manager import TemplateManager  # type: ignore[import]
-            tm_data = _ROOT / "fps-data" / "templates" / "system"
-            ctx._template_manager = TemplateManager(system_dir=tm_data if tm_data.exists() else None)
-            ctx._template_manager.load()
-        return ctx._template_manager
+        return ctx.template_manager
 
     @app.get(
         "/templates",
@@ -680,6 +813,594 @@ if _FASTAPI_AVAILABLE:
             warnings=result.warnings,
             success=result.success,
         )
+
+    # ── v1.8 Backup ──────────────────────────────────────────────
+
+    def _get_backup_manager():
+        """BackupManager を CliContext 経由で取得する"""
+        ctx = get_context()
+        return ctx.backup_manager
+
+    @app.post(
+        "/backup",
+        response_model=BackupCreateResponse,
+        summary="Create a backup",
+        tags=["backup"],
+        status_code=201,
+    )
+    def create_backup(body: BackupCreateRequest) -> BackupCreateResponse:
+        """指定ターゲット（省略時は all）をバックアップする。"""
+        from backup.models import BackupTarget  # type: ignore[import]
+        bm = _get_backup_manager()
+        try:
+            target = BackupTarget(body.target)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid target: {body.target!r}")
+        result = bm.backup(target)
+        return BackupCreateResponse(
+            success=result.success,
+            entry_count=result.entry_count,
+            total_kb=result.total_bytes / 1024,
+            entries=[
+                BackupEntryResponse(
+                    id=e.id,
+                    target=str(e.target),
+                    source_path=str(e.source_path),
+                    created_at=e.created_at_str,
+                    size_kb=e.size_kb,
+                )
+                for e in result.entries
+            ],
+            error=result.error,
+        )
+
+    @app.get(
+        "/backup",
+        response_model=BackupListResponse,
+        summary="List backups",
+        tags=["backup"],
+    )
+    def list_backups(
+        target: str | None = Query(default=None, description="ターゲット絞り込み"),
+    ) -> BackupListResponse:
+        """バックアップ一覧を新しい順で返す。"""
+        from backup.models import BackupTarget  # type: ignore[import]
+        bm = _get_backup_manager()
+        t = None
+        if target:
+            try:
+                t = BackupTarget(target)
+            except ValueError:
+                raise HTTPException(status_code=400, detail=f"Invalid target: {target!r}")
+        entries = bm.list_backups(target=t)
+        return BackupListResponse(
+            entries=[
+                BackupEntryResponse(
+                    id=e.id,
+                    target=str(e.target),
+                    source_path=str(e.source_path),
+                    created_at=e.created_at_str,
+                    size_kb=e.size_kb,
+                )
+                for e in entries
+            ],
+            total=len(entries),
+        )
+
+    @app.delete(
+        "/backup/{entry_id}",
+        response_model=BackupDeleteResponse,
+        summary="Delete a backup entry",
+        tags=["backup"],
+    )
+    def delete_backup(entry_id: str) -> BackupDeleteResponse:
+        """バックアップを削除する。存在しない場合は 404。"""
+        bm = _get_backup_manager()
+        deleted = bm.delete(entry_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Backup '{entry_id}' not found")
+        return BackupDeleteResponse(id=entry_id, deleted=True)
+
+    @app.post(
+        "/backup/{entry_id}/restore",
+        response_model=BackupRestoreResponse,
+        summary="Restore from a backup entry",
+        tags=["backup"],
+    )
+    def restore_backup(entry_id: str) -> BackupRestoreResponse:
+        """バックアップからリストアする。存在しない場合は 404。"""
+        bm = _get_backup_manager()
+        entry = bm.get_or_none(entry_id)
+        if entry is None:
+            raise HTTPException(status_code=404, detail=f"Backup '{entry_id}' not found")
+        result = bm.restore(entry_id)
+        return BackupRestoreResponse(
+            success=result.success,
+            restored_files=len(result.restored_files),
+            error=result.error,
+        )
+
+    # ── v1.8 History 強化 ─────────────────────────────────────────
+
+    @app.get(
+        "/history/stats",
+        response_model=HistoryStatsResponse,
+        summary="Get history statistics",
+        tags=["history"],
+    )
+    def history_stats() -> HistoryStatsResponse:
+        """変換履歴の統計情報（頻出タグ・スコア分布）を返す。"""
+        ctx = get_context()
+        entries = ctx.history_manager.list_entries(limit=500)
+
+        # スコア分布
+        dist = {"excellent": 0, "good": 0, "fair": 0, "poor": 0}
+        total_score = 0.0
+        fav_count = 0
+        tag_counts: dict[str, int] = {}
+        tag_weight: dict[str, float] = {}
+
+        for e in entries:
+            s = e.overall_score
+            total_score += s
+            if e.favorite:
+                fav_count += 1
+            if s >= 80:
+                dist["excellent"] += 1
+            elif s >= 60:
+                dist["good"] += 1
+            elif s >= 40:
+                dist["fair"] += 1
+            else:
+                dist["poor"] += 1
+            # タグ頻度集計（output_prompt から簡易抽出）
+            for tag in e.output_prompt.split(","):
+                t = tag.strip().lower()
+                if t:
+                    tag_counts[t] = tag_counts.get(t, 0) + 1
+                    tag_weight[t] = tag_weight.get(t, 0.0) + 1.0
+
+        avg_score = total_score / len(entries) if entries else 0.0
+        top_tags = sorted(tag_counts.items(), key=lambda x: -x[1])[:20]
+
+        return HistoryStatsResponse(
+            total_entries=len(entries),
+            favorite_count=fav_count,
+            avg_score=round(avg_score, 1),
+            top_tags=[
+                TagFrequency(
+                    tag=t,
+                    count=c,
+                    avg_weight=round(tag_weight.get(t, 0) / c, 2),
+                )
+                for t, c in top_tags
+            ],
+            score_distribution=dist,
+        )
+
+    @app.get(
+        "/history/export",
+        response_model=HistoryExportResponse,
+        summary="Export history as CSV or JSON",
+        tags=["history"],
+    )
+    def export_history(
+        format: str = Query(default="csv", description="出力フォーマット: csv | json"),
+        limit: int = Query(default=100, ge=1, le=1000),
+        favorite_only: bool = Query(default=False),
+        min_score: float = Query(default=0.0, ge=0.0, le=100.0),
+    ) -> HistoryExportResponse:
+        """変換履歴を CSV または JSON でエクスポートする。"""
+        import csv, io
+        ctx = get_context()
+        entries = ctx.history_manager.list_entries(limit=limit)
+        if favorite_only:
+            entries = [e for e in entries if e.favorite]
+        if min_score > 0:
+            entries = [e for e in entries if e.overall_score >= min_score]
+
+        if format == "json":
+            data = json_module.dumps([
+                {
+                    "id": e.id,
+                    "input_prompt": e.input_prompt,
+                    "output_prompt": e.output_prompt,
+                    "score": e.overall_score,
+                    "favorite": e.favorite,
+                    "label": e.label,
+                    "created_at": e.created_at_str,
+                }
+                for e in entries
+            ], ensure_ascii=False, indent=2)
+        else:
+            buf = io.StringIO()
+            writer = csv.writer(buf)
+            writer.writerow(["id", "created_at", "score", "favorite", "label",
+                             "input_prompt", "output_prompt"])
+            for e in entries:
+                writer.writerow([
+                    e.id, e.created_at_str, e.overall_score,
+                    e.favorite, e.label, e.input_prompt, e.output_prompt,
+                ])
+            data = buf.getvalue()
+
+        return HistoryExportResponse(format=format, total=len(entries), data=data)
+
+    # ── v1.8 Dashboard ───────────────────────────────────────────
+
+    @app.get(
+        "/dashboard",
+        response_model=DashboardResponse,
+        summary="Get overall dashboard stats",
+        tags=["dashboard"],
+    )
+    def dashboard() -> DashboardResponse:
+        """辞書・プリセット・履歴・バックアップの統計サマリを返す。"""
+        from fps_core import __version__  # type: ignore[import]
+        ctx = get_context()
+        dict_stats   = ctx.dictionary_manager.statistics()
+        preset_stats = ctx.preset_manager.statistics()
+        bm = _get_backup_manager()
+        bk_list = bm.list_backups()
+        history = ctx.history_manager.list_entries(limit=200)
+
+        # 日本語エントリ数（tags フィールドに "japanese" を含むもの）
+        jp_count = 0
+        try:
+            import json as _json
+            jp_path = _ROOT / "fps-data" / "dictionaries" / "system" / "synonyms" / "japanese_tags.json"
+            if jp_path.exists():
+                jp_data = _json.loads(jp_path.read_text(encoding="utf-8"))
+                jp_count = len(jp_data.get("entries", []))
+        except Exception:
+            pass
+
+        avg_score = 0.0
+        tag_counts: dict[str, int] = {}
+        for e in history:
+            avg_score += e.overall_score
+            for tag in e.output_prompt.split(","):
+                t = tag.strip().lower()
+                if t:
+                    tag_counts[t] = tag_counts.get(t, 0) + 1
+        if history:
+            avg_score /= len(history)
+
+        top_tags = sorted(tag_counts.items(), key=lambda x: -x[1])[:10]
+        recent = [e.input_prompt[:60] for e in history[:5]]
+
+        return DashboardResponse(
+            version="2.0.0",
+            dictionary_keys=dict_stats.get("total_keys", 0),
+            japanese_entries=jp_count,
+            preset_count=preset_stats.get("total_presets", 0),
+            history_count=len(history),
+            backup_count=len(bk_list),
+            avg_score=round(avg_score, 1),
+            top_tags=[TagFrequency(tag=t, count=c) for t, c in top_tags],
+            recent_activity=recent,
+        )
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.0 パーソナライゼーション — /profile
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_upm():
+        """UserProfileManager を CliContext 経由で取得する"""
+        return get_context().user_profile_manager
+
+    @app.get(
+        "/profile",
+        response_model=ProfileResponse,
+        summary="Get user profile",
+        tags=["profile"],
+    )
+    def get_profile() -> ProfileResponse:
+        """ユーザープロファイルの概要を返す（頻出タグ・スタイルルール・学習日時）。"""
+        upm = _get_upm()
+        p = upm.get_profile()
+        stats = upm.statistics()
+        top = upm.recommend(20)
+        return ProfileResponse(
+            tag_weight_count=stats["tag_weight_count"],
+            excluded_tag_count=stats["excluded_tag_count"],
+            style_rule_count=stats["style_rule_count"],
+            tag_frequency_count=stats["tag_frequency_count"],
+            score_trend_count=stats["score_trend_count"],
+            last_learned=stats["last_learned"],
+            top_tags=[TagFreqItem(tag=e.tag, count=e.count,
+                                  avg_weight=round(e.avg_weight, 3),
+                                  last_used=e.last_used.isoformat()) for e in top],
+            style_rules=[StyleRuleItem(id=r.id, name=r.name,
+                                       always_include=r.always_include,
+                                       always_exclude=r.always_exclude,
+                                       enabled=r.enabled)
+                         for r in p.style_rules],
+        )
+
+    @app.post(
+        "/profile/learn",
+        response_model=ProfileLearnResponse,
+        summary="Learn from history",
+        tags=["profile"],
+    )
+    def learn_from_history(
+        limit: int = Query(default=200, ge=10, le=1000,
+                           description="学習に使う履歴件数"),
+        days: int = Query(default=30, ge=1, le=365,
+                          description="スコアトレンド集計日数"),
+    ) -> ProfileLearnResponse:
+        """変換履歴からタグ頻度を学習し、スコアトレンドを更新する。"""
+        ctx = get_context()
+        upm = _get_upm()
+        entries = ctx.history_manager.list_entries(limit=limit)
+        result = upm.learn(entries)
+        upm.build_score_trends(entries, days=days)
+        return ProfileLearnResponse(
+            learned=result["learned"],
+            updated=result["updated"],
+            total=result["total"],
+            trend_days=days,
+        )
+
+    @app.get(
+        "/profile/recommendations",
+        response_model=ProfileRecommendResponse,
+        summary="Get tag recommendations",
+        tags=["profile"],
+    )
+    def get_recommendations(
+        n: int = Query(default=20, ge=1, le=50, description="推奨タグ件数"),
+    ) -> ProfileRecommendResponse:
+        """使用頻度と重みに基づく推奨タグリストを返す。"""
+        upm = _get_upm()
+        recs = upm.recommend(n)
+        return ProfileRecommendResponse(
+            recommendations=[TagFreqItem(tag=e.tag, count=e.count,
+                                         avg_weight=round(e.avg_weight, 3),
+                                         last_used=e.last_used.isoformat()) for e in recs],
+            total=len(recs),
+        )
+
+    @app.get(
+        "/profile/score-trend",
+        response_model=ProfileScoreTrendResponse,
+        summary="Get score trend",
+        tags=["profile"],
+    )
+    def get_score_trend(
+        days: int = Query(default=30, ge=1, le=365),
+    ) -> ProfileScoreTrendResponse:
+        """過去N日間のスコア傾向（日別集計）を返す。"""
+        ctx = get_context()
+        upm = _get_upm()
+        entries = ctx.history_manager.list_entries(limit=500)
+        trends = upm.build_score_trends(entries, days=days)
+        return ProfileScoreTrendResponse(
+            trends=[ScoreTrendItem(date=t.date, avg_score=t.avg_score,
+                                   entry_count=t.entry_count, top_tag=t.top_tag)
+                    for t in trends],
+            days=days,
+            total=len(trends),
+        )
+
+    @app.put(
+        "/profile/tags/{tag}/weight",
+        response_model=TagWeightItem,
+        summary="Set tag weight",
+        tags=["profile"],
+    )
+    def set_tag_weight(tag: str, body: SetTagWeightRequest) -> TagWeightItem:
+        """タグの重みを設定する（0.0 = 除外、1.0 = 標準、最大 3.0）。"""
+        upm = _get_upm()
+        tw = upm.set_tag_weight(tag, body.weight, body.reason)
+        return TagWeightItem(tag=tw.tag, weight=tw.weight, reason=tw.reason)
+
+    @app.delete(
+        "/profile/tags/{tag}/weight",
+        summary="Remove tag weight override",
+        tags=["profile"],
+    )
+    def remove_tag_weight(tag: str) -> dict:
+        """タグの重み設定を削除してデフォルトに戻す。"""
+        upm = _get_upm()
+        deleted = upm.remove_tag_weight(tag)
+        return {"tag": tag, "deleted": deleted}
+
+    @app.post(
+        "/profile/rules",
+        response_model=StyleRuleItem,
+        status_code=201,
+        summary="Add a style rule",
+        tags=["profile"],
+    )
+    def add_style_rule(body: AddStyleRuleRequest) -> StyleRuleItem:
+        """スタイルルール（常時include/exclude）を追加する。"""
+        from user.models import StyleRule as SR  # type: ignore[import]
+        upm = _get_upm()
+        rule = SR(id=body.id, name=body.name,
+                  always_include=body.always_include,
+                  always_exclude=body.always_exclude,
+                  enabled=body.enabled)
+        r = upm.add_style_rule(rule)
+        return StyleRuleItem(id=r.id, name=r.name,
+                             always_include=r.always_include,
+                             always_exclude=r.always_exclude,
+                             enabled=r.enabled)
+
+    @app.delete(
+        "/profile/rules/{rule_id}",
+        summary="Remove a style rule",
+        tags=["profile"],
+    )
+    def remove_style_rule(rule_id: str) -> dict:
+        """スタイルルールを削除する。"""
+        upm = _get_upm()
+        deleted = upm.remove_style_rule(rule_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Rule '{rule_id}' not found")
+        return {"id": rule_id, "deleted": True}
+
+    @app.delete(
+        "/profile/reset",
+        response_model=ProfileResetResponse,
+        summary="Reset user profile",
+        tags=["profile"],
+    )
+    def reset_profile() -> ProfileResetResponse:
+        """ユーザープロファイルを完全リセットする。"""
+        upm = _get_upm()
+        upm.reset()
+        return ProfileResetResponse(reset=True, message="プロファイルをリセットしました")
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v1.9 WebSocket エンドポイント
+    # ══════════════════════════════════════════════════════════════
+
+    @app.websocket("/ws/pipeline")
+    async def ws_pipeline(websocket: WebSocket) -> None:
+        """
+        ★ v1.9 WebSocket — コンパイル進捗リアルタイムストリーム。
+
+        購読するイベント:
+          pipeline.before_compile / pipeline.after_compile / pipeline.error
+          stage.before_run / stage.after_run / stage.error
+          optimizer.analyzed / pipeline.cache_hit
+
+        接続直後に {"type": "ws.connected", "channel": "pipeline"} を送信する。
+
+        使い方 (JavaScript):
+            const ws = new WebSocket("ws://localhost:8420/ws/pipeline");
+            ws.onmessage = e => console.log(JSON.parse(e.data));
+        """
+        await ws_manager.connect(websocket, "pipeline")
+        try:
+            await websocket.send_json({
+                "type": "ws.connected",
+                "channel": "pipeline",
+                "msg": "Subscribed to pipeline events",
+            })
+            while True:
+                # クライアントからのメッセージを待つ（ping/pong 兼用）
+                data = await websocket.receive_text()
+                if data == "ping":
+                    await websocket.send_json({"type": "pong"})
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket, "pipeline")
+        except Exception:
+            ws_manager.disconnect(websocket, "pipeline")
+
+    @app.websocket("/ws/history")
+    async def ws_history(websocket: WebSocket) -> None:
+        """
+        ★ v1.9 WebSocket — 新規履歴エントリをリアルタイムプッシュ。
+
+        購読するイベント:
+          history.recorded — compile 時に新規エントリが追加されたとき
+          history.deleted  — エントリが削除されたとき
+
+        接続直後に最新5件の履歴スナップショットを送信する。
+
+        使い方 (JavaScript):
+            const ws = new WebSocket("ws://localhost:8420/ws/history");
+            ws.onmessage = e => {
+              const d = JSON.parse(e.data);
+              if (d.type === "history.recorded") appendToList(d.data);
+            };
+        """
+        await ws_manager.connect(websocket, "history")
+        try:
+            # 接続直後にスナップショット送信
+            ctx = get_context()
+            recent = ctx.history_manager.list_entries(limit=5)
+            await websocket.send_json({
+                "type": "ws.connected",
+                "channel": "history",
+                "snapshot": [
+                    {
+                        "id": e.id,
+                        "input_prompt": e.input_prompt,
+                        "output_prompt": e.output_prompt,
+                        "score": e.overall_score,
+                        "favorite": e.favorite,
+                        "created_at": e.created_at_str,
+                    }
+                    for e in recent
+                ],
+            })
+            while True:
+                data = await websocket.receive_text()
+                if data == "ping":
+                    await websocket.send_json({"type": "pong"})
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket, "history")
+        except Exception:
+            ws_manager.disconnect(websocket, "history")
+
+    @app.websocket("/ws/events")
+    async def ws_events(websocket: WebSocket) -> None:
+        """
+        ★ v1.9 WebSocket — 全イベントのサブスクライブ（デバッグ・モニタリング用）。
+
+        クライアントは接続後に JSON でフィルタを送信できる:
+            {"filter": ["pipeline.", "stage."]}
+
+        フィルタなし（デフォルト）では全イベントを受信する。
+
+        使い方 (JavaScript):
+            const ws = new WebSocket("ws://localhost:8420/ws/events");
+            ws.send(JSON.stringify({filter: ["pipeline."]}));
+            ws.onmessage = e => console.log(JSON.parse(e.data));
+        """
+        import asyncio as _asyncio
+        await ws_manager.connect(websocket, "events")
+        event_filter: list[str] = []
+        try:
+            await websocket.send_json({
+                "type": "ws.connected",
+                "channel": "events",
+                "msg": "Subscribed to all events. Send {filter:[...]} to narrow down.",
+            })
+
+            async def receive_loop() -> None:
+                nonlocal event_filter
+                while True:
+                    try:
+                        raw = await websocket.receive_text()
+                        if raw == "ping":
+                            await websocket.send_json({"type": "pong"})
+                        else:
+                            msg = json_module.loads(raw)
+                            if "filter" in msg:
+                                event_filter = msg["filter"]
+                                await websocket.send_json({
+                                    "type": "ws.filter_set",
+                                    "filter": event_filter,
+                                })
+                    except Exception:
+                        break
+
+            await receive_loop()
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket, "events")
+        except Exception:
+            ws_manager.disconnect(websocket, "events")
+
+    @app.get(
+        "/ws/stats",
+        summary="WebSocket connection stats",
+        tags=["websocket"],
+    )
+    def ws_stats() -> dict:
+        """現在の WebSocket 接続数を返す（デバッグ用）。"""
+        return {
+            "connections": ws_manager.stats(),
+            "total": ws_manager.connection_count(),
+        }
+
 
 else:
     app = None  # type: ignore[assignment]
