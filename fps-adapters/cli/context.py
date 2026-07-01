@@ -7,6 +7,7 @@ CLI 全サブコマンドが共有する Manager 群の初期化処理。
 from __future__ import annotations
 
 import sys
+import threading
 from pathlib import Path
 
 _ROOT = Path(__file__).parents[2]
@@ -16,6 +17,9 @@ _ADAPTERS = _ROOT / "fps-adapters"
 for _p in (str(_CORE), str(_ADAPTERS)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
+
+_template_manager_lock = threading.Lock()
+_event_bus_lock = threading.Lock()
 
 
 class CliContext:
@@ -40,6 +44,9 @@ class CliContext:
         self._optimizer_manager = None
         self._history_manager = None
         self._plugin_manager = None
+        self._template_manager = None  # ★v1.7
+        self._event_bus = None            # ★v1.9
+        self._user_profile_manager = None  # ★v2.0
 
     @property
     def dictionary_manager(self):
@@ -100,6 +107,7 @@ class CliContext:
             if weight_path.exists():
                 ctx["category_weight_table"] = CategoryWeightTable.load(weight_path)
             pm.set_context(**ctx)
+            pm.set_event_bus(self.event_bus)
             self._pipeline_manager = pm
         return self._pipeline_manager
 
@@ -150,3 +158,48 @@ class CliContext:
 
             self._plugin_manager = PluginManager()
         return self._plugin_manager
+
+    @property
+    def template_manager(self):
+        """
+        ★ v1.7 — TemplateManager プロパティ（負債4解消）。
+        初回アクセス時にスレッドセーフな遅延初期化を行う。
+        """
+        if self._template_manager is None:
+            with _template_manager_lock:
+                if self._template_manager is None:
+                    from template.manager import TemplateManager  # type: ignore[import]
+                    system_dir = self.data_root / "templates" / "system"
+                    tm = TemplateManager(
+                        system_dir=system_dir if system_dir.exists() else None
+                    )
+                    tm.load()
+                    self._template_manager = tm
+        return self._template_manager
+
+    @property
+    def event_bus(self):
+        """
+        ★ v1.9 — EventBus シングルトンプロパティ。
+        PipelineManager・HistoryManager と EventBus を統合して提供する。
+        """
+        if self._event_bus is None:
+            with _event_bus_lock:
+                if self._event_bus is None:
+                    from events.event_bus import EventBus  # type: ignore[import]
+                    bus = EventBus()
+                    bus.enable_history(max_history=500)
+                    self._event_bus = bus
+        return self._event_bus
+
+    @property
+    def user_profile_manager(self):
+        """★ v2.0 — UserProfileManager シングルトンプロパティ。"""
+        if self._user_profile_manager is None:
+            from user.manager import UserProfileManager  # type: ignore[import]
+            upm = UserProfileManager(profile_dir=self.data_root / "user")
+            upm.load()
+            self._user_profile_manager = upm
+        return self._user_profile_manager
+
+
