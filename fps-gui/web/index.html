@@ -180,6 +180,31 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     .dash-score-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;}
     .dash-score-label{width:80px;color:var(--muted);}
 
+    
+    /* ── v1.9 WebSocket インジケーター ── */
+    #ws-indicator{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-left:auto;padding:0 12px;}
+    .ws-dot{width:8px;height:8px;border-radius:50%;background:#555;transition:background .3s;}
+    .ws-dot.connected{background:#2ecc71;box-shadow:0 0 6px #2ecc71;}
+    .ws-dot.connecting{background:#f39c12;animation:pulse 1s infinite;}
+    .ws-dot.error{background:#e74c3c;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* ── v1.9 パイプライン進捗バー ── */
+    #pipeline-progress{display:none;position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:9999;}
+    #pipeline-progress-bar{height:100%;width:0;background:var(--accent);transition:width .3s;}
+    #pipeline-progress.active{display:block;}
+
+    /* ── v1.9 ステージトースト ── */
+    #stage-toasts{position:fixed;bottom:70px;right:16px;display:flex;flex-direction:column;gap:6px;z-index:9998;pointer-events:none;}
+    .stage-toast{background:var(--bg-secondary);border:1px solid var(--border);border-left:3px solid var(--accent);padding:6px 12px;border-radius:6px;font-size:12px;opacity:0;transform:translateX(20px);transition:all .25s;max-width:260px;}
+    .stage-toast.show{opacity:1;transform:translateX(0);}
+    .stage-toast.done{border-left-color:#2ecc71;}
+    .stage-toast.error{border-left-color:#e74c3c;}
+
+    /* ── v1.9 History リアルタイムバッジ ── */
+    .ht-new-badge{display:inline-block;padding:1px 6px;background:var(--accent);color:#fff;border-radius:8px;font-size:10px;margin-left:6px;animation:fadein .4s;}
+    @keyframes fadein{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -293,6 +318,7 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="presets" onclick="showTab('presets')">Presets</button>
     <button class="nav-btn" data-tab="history" onclick="showTab('history')">History</button>
     <button class="nav-btn" data-tab="backup" onclick="showTab('backup')">Backup</button>
+    <div id="ws-indicator"><div class="ws-dot" id="ws-dot"></div><span id="ws-label">WS 未接続</span></div>
     <button class="nav-btn" data-tab="dashboard" onclick="showTab('dashboard')">Dashboard</button>
     <button class="nav-btn" data-tab="kb" onclick="showTab('kb')">🔍 Knowledge</button>
   </nav>
@@ -1169,6 +1195,178 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
       el.innerHTML = `<div class="bk-empty">ダッシュボード取得失敗: ${escHtml(e.message)}</div>`;
     }
   }
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v1.9 WebSocket クライアント
+  // ══════════════════════════════════════════════════════════════
+
+  const WS_BASE = (() => {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${location.host}`;
+  })();
+
+  // ── 接続状態管理 ─────────────────────────────────────────────
+  const wsState = { pipeline: null, history: null, reconnectTimer: null };
+  let pipelineStages = [];
+
+  function wsSetIndicator(status) {
+    const dot   = document.getElementById('ws-dot');
+    const label = document.getElementById('ws-label');
+    if (!dot) return;
+    dot.className = 'ws-dot ' + status;
+    const labels = { connected: 'WS 接続中', connecting: '接続中…', error: 'WS エラー', '': '未接続' };
+    if (label) label.textContent = labels[status] || status;
+  }
+
+  // ── /ws/pipeline ─────────────────────────────────────────────
+  function wsConnectPipeline() {
+    if (wsState.pipeline && wsState.pipeline.readyState < 2) return;
+    wsSetIndicator('connecting');
+    const ws = new WebSocket(`${WS_BASE}/ws/pipeline`);
+    wsState.pipeline = ws;
+
+    ws.onopen = () => {
+      wsSetIndicator('connected');
+      clearTimeout(wsState.reconnectTimer);
+    };
+
+    ws.onmessage = (ev) => {
+      const msg = JSON.parse(ev.data);
+      handlePipelineEvent(msg);
+    };
+
+    ws.onclose = () => {
+      wsSetIndicator('');
+      wsState.pipeline = null;
+      wsState.reconnectTimer = setTimeout(wsConnectPipeline, 3000);
+    };
+
+    ws.onerror = () => { wsSetIndicator('error'); };
+
+    // keepalive ping
+    setInterval(() => {
+      if (ws.readyState === 1) ws.send('ping');
+    }, 25000);
+  }
+
+  function handlePipelineEvent(msg) {
+    const type = msg.type;
+    const bar  = document.getElementById('pipeline-progress');
+    const fill = document.getElementById('pipeline-progress-bar');
+
+    if (type === 'pipeline.before_compile') {
+      pipelineStages = [];
+      if (bar) { bar.classList.add('active'); }
+      if (fill) fill.style.width = '5%';
+      showStageToast('🔄 コンパイル開始', 'active');
+    }
+    else if (type === 'stage.before_run') {
+      const stage = msg.data?.stage || '';
+      pipelineStages.push(stage);
+      const pct = Math.min(10 + pipelineStages.length * 8, 85);
+      if (fill) fill.style.width = pct + '%';
+      showStageToast(`▶ ${stage}`, 'active', 1200);
+    }
+    else if (type === 'stage.after_run') {
+      const stage = msg.data?.stage || '';
+      showStageToast(`✓ ${stage}`, 'done', 1000);
+    }
+    else if (type === 'stage.error') {
+      showStageToast(`✗ ${msg.data?.stage || 'error'}: ${msg.data?.error || ''}`, 'error', 3000);
+    }
+    else if (type === 'pipeline.after_compile') {
+      if (fill) fill.style.width = '100%';
+      setTimeout(() => {
+        if (bar) bar.classList.remove('active');
+        if (fill) fill.style.width = '0';
+      }, 600);
+    }
+    else if (type === 'pipeline.cache_hit') {
+      showStageToast('⚡ キャッシュヒット', 'done', 1000);
+      if (bar) bar.classList.remove('active');
+    }
+    else if (type === 'optimizer.analyzed') {
+      const score = msg.data?.overall_score;
+      if (score !== undefined) showStageToast(`📊 スコア: ${score.toFixed(1)}点`, 'done', 2000);
+    }
+  }
+
+  // ── /ws/history ──────────────────────────────────────────────
+  function wsConnectHistory() {
+    if (wsState.history && wsState.history.readyState < 2) return;
+    const ws = new WebSocket(`${WS_BASE}/ws/history`);
+    wsState.history = ws;
+
+    ws.onmessage = (ev) => {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === 'history.recorded') {
+        // History タブが表示中なら自動リフレッシュ
+        const histPanel = document.getElementById('history-panel');
+        if (histPanel && histPanel.classList.contains('active')) {
+          loadHistory();
+        }
+        // History タブボタンにバッジ
+        const btn = document.querySelector('[data-tab="history"]');
+        if (btn && !histPanel?.classList.contains('active')) {
+          if (!btn.querySelector('.ht-new-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'ht-new-badge';
+            badge.textContent = 'NEW';
+            btn.appendChild(badge);
+          }
+        }
+        toast('📝 新規履歴が追加されました');
+      }
+      else if (msg.type === 'history.deleted') {
+        const histPanel = document.getElementById('history-panel');
+        if (histPanel?.classList.contains('active')) loadHistory();
+      }
+    };
+
+    ws.onclose = () => {
+      wsState.history = null;
+      setTimeout(wsConnectHistory, 4000);
+    };
+
+    setInterval(() => {
+      if (ws.readyState === 1) ws.send('ping');
+    }, 25000);
+  }
+
+  // ── ステージトースト ──────────────────────────────────────────
+  function showStageToast(msg, type = '', duration = 1800) {
+    const container = document.getElementById('stage-toasts');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = `stage-toast ${type}`;
+    el.textContent = msg;
+    container.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  }
+
+  // History タブ表示時に NEW バッジを消す
+  const _origShowTab = showTab;
+  function showTab(tab) {
+    _origShowTab(tab);
+    if (tab === 'history') {
+      const btn = document.querySelector('[data-tab="history"]');
+      const badge = btn?.querySelector('.ht-new-badge');
+      if (badge) badge.remove();
+    }
+  }
+
+  // ── 初期接続 ─────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      wsConnectPipeline();
+      wsConnectHistory();
+    }, 500);
+  });
 
   </script>
 </body>
