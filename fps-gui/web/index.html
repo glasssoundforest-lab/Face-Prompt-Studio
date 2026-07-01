@@ -205,6 +205,54 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     .ht-new-badge{display:inline-block;padding:1px 6px;background:var(--accent);color:#fff;border-radius:8px;font-size:10px;margin-left:6px;animation:fadein .4s;}
     @keyframes fadein{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 
+    
+    /* ── v2.0 Profile タブ ── */
+    #profile-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;}
+    #profile-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;height:100%;}
+    .pf-sidebar{padding:16px;border-right:1px solid var(--border);overflow-y:auto;}
+    .pf-sidebar h3{font-size:0.85rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;}
+    .pf-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+    .pf-stat{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+    .pf-stat-num{font-size:1.4rem;font-weight:700;color:var(--accent);}
+    .pf-stat-lbl{font-size:11px;color:var(--muted);}
+    .pf-btn{width:100%;padding:8px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:6px;}
+    .pf-btn-primary{background:var(--accent);color:#fff;}
+    .pf-btn-secondary{background:var(--bg-secondary);color:var(--text);border:1px solid var(--border);}
+    .pf-btn-danger{background:#e74c3c;color:#fff;}
+    .pf-main{padding:16px;overflow-y:auto;}
+    .pf-section{margin-bottom:24px;}
+    .pf-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .pf-section-title{font-size:0.9rem;font-weight:600;}
+    /* 推奨タグ */
+    .pf-rec-grid{display:flex;flex-wrap:wrap;gap:6px;}
+    .pf-rec-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+                background:var(--bg-secondary);border:1px solid var(--border);
+                border-radius:14px;font-size:12px;cursor:pointer;transition:all .15s;}
+    .pf-rec-tag:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--bg-secondary));}
+    .pf-rec-cnt{font-size:10px;color:var(--muted);}
+    /* スコアトレンドグラフ */
+    .pf-trend-wrap{position:relative;height:160px;background:var(--bg-secondary);
+                   border:1px solid var(--border);border-radius:8px;overflow:hidden;padding:8px 12px 24px;}
+    .pf-trend-svg{width:100%;height:100%;}
+    .pf-trend-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;}
+    /* スタイルルール */
+    .pf-rule{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;
+             padding:10px 14px;margin-bottom:8px;}
+    .pf-rule-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    .pf-rule-name{font-weight:600;font-size:13px;}
+    .pf-rule-tags{font-size:11px;color:var(--muted);}
+    /* タグ重み */
+    .pf-weight-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;}
+    .pf-weight-tag{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .pf-weight-val{width:44px;text-align:right;color:var(--accent);font-weight:600;}
+    .pf-weight-zero{color:#e74c3c;}
+    /* add-rule form */
+    .pf-add-rule{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;}
+    .pf-add-rule input,.pf-add-rule textarea{width:100%;padding:6px 9px;border:1px solid var(--border);
+      border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;margin-bottom:6px;box-sizing:border-box;}
+    .pf-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);
+                border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-left:6px;}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -319,6 +367,7 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="history" onclick="showTab('history')">History</button>
     <button class="nav-btn" data-tab="backup" onclick="showTab('backup')">Backup</button>
     <div id="ws-indicator"><div class="ws-dot" id="ws-dot"></div><span id="ws-label">WS 未接続</span></div>
+    <button class="nav-btn" data-tab="profile" onclick="showTab('profile')">Profile</button>
     <button class="nav-btn" data-tab="dashboard" onclick="showTab('dashboard')">Dashboard</button>
     <button class="nav-btn" data-tab="kb" onclick="showTab('kb')">🔍 Knowledge</button>
   </nav>
@@ -382,6 +431,69 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
       </div>
       <div id="bk-list">
         <div class="bk-empty">読み込み中…</div>
+      </div>
+    </div>
+
+
+    <!-- v2.0 Profile Panel -->
+    <div id="profile-panel">
+      <div class="pf-sidebar">
+        <h3>📊 プロファイル統計</h3>
+        <div class="pf-stat-grid">
+          <div class="pf-stat"><div class="pf-stat-num" id="pf-s-freq">—</div><div class="pf-stat-lbl">学習タグ</div></div>
+          <div class="pf-stat"><div class="pf-stat-num" id="pf-s-rules">—</div><div class="pf-stat-lbl">ルール</div></div>
+          <div class="pf-stat"><div class="pf-stat-num" id="pf-s-exc">—</div><div class="pf-stat-lbl">除外タグ</div></div>
+          <div class="pf-stat"><div class="pf-stat-num" id="pf-s-weights">—</div><div class="pf-stat-lbl">重み設定</div></div>
+        </div>
+        <div id="pf-last-learned" style="font-size:11px;color:var(--muted);margin-bottom:12px;">最終学習: 未実施</div>
+        <button class="pf-btn pf-btn-primary" onclick="pfLearn()">🧠 履歴から学習</button>
+        <button class="pf-btn pf-btn-secondary" onclick="pfLoad()">🔄 更新</button>
+        <button class="pf-btn pf-btn-danger" onclick="pfReset()">🗑 プロファイルをリセット</button>
+      </div>
+      <div class="pf-main">
+        <!-- スコアトレンド -->
+        <div class="pf-section">
+          <div class="pf-section-header">
+            <span class="pf-section-title">📈 スコアトレンド（30日）</span>
+            <select id="pf-trend-days" onchange="pfLoadTrend()" style="font-size:12px;padding:3px 7px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);">
+              <option value="14">14日</option>
+              <option value="30" selected>30日</option>
+              <option value="60">60日</option>
+              <option value="90">90日</option>
+            </select>
+          </div>
+          <div class="pf-trend-wrap"><svg class="pf-trend-svg" id="pf-trend-svg"></svg></div>
+        </div>
+        <!-- 推奨タグ -->
+        <div class="pf-section">
+          <div class="pf-section-header">
+            <span class="pf-section-title">⭐ 推奨タグ（頻出 Top20）</span>
+            <button style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg-secondary);cursor:pointer;" onclick="pfInsertAllRecs()">全部追加</button>
+          </div>
+          <div id="pf-rec-grid" class="pf-rec-grid"></div>
+        </div>
+        <!-- スタイルルール -->
+        <div class="pf-section">
+          <div class="pf-section-header">
+            <span class="pf-section-title">📋 スタイルルール</span>
+            <button style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg-secondary);cursor:pointer;" onclick="pfToggleAddRule()">＋ 追加</button>
+          </div>
+          <div id="pf-rules-list"></div>
+          <div id="pf-add-rule-form" class="pf-add-rule" style="display:none;">
+            <input id="pf-rule-id" placeholder="ルールID（英数字）" />
+            <input id="pf-rule-name" placeholder="ルール名" />
+            <textarea id="pf-rule-include" rows="2" placeholder="常に追加するタグ（カンマ区切り）"></textarea>
+            <textarea id="pf-rule-exclude" rows="2" placeholder="常に除外するタグ（カンマ区切り）"></textarea>
+            <button class="pf-btn pf-btn-primary" style="margin-top:4px" onclick="pfAddRule()">保存</button>
+          </div>
+        </div>
+        <!-- タグ重み -->
+        <div class="pf-section">
+          <div class="pf-section-header">
+            <span class="pf-section-title">⚖ タグ重み設定</span>
+          </div>
+          <div id="pf-weights-list" style="max-height:200px;overflow-y:auto;"></div>
+        </div>
       </div>
     </div>
 
@@ -561,7 +673,10 @@ function showTab(tab){
   mainEl.style.display='';kbEl.classList.remove('active');htEl.classList.remove('active');
   if(tab==='kb'){
     mainEl.style.display='none';kbEl.classList.add('active');initKb();
-  } else if(tab==='backup'){
+  } else if(tab==='profile'){
+      await pfLoad();
+      await pfLoadTrend();
+    } else if(tab==='backup'){
       await bkLoad();
     } else if(tab==='dashboard'){
       await dashLoad();
@@ -1367,6 +1482,181 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
       wsConnectHistory();
     }, 500);
   });
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v2.0 Profile
+  // ══════════════════════════════════════════════════════════════
+  async function pfLoad() {
+    try {
+      const p = await api('/profile');
+      document.getElementById('pf-s-freq').textContent    = p.tag_frequency_count;
+      document.getElementById('pf-s-rules').textContent   = p.style_rule_count;
+      document.getElementById('pf-s-exc').textContent     = p.excluded_tag_count;
+      document.getElementById('pf-s-weights').textContent = p.tag_weight_count;
+      const ll = document.getElementById('pf-last-learned');
+      if (ll) ll.textContent = p.last_learned
+        ? '最終学習: ' + p.last_learned.slice(0, 16).replace('T', ' ')
+        : '最終学習: 未実施';
+
+      // 推奨タグ
+      const grid = document.getElementById('pf-rec-grid');
+      if (grid) {
+        if (!p.top_tags.length) {
+          grid.innerHTML = '<span style="color:var(--muted);font-size:13px">「履歴から学習」を実行してください</span>';
+        } else {
+          grid.innerHTML = p.top_tags.map(t => `
+            <span class="pf-rec-tag" onclick="pfInsertTag('${escHtml(t.tag)}')">
+              ${escHtml(t.tag)} <span class="pf-rec-cnt">${t.count}</span>
+            </span>`).join('');
+        }
+      }
+
+      // スタイルルール
+      const rulesList = document.getElementById('pf-rules-list');
+      if (rulesList) {
+        rulesList.innerHTML = p.style_rules.length
+          ? p.style_rules.map(r => `
+            <div class="pf-rule">
+              <div class="pf-rule-header">
+                <span class="pf-rule-name">${escHtml(r.name)}</span>
+                <button style="font-size:11px;padding:2px 8px;background:#e74c3c;color:#fff;border:none;border-radius:4px;cursor:pointer"
+                  onclick="pfDeleteRule('${escHtml(r.id)}')">削除</button>
+              </div>
+              ${r.always_include.length ? `<div class="pf-rule-tags">✅ ${r.always_include.join(', ')}</div>` : ''}
+              ${r.always_exclude.length ? `<div class="pf-rule-tags">🚫 ${r.always_exclude.join(', ')}</div>` : ''}
+            </div>`).join('')
+          : '<div style="color:var(--muted);font-size:13px">スタイルルールなし</div>';
+      }
+    } catch(e) { toast('Profile 読み込み失敗: ' + e.message, true); }
+  }
+
+  async function pfLearn() {
+    const btn = document.querySelector('.pf-btn-primary');
+    if (btn) btn.innerHTML = '学習中… <span class="pf-spinner"></span>';
+    try {
+      const days = parseInt(document.getElementById('pf-trend-days')?.value || '30');
+      const r = await api('/profile/learn', {method:'POST', params:{limit:300, days}});
+      toast(`✅ 学習完了 — 新規:${r.learned}件 更新:${r.updated}件`);
+      await pfLoad();
+      await pfLoadTrend();
+    } catch(e) { toast('学習失敗: ' + e.message, true); }
+    finally { if (btn) btn.textContent = '🧠 履歴から学習'; }
+  }
+
+  async function pfLoadTrend() {
+    const days = parseInt(document.getElementById('pf-trend-days')?.value || '30');
+    try {
+      const res = await api('/profile/score-trend', {params:{days}});
+      pfDrawTrend(res.trends);
+    } catch(e) {
+      const svg = document.getElementById('pf-trend-svg');
+      if (svg) svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--muted)" font-size="13">データなし</text>';
+    }
+  }
+
+  function pfDrawTrend(trends) {
+    const svgEl = document.getElementById('pf-trend-svg');
+    if (!svgEl || !trends.length) {
+      if (svgEl) svgEl.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--muted)" font-size="13">データなし</text>';
+      return;
+    }
+    const W = svgEl.clientWidth || 500, H = svgEl.clientHeight || 120;
+    const PAD = {l:36, r:12, t:10, b:22};
+    const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
+    const scores = trends.map(t => t.avg_score);
+    const minS = Math.max(0, Math.min(...scores) - 10);
+    const maxS = Math.min(100, Math.max(...scores) + 10);
+    const scaleX = i => PAD.l + (i / (trends.length - 1 || 1)) * iW;
+    const scaleY = s => PAD.t + iH - ((s - minS) / (maxS - minS || 1)) * iH;
+
+    const pts = trends.map((t, i) => `${scaleX(i).toFixed(1)},${scaleY(t.avg_score).toFixed(1)}`).join(' ');
+    const area = `M${scaleX(0)},${scaleY(minS)} ` +
+      trends.map((t, i) => `L${scaleX(i)},${scaleY(t.avg_score)}`).join(' ') +
+      ` L${scaleX(trends.length-1)},${scaleY(minS)} Z`;
+
+    // Y軸ラベル
+    const yLabels = [minS, (minS+maxS)/2, maxS].map(v =>
+      `<text x="${PAD.l-4}" y="${scaleY(v)+4}" text-anchor="end" font-size="9" fill="var(--muted)">${v.toFixed(0)}</text>`
+    ).join('');
+
+    // X軸ラベル（最初・中間・最後）
+    const xIdx = [0, Math.floor(trends.length/2), trends.length-1];
+    const xLabels = xIdx.filter(i => trends[i]).map(i =>
+      `<text x="${scaleX(i)}" y="${H-4}" text-anchor="middle" font-size="9" fill="var(--muted)">${trends[i].date.slice(5)}</text>`
+    ).join('');
+
+    svgEl.innerHTML = `
+      <defs>
+        <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity=".25"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${area}" fill="url(#trendGrad)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+      ${trends.map((t,i) => `<circle cx="${scaleX(i)}" cy="${scaleY(t.avg_score)}" r="3" fill="var(--accent)">
+        <title>${t.date}: ${t.avg_score.toFixed(1)}点 (${t.entry_count}件)</title></circle>`).join('')}
+      ${yLabels}${xLabels}
+    `;
+  }
+
+  function pfInsertTag(tag) {
+    const ta = document.getElementById('tag-input') || document.querySelector('textarea');
+    if (!ta) { toast(tag + ' をコピーしました'); navigator.clipboard?.writeText(tag); return; }
+    const cur = ta.value.trim();
+    ta.value = cur ? cur + ', ' + tag : tag;
+    toast('✅ ' + tag + ' を追加しました');
+  }
+
+  function pfInsertAllRecs() {
+    const tags = [...document.querySelectorAll('.pf-rec-tag')]
+      .map(el => el.childNodes[0].textContent.trim()).filter(Boolean);
+    if (!tags.length) return;
+    const ta = document.getElementById('tag-input') || document.querySelector('textarea');
+    if (!ta) { navigator.clipboard?.writeText(tags.join(', ')); return; }
+    const cur = ta.value.trim();
+    ta.value = cur ? cur + ', ' + tags.join(', ') : tags.join(', ');
+    toast(`✅ ${tags.length}件を追加しました`);
+  }
+
+  async function pfReset() {
+    if (!confirm('プロファイルを完全にリセットしますか？\n学習データ・スタイルルール・タグ重みがすべて削除されます。')) return;
+    try {
+      await api('/profile/reset', {method:'DELETE'});
+      toast('✅ プロファイルをリセットしました');
+      await pfLoad();
+      await pfLoadTrend();
+    } catch(e) { toast('リセット失敗: ' + e.message, true); }
+  }
+
+  function pfToggleAddRule() {
+    const f = document.getElementById('pf-add-rule-form');
+    if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  }
+
+  async function pfAddRule() {
+    const id   = document.getElementById('pf-rule-id')?.value.trim();
+    const name = document.getElementById('pf-rule-name')?.value.trim();
+    const inc  = (document.getElementById('pf-rule-include')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+    const exc  = (document.getElementById('pf-rule-exclude')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+    if (!id || !name) { toast('ID と名前は必須です', true); return; }
+    try {
+      await api('/profile/rules', {method:'POST', body:{id, name, always_include:inc, always_exclude:exc}});
+      toast('✅ スタイルルールを追加しました');
+      pfToggleAddRule();
+      await pfLoad();
+    } catch(e) { toast('追加失敗: ' + e.message, true); }
+  }
+
+  async function pfDeleteRule(ruleId) {
+    if (!confirm('このスタイルルールを削除しますか？')) return;
+    try {
+      await api(`/profile/rules/${encodeURIComponent(ruleId)}`, {method:'DELETE'});
+      toast('✅ ルールを削除しました');
+      await pfLoad();
+    } catch(e) { toast('削除失敗: ' + e.message, true); }
+  }
 
   </script>
 </body>
