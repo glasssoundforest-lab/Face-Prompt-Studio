@@ -30,7 +30,7 @@ class TestJapaneseTagsFile:
 
     def test_has_entries(self):
         data = json.loads(JAPANESE_DICT.read_text(encoding="utf-8"))
-        assert len(data.get("entries", [])) >= 200
+        assert len(data.get("entries", [])) >= 500
 
     def test_entry_schema(self):
         data = json.loads(JAPANESE_DICT.read_text(encoding="utf-8"))
