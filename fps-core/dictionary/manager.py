@@ -256,6 +256,137 @@ class DictionaryManager:
             self._watcher.stop()
 
     # ══════════════════════════════════════════════════════════════
+    # ★v1.2 User Dictionary CRUD
+    # ══════════════════════════════════════════════════════════════
+
+    def _user_custom_file(self) -> Path:
+        """ユーザーカスタムエントリを保存する JSON ファイルパスを返す。"""
+        if self._user_dir is None:
+            raise RuntimeError("user_dir が設定されていません")
+        self._user_dir.mkdir(parents=True, exist_ok=True)
+        return self._user_dir / "custom.json"
+
+    def _load_user_custom(self) -> dict:
+        """custom.json を読み込む（なければ空のスキーマを返す）。"""
+        path = self._user_custom_file()
+        if not path.exists():
+            return {"version": "1.0", "category": "user_custom", "entries": []}
+        import json as _json
+        return _json.loads(path.read_text(encoding="utf-8"))
+
+    def _save_user_custom(self, data: dict) -> None:
+        """custom.json に書き込む。entries が空なら削除する。"""
+        import json as _json
+        path = self._user_custom_file()
+        if not data.get("entries"):
+            # エントリが空なら削除（validator は空 entries を拒否するため）
+            if path.exists():
+                path.unlink()
+            return
+        path.write_text(_json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def add_user_entry(
+        self,
+        key: str,
+        resolved: str,
+        category: str,
+        aliases: list[str] | None = None,
+        weight: float = 1.0,
+    ) -> None:
+        """ユーザー辞書にエントリを追加する（既存キーは上書き）。"""
+        import re as _re
+
+        def _norm(s: str) -> str:
+            return _re.sub(r"[\s\-]+", "_", s.strip().lower())
+
+        norm_key = _norm(key)
+        # aliases は正規化済み文字列で、key 自身との重複を除去
+        norm_aliases = []
+        seen = {norm_key}
+        for a in (aliases or []):
+            na = _norm(a)
+            if na and na not in seen:
+                norm_aliases.append(na)
+                seen.add(na)
+
+        with self._lock:
+            data = self._load_user_custom()
+            entries = data.get("entries", [])
+            for e in entries:
+                if e["key"] == norm_key:
+                    e["resolved"] = resolved
+                    e["category"] = category
+                    e["aliases"] = norm_aliases
+                    e["weight"] = weight
+                    break
+            else:
+                entries.append({
+                    "key": norm_key,
+                    "resolved": resolved,
+                    "category": category,
+                    "aliases": norm_aliases,
+                    "weight": weight,
+                    "tags": ["user"],
+                })
+            data["entries"] = entries
+            self._save_user_custom(data)
+        self.reload()
+
+    def update_user_entry(
+        self,
+        key: str,
+        resolved: str | None = None,
+        category: str | None = None,
+        aliases: list[str] | None = None,
+        weight: float | None = None,
+    ) -> bool:
+        """ユーザー辞書エントリを部分更新する。
+
+        Returns:
+            True = 更新成功 / False = キーが見つからない
+        """
+        with self._lock:
+            data = self._load_user_custom()
+            entries = data.get("entries", [])
+            for e in entries:
+                if e["key"] == key:
+                    if resolved is not None:
+                        e["resolved"] = resolved
+                    if category is not None:
+                        e["category"] = category
+                    if aliases is not None:
+                        e["aliases"] = aliases
+                    if weight is not None:
+                        e["weight"] = weight
+                    data["entries"] = entries
+                    self._save_user_custom(data)
+                    self.reload()
+                    return True
+            return False
+
+    def delete_user_entry(self, key: str) -> bool:
+        """ユーザー辞書からエントリを削除する。
+
+        Returns:
+            True = 削除成功 / False = キーが見つからない
+        """
+        with self._lock:
+            data = self._load_user_custom()
+            before = len(data.get("entries", []))
+            data["entries"] = [e for e in data.get("entries", []) if e["key"] != key]
+            if len(data["entries"]) == before:
+                return False
+            self._save_user_custom(data)
+        self.reload()
+        return True
+
+    def list_user_entries(self) -> list[dict]:
+        """ユーザー辞書のエントリ一覧を返す。"""
+        with self._lock:
+            data = self._load_user_custom()
+            return list(data.get("entries", []))
+
+    # ══════════════════════════════════════════════════════════════
     # Private
     # ══════════════════════════════════════════════════════════════
 

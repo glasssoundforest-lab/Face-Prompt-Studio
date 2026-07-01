@@ -65,6 +65,11 @@ from .models import (  # noqa: E402
     TemplateListResponse,
     TemplateSummaryResponse,
     TemplateVariableResponse,
+    UserEntryCreateRequest,
+    UserEntryDeleteResponse,
+    UserEntryListResponse,
+    UserEntryResponse,
+    UserEntryUpdateRequest,
     ValidationResponse,
 )
 
@@ -395,6 +400,93 @@ if _FASTAPI_AVAILABLE:
             weight=result.weight,
             category=result.category,  # type: ignore[arg-type]
         )
+
+    # ── v1.2 User Dictionary CRUD ─────────────────────────────────
+
+    @app.get(
+        "/dictionary/user/entries",
+        response_model=UserEntryListResponse,
+        summary="List user dictionary entries",
+        tags=["dictionary"],
+    )
+    def list_user_entries() -> UserEntryListResponse:
+        """ユーザー辞書エントリ一覧を返す。"""
+        ctx = get_context()
+        entries = ctx.dictionary_manager.list_user_entries()
+        return UserEntryListResponse(
+            entries=[UserEntryResponse(**e) for e in entries],
+            total=len(entries),
+        )
+
+    @app.post(
+        "/dictionary/user/entries",
+        response_model=UserEntryResponse,
+        summary="Add a user dictionary entry",
+        tags=["dictionary"],
+        status_code=201,
+    )
+    def create_user_entry(body: UserEntryCreateRequest) -> UserEntryResponse:
+        """ユーザー辞書にエントリを追加する（既存キーは上書き）。"""
+        ctx = get_context()
+        ctx.dictionary_manager.add_user_entry(
+            key=body.key,
+            resolved=body.resolved,
+            category=body.category,
+            aliases=body.aliases,
+            weight=body.weight,
+        )
+        return UserEntryResponse(
+            key=body.key,
+            resolved=body.resolved,
+            category=body.category,
+            aliases=body.aliases,
+            weight=body.weight,
+            tags=["user"],
+        )
+
+    @app.put(
+        "/dictionary/user/entries/{key}",
+        response_model=UserEntryResponse,
+        summary="Update a user dictionary entry",
+        tags=["dictionary"],
+    )
+    def update_user_entry(key: str, body: UserEntryUpdateRequest) -> UserEntryResponse:
+        """ユーザー辞書エントリを部分更新する。存在しない場合は 404。"""
+        ctx = get_context()
+        ok = ctx.dictionary_manager.update_user_entry(
+            key=key,
+            resolved=body.resolved,
+            category=body.category,
+            aliases=body.aliases,
+            weight=body.weight,
+        )
+        if not ok:
+            raise HTTPException(status_code=404, detail=f"User entry '{key}' not found")
+        result = ctx.dictionary_manager.lookup(key)
+        if not result.found or result.entry is None:
+            raise HTTPException(status_code=404, detail=f"User entry '{key}' not found after update")
+        return UserEntryResponse(
+            key=result.key,
+            resolved=result.resolved or "",  # type: ignore[arg-type]
+            category=result.category or "",  # type: ignore[arg-type]
+            aliases=result.entry.aliases,
+            weight=result.weight,
+            tags=list(result.entry.tags),
+        )
+
+    @app.delete(
+        "/dictionary/user/entries/{key}",
+        response_model=UserEntryDeleteResponse,
+        summary="Delete a user dictionary entry",
+        tags=["dictionary"],
+    )
+    def delete_user_entry(key: str) -> UserEntryDeleteResponse:
+        """ユーザー辞書からエントリを削除する。存在しない場合は 404。"""
+        ctx = get_context()
+        deleted = ctx.dictionary_manager.delete_user_entry(key)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"User entry '{key}' not found")
+        return UserEntryDeleteResponse(key=key, deleted=True)
 
     # ── M5-4 History Timeline ────────────────────────────────────
 

@@ -218,3 +218,39 @@ if _PYDANTIC_AVAILABLE:
         missing_variables: list[str] = []
         warnings: list[str] = []
         success: bool
+
+    # ── v1.2 User Dictionary CRUD ─────────────────────────────────
+
+    class UserEntryCreateRequest(BaseModel):
+        """POST /dictionary/user/entries リクエスト"""
+        key: str
+        resolved: str
+        category: str
+        aliases: list[str] = []
+        weight: float = 1.0
+
+    class UserEntryUpdateRequest(BaseModel):
+        """PUT /dictionary/user/entries/{key} リクエスト"""
+        resolved: str | None = None
+        category: str | None = None
+        aliases: list[str] | None = None
+        weight: float | None = None
+
+    class UserEntryResponse(BaseModel):
+        """ユーザー辞書エントリ 1件レスポンス"""
+        key: str
+        resolved: str
+        category: str
+        aliases: list[str] = []
+        weight: float
+        tags: list[str] = []
+
+    class UserEntryListResponse(BaseModel):
+        """GET /dictionary/user/entries レスポンス"""
+        entries: list[UserEntryResponse]
+        total: int
+
+    class UserEntryDeleteResponse(BaseModel):
+        """DELETE /dictionary/user/entries/{key} レスポンス"""
+        key: str
+        deleted: bool

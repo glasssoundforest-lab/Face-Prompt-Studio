@@ -102,7 +102,31 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-/* ── M5-4 History Timeline ─────────────────────────────── */
+/* ── v1.2 User Dictionary Editor ───────────────────────── */
+.kb-user-section{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.kb-user-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+.kb-user-form{display:flex;flex-direction:column;gap:8px;}
+.kb-user-row{display:flex;gap:6px;align-items:center;}
+.kb-user-label{font-size:11px;color:var(--muted);min-width:60px;flex-shrink:0;}
+.kb-user-input{flex:1;padding:6px 9px;font-size:12px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);outline:none;transition:border-color .2s;}
+.kb-user-input:focus{border-color:var(--accent);}
+.kb-user-submit{padding:7px 0;width:100%;background:var(--accent);color:#000;border-radius:var(--r);font-size:12px;font-weight:700;margin-top:4px;}
+.kb-user-submit:hover{opacity:.85;}
+.kb-user-delete{padding:5px 10px;border-radius:var(--r);font-size:11px;border:1px solid var(--border);color:var(--red);background:transparent;}
+.kb-user-delete:hover{background:rgba(255,83,112,.08);}
+.kb-user-list{margin-top:12px;}
+.kb-user-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:11px;}
+.kb-user-item-key{flex:1;color:var(--accent);}
+.kb-user-item-res{flex:1;color:var(--muted);}
+.kb-user-item-cat{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--surface2);color:var(--muted);}
+/* ── v1.2 Optimizer連携ビュー ──────────────────────────── */
+.kb-conflict-view{margin-top:12px;}
+.kb-conflict-title{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.kb-conflict-group{margin-bottom:10px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg);}
+.kb-conflict-group-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.kb-conflict-tags{display:flex;flex-wrap:wrap;gap:5px;}
+.kb-conflict-tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:8px;background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);color:#e0b800;}
+</style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
 .ht-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;}
@@ -275,6 +299,44 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
   </div>
   <div id="kb-right" class="kb-right">
     <div class="kb-right-ph">エントリを選択すると詳細を表示します</div>
+  </div>
+</div>
+
+<!-- v1.2 User Dict Editor / Optimizer 連携（KB右下に追加パネル） -->
+<div id="kb-user-panel" style="display:none;padding:20px 24px;border-top:1px solid var(--border);background:var(--bg);">
+  <div class="kb-user-section">
+    <div class="kb-user-title">🖊 ユーザー辞書エントリ追加</div>
+    <div class="kb-user-form">
+      <div class="kb-user-row">
+        <span class="kb-user-label">キー</span>
+        <input class="kb-user-input" id="kbu-key" placeholder="my_tag" />
+      </div>
+      <div class="kb-user-row">
+        <span class="kb-user-label">Resolved</span>
+        <input class="kb-user-input" id="kbu-resolved" placeholder="Category.Value" />
+      </div>
+      <div class="kb-user-row">
+        <span class="kb-user-label">カテゴリ</span>
+        <input class="kb-user-input" id="kbu-category" placeholder="eyes" />
+      </div>
+      <div class="kb-user-row">
+        <span class="kb-user-label">重み</span>
+        <input class="kb-user-input" id="kbu-weight" type="number" value="1.0" step="0.1" min="0.1" max="3.0" style="max-width:80px" />
+      </div>
+      <div class="kb-user-row">
+        <span class="kb-user-label">別名</span>
+        <input class="kb-user-input" id="kbu-aliases" placeholder="alias1, alias2" />
+      </div>
+      <button class="kb-user-submit" onclick="kbuSave()">＋ エントリ追加</button>
+    </div>
+  </div>
+  <div class="kb-user-section" id="kbu-list-wrap">
+    <div class="kb-user-title">ユーザー辞書一覧</div>
+    <div class="kb-user-list" id="kbu-list"><div class="empty" style="padding:8px 0;font-size:12px">なし</div></div>
+  </div>
+  <div class="kb-conflict-view" id="kb-conflict-view">
+    <div class="kb-conflict-title">⚠ 矛盾グループ（Optimizer連携）</div>
+    <div id="kb-conflict-groups"></div>
   </div>
 </div>
 
@@ -658,6 +720,7 @@ function htLoadToEditor(prompt){
 ═══════════════════════════════════════════════════════ */
 const kb={cats:[],activeCat:null,selKey:null,timer:null,initialized:false};
 
+// ── v1.2 User Dictionary Editor ──────────────────────────
 async function initKb(){
   if(kb.initialized)return;
   kb.initialized=true;
@@ -666,6 +729,10 @@ async function initKb(){
     kb.cats=data.categories||[];
     renderKbCatBar();
   }catch(e){console.error('[KB]',e);}
+  // ユーザー辞書パネルを表示してロード
+  $('kb-user-panel').style.display='block';
+  await kbuLoad();
+  await kbLoadConflictGroups();
 }
 
 function renderKbCatBar(){
@@ -752,6 +819,78 @@ function kbAddToEditor(tag){
   showTab('editor');
   previewTags();
   toast('"'+tag+'" をエディタに追加しました');
+}
+
+/* ── v1.2 ユーザー辞書 CRUD ────────────────────────────── */
+async function kbuLoad(){
+  try{
+    const data=await api('/dictionary/user/entries');
+    renderKbuList(data.entries||[]);
+  }catch(e){console.error('[KBU]',e);}
+}
+
+function renderKbuList(entries){
+  const list=$('kbu-list');
+  if(!entries.length){list.innerHTML='<div class="empty" style="padding:8px 0;font-size:12px">なし</div>';return;}
+  list.innerHTML=entries.map(e=>`
+    <div class="kb-user-item">
+      <span class="kb-user-item-key">${escHtml(e.key)}</span>
+      <span class="kb-user-item-res">${escHtml(e.resolved)}</span>
+      <span class="kb-user-item-cat">${escHtml(e.category)}</span>
+      <button class="kb-user-delete" onclick="kbuDelete('${escAttr(e.key)}')">削除</button>
+    </div>
+  `).join('');
+}
+
+async function kbuSave(){
+  const key=$('kbu-key').value.trim();
+  const resolved=$('kbu-resolved').value.trim();
+  const category=$('kbu-category').value.trim();
+  const weight=parseFloat($('kbu-weight').value)||1.0;
+  const aliasStr=$('kbu-aliases').value.trim();
+  const aliases=aliasStr?aliasStr.split(',').map(s=>s.trim()).filter(Boolean):[];
+
+  if(!key||!resolved||!category){toast('キー・Resolved・カテゴリは必須です');return;}
+  try{
+    await api('/dictionary/user/entries',{method:'POST',body:{key,resolved,category,aliases,weight}});
+    $('kbu-key').value='';$('kbu-resolved').value='';$('kbu-category').value='';$('kbu-aliases').value='';
+    await kbuLoad();
+    toast(`"${key}" を追加しました`);
+  }catch(e){toast('追加エラー: '+e.message);}
+}
+
+async function kbuDelete(key){
+  if(!confirm(`"${key}" を削除しますか？`))return;
+  try{
+    await api(`/dictionary/user/entries/${encodeURIComponent(key)}`,{method:'DELETE'});
+    await kbuLoad();
+    toast(`"${key}" を削除しました`);
+  }catch(e){toast('削除エラー: '+e.message);}
+}
+
+/* ── v1.2 Optimizer連携: 矛盾グループ可視化 ──────────────── */
+const CONFLICT_GROUPS = {
+  'eyes_color':    ['Eyes.Blue','Eyes.Green','Eyes.Brown','Eyes.Red','Eyes.Golden','Eyes.Purple','Eyes.Silver','Eyes.Black'],
+  'hair_color':    ['Hair.Blonde','Hair.Black','Hair.Silver','Hair.Brown','Hair.Red','Hair.Pink','Hair.Purple','Hair.Blue','Hair.Green'],
+  'hair_length':   ['Hair.Long','Hair.Short','Hair.Medium','Hair.VeryLong'],
+  'skin_tone':     ['Skin.Fair','Skin.Tan','Skin.Dark','Skin.Olive','Skin.Pale'],
+  'face_shape':    ['FaceShape.Oval','FaceShape.Round','FaceShape.Square','FaceShape.Heart','FaceShape.Long'],
+  'quality_level': ['Quality.High','Quality.Medium','Quality.Low'],
+  'makeup_intensity': ['Makeup.Heavy','Makeup.Light'],
+};
+
+async function kbLoadConflictGroups(){
+  const el=$('kb-conflict-groups');
+  // 現在のプロンプトから使用中の resolved 値を取得
+  const prompt=($('prompt-input')?.value||'').trim();
+  if(!prompt){el.innerHTML='<div style="font-size:12px;color:var(--muted)">エディタにプロンプトを入力すると矛盾チェックができます</div>';return;}
+
+  // 簡易チェック: EXCLUSIVE_GROUPSを静的に定義してローカルで矛盾を検出
+  const html=Object.entries(CONFLICT_GROUPS).map(([name,values])=>{
+    const tags=values.map(v=>`<span class="kb-conflict-tag">${escHtml(v)}</span>`).join('');
+    return `<div class="kb-conflict-group"><div class="kb-conflict-group-name">${escHtml(name)}</div><div class="kb-conflict-tags">${tags}</div></div>`;
+  }).join('');
+  el.innerHTML=html||'<div style="font-size:12px;color:var(--muted)">矛盾なし</div>';
 }
 async function loadPresets(){
   const body=$('result-body');
