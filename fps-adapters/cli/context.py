@@ -19,6 +19,7 @@ for _p in (str(_CORE), str(_ADAPTERS)):
         sys.path.insert(0, _p)
 
 _template_manager_lock = threading.Lock()
+_event_bus_lock = threading.Lock()
 
 
 class CliContext:
@@ -44,6 +45,7 @@ class CliContext:
         self._history_manager = None
         self._plugin_manager = None
         self._template_manager = None  # ★v1.7
+        self._event_bus = None            # ★v1.9
 
     @property
     def dictionary_manager(self):
@@ -104,6 +106,7 @@ class CliContext:
             if weight_path.exists():
                 ctx["category_weight_table"] = CategoryWeightTable.load(weight_path)
             pm.set_context(**ctx)
+            pm.set_event_bus(self.event_bus)
             self._pipeline_manager = pm
         return self._pipeline_manager
 
@@ -172,3 +175,19 @@ class CliContext:
                     tm.load()
                     self._template_manager = tm
         return self._template_manager
+
+    @property
+    def event_bus(self):
+        """
+        ★ v1.9 — EventBus シングルトンプロパティ。
+        PipelineManager・HistoryManager と EventBus を統合して提供する。
+        """
+        if self._event_bus is None:
+            with _event_bus_lock:
+                if self._event_bus is None:
+                    from events.event_bus import EventBus  # type: ignore[import]
+                    bus = EventBus()
+                    bus.enable_history(max_history=500)
+                    self._event_bus = bus
+        return self._event_bus
+
