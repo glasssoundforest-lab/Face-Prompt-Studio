@@ -46,6 +46,7 @@ class CliContext:
         self._plugin_manager = None
         self._template_manager = None  # ★v1.7
         self._event_bus = None            # ★v1.9
+        self._user_profile_manager = None  # ★v2.0
 
     @property
     def dictionary_manager(self):
@@ -190,4 +191,15 @@ class CliContext:
                     bus.enable_history(max_history=500)
                     self._event_bus = bus
         return self._event_bus
+
+    @property
+    def user_profile_manager(self):
+        """★ v2.0 — UserProfileManager シングルトンプロパティ。"""
+        if self._user_profile_manager is None:
+            from user.manager import UserProfileManager  # type: ignore[import]
+            upm = UserProfileManager(profile_dir=self.data_root / "user")
+            upm.load()
+            self._user_profile_manager = upm
+        return self._user_profile_manager
+
 
