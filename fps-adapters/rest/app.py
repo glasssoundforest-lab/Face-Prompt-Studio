@@ -36,7 +36,7 @@ if str(_ADAPTERS) not in sys.path:
     sys.path.insert(0, str(_ADAPTERS))
 
 try:
-    from fastapi import FastAPI, HTTPException, Query
+    from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 
     _FASTAPI_AVAILABLE = True
 except ImportError:
@@ -100,7 +100,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="1.8.0",
+        version="1.9.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -114,6 +114,15 @@ if _FASTAPI_AVAILABLE:
         @app.get("/", include_in_schema=False)
         def serve_ui() -> FileResponse:
             return FileResponse(str(_GUI_DIR / "index.html"))
+
+
+    from .ws import manager as ws_manager, setup_event_bridge
+
+    @app.on_event("startup")
+    async def on_startup() -> None:
+        """アプリ起動時に EventBus ↔ WebSocket ブリッジを初期化する。"""
+        ctx = get_context()
+        setup_event_bridge(ctx.event_bus)
 
     _ctx: CliContext | None = None
 
@@ -132,7 +141,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="1.8.0",
+            version="1.9.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -166,6 +175,22 @@ if _FASTAPI_AVAILABLE:
         if adapter:
             adapter_output = _convert_with_adapter(result, adapter)
 
+        # v1.9: history に記録して WebSocket に emit
+        try:
+            ctx.history_manager.record(
+                input_prompt=prompt,
+                output_prompt=result.prompt,
+                output_negative=result.negative,
+                tag_count=result.tag_count,
+                overall_score=0.0,
+            )
+            ctx.event_bus.emit(
+                "history.recorded",
+                {"input": prompt, "output": result.prompt, "tag_count": result.tag_count},
+                source="compile",
+            )
+        except Exception:
+            pass
         return CompileResponse(
             success=result.success,
             prompt=result.prompt,
@@ -209,6 +234,16 @@ if _FASTAPI_AVAILABLE:
 
         opt_result = ctx.optimizer_manager.analyze(pos_tags, negative_tags=neg_tags or None)
 
+        # v1.9: optimizer.analyzed を emit
+        try:
+            ctx.event_bus.emit(
+                "optimizer.analyzed",
+                {"overall_score": opt_result.score.overall_score,
+                 "issue_count": len(opt_result.issues)},
+                source="optimize",
+            )
+        except Exception:
+            pass
         return OptimizeResponse(
             score=QualityScoreResponse(**opt_result.score.to_dict()),
             issues=[
@@ -1024,7 +1059,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="1.8.0",
+            version="1.9.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1034,6 +1069,152 @@ if _FASTAPI_AVAILABLE:
             top_tags=[TagFrequency(tag=t, count=c) for t, c in top_tags],
             recent_activity=recent,
         )
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v1.9 WebSocket エンドポイント
+    # ══════════════════════════════════════════════════════════════
+
+    @app.websocket("/ws/pipeline")
+    async def ws_pipeline(websocket: WebSocket) -> None:
+        """
+        ★ v1.9 WebSocket — コンパイル進捗リアルタイムストリーム。
+
+        購読するイベント:
+          pipeline.before_compile / pipeline.after_compile / pipeline.error
+          stage.before_run / stage.after_run / stage.error
+          optimizer.analyzed / pipeline.cache_hit
+
+        接続直後に {"type": "ws.connected", "channel": "pipeline"} を送信する。
+
+        使い方 (JavaScript):
+            const ws = new WebSocket("ws://localhost:8420/ws/pipeline");
+            ws.onmessage = e => console.log(JSON.parse(e.data));
+        """
+        await ws_manager.connect(websocket, "pipeline")
+        try:
+            await websocket.send_json({
+                "type": "ws.connected",
+                "channel": "pipeline",
+                "msg": "Subscribed to pipeline events",
+            })
+            while True:
+                # クライアントからのメッセージを待つ（ping/pong 兼用）
+                data = await websocket.receive_text()
+                if data == "ping":
+                    await websocket.send_json({"type": "pong"})
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket, "pipeline")
+        except Exception:
+            ws_manager.disconnect(websocket, "pipeline")
+
+    @app.websocket("/ws/history")
+    async def ws_history(websocket: WebSocket) -> None:
+        """
+        ★ v1.9 WebSocket — 新規履歴エントリをリアルタイムプッシュ。
+
+        購読するイベント:
+          history.recorded — compile 時に新規エントリが追加されたとき
+          history.deleted  — エントリが削除されたとき
+
+        接続直後に最新5件の履歴スナップショットを送信する。
+
+        使い方 (JavaScript):
+            const ws = new WebSocket("ws://localhost:8420/ws/history");
+            ws.onmessage = e => {
+              const d = JSON.parse(e.data);
+              if (d.type === "history.recorded") appendToList(d.data);
+            };
+        """
+        await ws_manager.connect(websocket, "history")
+        try:
+            # 接続直後にスナップショット送信
+            ctx = get_context()
+            recent = ctx.history_manager.list_entries(limit=5)
+            await websocket.send_json({
+                "type": "ws.connected",
+                "channel": "history",
+                "snapshot": [
+                    {
+                        "id": e.id,
+                        "input_prompt": e.input_prompt,
+                        "output_prompt": e.output_prompt,
+                        "score": e.overall_score,
+                        "favorite": e.favorite,
+                        "created_at": e.created_at_str,
+                    }
+                    for e in recent
+                ],
+            })
+            while True:
+                data = await websocket.receive_text()
+                if data == "ping":
+                    await websocket.send_json({"type": "pong"})
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket, "history")
+        except Exception:
+            ws_manager.disconnect(websocket, "history")
+
+    @app.websocket("/ws/events")
+    async def ws_events(websocket: WebSocket) -> None:
+        """
+        ★ v1.9 WebSocket — 全イベントのサブスクライブ（デバッグ・モニタリング用）。
+
+        クライアントは接続後に JSON でフィルタを送信できる:
+            {"filter": ["pipeline.", "stage."]}
+
+        フィルタなし（デフォルト）では全イベントを受信する。
+
+        使い方 (JavaScript):
+            const ws = new WebSocket("ws://localhost:8420/ws/events");
+            ws.send(JSON.stringify({filter: ["pipeline."]}));
+            ws.onmessage = e => console.log(JSON.parse(e.data));
+        """
+        import asyncio as _asyncio
+        await ws_manager.connect(websocket, "events")
+        event_filter: list[str] = []
+        try:
+            await websocket.send_json({
+                "type": "ws.connected",
+                "channel": "events",
+                "msg": "Subscribed to all events. Send {filter:[...]} to narrow down.",
+            })
+
+            async def receive_loop() -> None:
+                nonlocal event_filter
+                while True:
+                    try:
+                        raw = await websocket.receive_text()
+                        if raw == "ping":
+                            await websocket.send_json({"type": "pong"})
+                        else:
+                            msg = json_module.loads(raw)
+                            if "filter" in msg:
+                                event_filter = msg["filter"]
+                                await websocket.send_json({
+                                    "type": "ws.filter_set",
+                                    "filter": event_filter,
+                                })
+                    except Exception:
+                        break
+
+            await receive_loop()
+        except WebSocketDisconnect:
+            ws_manager.disconnect(websocket, "events")
+        except Exception:
+            ws_manager.disconnect(websocket, "events")
+
+    @app.get(
+        "/ws/stats",
+        summary="WebSocket connection stats",
+        tags=["websocket"],
+    )
+    def ws_stats() -> dict:
+        """現在の WebSocket 接続数を返す（デバッグ用）。"""
+        return {
+            "connections": ws_manager.stats(),
+            "total": ws_manager.connection_count(),
+        }
 
 
 else:
