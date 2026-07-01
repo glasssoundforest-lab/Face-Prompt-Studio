@@ -72,14 +72,58 @@ if _PYDANTIC_AVAILABLE:
         system_files: int
         user_files: int
 
+    class PresetTagItem(BaseModel):
+        """プリセットタグ 1件"""
+        tag: str
+        category: str = ""
+        weight: float = 1.0
+
     class PresetSummary(BaseModel):
         id: str
         name: str
         description: str
         tag_count: int
+        source: str = "system"  # ★v1.7
 
     class PresetListResponse(BaseModel):
         presets: list[PresetSummary]
+
+    # ── v1.7 Preset CRUD ─────────────────────────────────────────
+
+    class PresetCreateRequest(BaseModel):
+        """POST /presets リクエスト"""
+        id: str = Field(..., description="一意なプリセットID")
+        name: str = Field(..., min_length=1)
+        description: str = ""
+        tags: list[PresetTagItem] = Field(default_factory=list)
+        negative_tags: list[PresetTagItem] = Field(default_factory=list)
+
+    class PresetUpdateRequest(BaseModel):
+        """PUT /presets/{id} リクエスト"""
+        name: str | None = None
+        description: str | None = None
+        tags: list[PresetTagItem] | None = None
+        negative_tags: list[PresetTagItem] | None = None
+
+    class PresetTagsAddRequest(BaseModel):
+        """POST /presets/{id}/tags/add リクエスト"""
+        tags: list[PresetTagItem] = Field(..., min_length=1)
+        negative: bool = False
+
+    class PresetDetailResponse(BaseModel):
+        """プリセット詳細レスポンス"""
+        id: str
+        name: str
+        description: str
+        tags: list[PresetTagItem]
+        negative_tags: list[PresetTagItem]
+        tag_count: int
+        source: str
+
+    class PresetDeleteResponse(BaseModel):
+        """DELETE /presets/{id} レスポンス"""
+        id: str
+        deleted: bool
 
     class HistoryEntryResponse(BaseModel):
         id: str
@@ -256,3 +300,155 @@ if _PYDANTIC_AVAILABLE:
         """DELETE /dictionary/user/entries/{key} レスポンス"""
         key: str
         deleted: bool
+
+    # ── v1.8 Backup ──────────────────────────────────────────────
+
+    class BackupEntryResponse(BaseModel):
+        """バックアップエントリ 1件"""
+        id: str
+        target: str
+        source_path: str
+        created_at: str
+        size_kb: float
+
+    class BackupListResponse(BaseModel):
+        """GET /backup レスポンス"""
+        entries: list[BackupEntryResponse]
+        total: int
+
+    class BackupCreateRequest(BaseModel):
+        """POST /backup リクエスト"""
+        target: str = "all"   # "all" | "dictionary" | "rules" | "presets" | "config"
+
+    class BackupCreateResponse(BaseModel):
+        """POST /backup レスポンス"""
+        success: bool
+        entry_count: int
+        total_kb: float
+        entries: list[BackupEntryResponse]
+        error: str = ""
+
+    class BackupDeleteResponse(BaseModel):
+        """DELETE /backup/{id} レスポンス"""
+        id: str
+        deleted: bool
+
+    class BackupRestoreResponse(BaseModel):
+        """POST /backup/{id}/restore レスポンス"""
+        success: bool
+        restored_files: int
+        error: str = ""
+
+    # ── v1.8 History 強化 ─────────────────────────────────────────
+
+    class TagFrequency(BaseModel):
+        """タグ使用頻度 1件"""
+        tag: str
+        count: int
+        avg_weight: float = 1.0
+
+    class HistoryStatsResponse(BaseModel):
+        """GET /history/stats レスポンス"""
+        total_entries: int
+        favorite_count: int
+        avg_score: float
+        top_tags: list[TagFrequency]
+        score_distribution: dict[str, int]   # "excellent"/"good"/"fair"/"poor" → count
+
+    class HistoryExportResponse(BaseModel):
+        """GET /history/export レスポンス"""
+        format: str
+        total: int
+        data: str    # CSV or JSON string
+
+    # ── v1.8 Dashboard ───────────────────────────────────────────
+
+    class DashboardResponse(BaseModel):
+        """GET /dashboard レスポンス"""
+        version: str
+        dictionary_keys: int
+        japanese_entries: int
+        preset_count: int
+        history_count: int
+        backup_count: int
+        avg_score: float
+        top_tags: list[TagFrequency]
+        recent_activity: list[str]
+
+    # ── v2.0 UserProfile ─────────────────────────────────────────
+
+    class TagWeightItem(BaseModel):
+        """タグ重みエントリ"""
+        tag: str
+        weight: float
+        reason: str = "manual"
+
+    class StyleRuleItem(BaseModel):
+        """スタイルルール 1件"""
+        id: str
+        name: str
+        always_include: list[str] = []
+        always_exclude: list[str] = []
+        enabled: bool = True
+
+    class TagFreqItem(BaseModel):
+        """タグ頻度エントリ"""
+        tag: str
+        count: int
+        avg_weight: float = 1.0
+        last_used: str = ""
+
+    class ScoreTrendItem(BaseModel):
+        """スコアトレンド 1日分"""
+        date: str
+        avg_score: float
+        entry_count: int
+        top_tag: str = ""
+
+    class ProfileResponse(BaseModel):
+        """GET /profile レスポンス"""
+        tag_weight_count: int
+        excluded_tag_count: int
+        style_rule_count: int
+        tag_frequency_count: int
+        score_trend_count: int
+        last_learned: str | None
+        top_tags: list[TagFreqItem]
+        style_rules: list[StyleRuleItem]
+
+    class ProfileLearnResponse(BaseModel):
+        """POST /profile/learn レスポンス"""
+        learned: int
+        updated: int
+        total: int
+        trend_days: int
+
+    class ProfileRecommendResponse(BaseModel):
+        """GET /profile/recommendations レスポンス"""
+        recommendations: list[TagFreqItem]
+        total: int
+
+    class ProfileScoreTrendResponse(BaseModel):
+        """GET /profile/score-trend レスポンス"""
+        trends: list[ScoreTrendItem]
+        days: int
+        total: int
+
+    class SetTagWeightRequest(BaseModel):
+        """PUT /profile/tags/{tag}/weight リクエスト"""
+        weight: float = Field(..., ge=0.0, le=3.0)
+        reason: str = "manual"
+
+    class AddStyleRuleRequest(BaseModel):
+        """POST /profile/rules リクエスト"""
+        id: str = Field(..., min_length=1)
+        name: str = Field(..., min_length=1)
+        always_include: list[str] = []
+        always_exclude: list[str] = []
+        enabled: bool = True
+
+    class ProfileResetResponse(BaseModel):
+        """DELETE /profile/reset レスポンス"""
+        reset: bool
+        message: str
+
