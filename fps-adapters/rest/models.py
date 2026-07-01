@@ -72,14 +72,58 @@ if _PYDANTIC_AVAILABLE:
         system_files: int
         user_files: int
 
+    class PresetTagItem(BaseModel):
+        """プリセットタグ 1件"""
+        tag: str
+        category: str = ""
+        weight: float = 1.0
+
     class PresetSummary(BaseModel):
         id: str
         name: str
         description: str
         tag_count: int
+        source: str = "system"  # ★v1.7
 
     class PresetListResponse(BaseModel):
         presets: list[PresetSummary]
+
+    # ── v1.7 Preset CRUD ─────────────────────────────────────────
+
+    class PresetCreateRequest(BaseModel):
+        """POST /presets リクエスト"""
+        id: str = Field(..., description="一意なプリセットID")
+        name: str = Field(..., min_length=1)
+        description: str = ""
+        tags: list[PresetTagItem] = Field(default_factory=list)
+        negative_tags: list[PresetTagItem] = Field(default_factory=list)
+
+    class PresetUpdateRequest(BaseModel):
+        """PUT /presets/{id} リクエスト"""
+        name: str | None = None
+        description: str | None = None
+        tags: list[PresetTagItem] | None = None
+        negative_tags: list[PresetTagItem] | None = None
+
+    class PresetTagsAddRequest(BaseModel):
+        """POST /presets/{id}/tags/add リクエスト"""
+        tags: list[PresetTagItem] = Field(..., min_length=1)
+        negative: bool = False
+
+    class PresetDetailResponse(BaseModel):
+        """プリセット詳細レスポンス"""
+        id: str
+        name: str
+        description: str
+        tags: list[PresetTagItem]
+        negative_tags: list[PresetTagItem]
+        tag_count: int
+        source: str
+
+    class PresetDeleteResponse(BaseModel):
+        """DELETE /presets/{id} レスポンス"""
+        id: str
+        deleted: bool
 
     class HistoryEntryResponse(BaseModel):
         id: str
