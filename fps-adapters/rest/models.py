@@ -374,3 +374,81 @@ if _PYDANTIC_AVAILABLE:
         avg_score: float
         top_tags: list[TagFrequency]
         recent_activity: list[str]
+
+    # ── v2.0 UserProfile ─────────────────────────────────────────
+
+    class TagWeightItem(BaseModel):
+        """タグ重みエントリ"""
+        tag: str
+        weight: float
+        reason: str = "manual"
+
+    class StyleRuleItem(BaseModel):
+        """スタイルルール 1件"""
+        id: str
+        name: str
+        always_include: list[str] = []
+        always_exclude: list[str] = []
+        enabled: bool = True
+
+    class TagFreqItem(BaseModel):
+        """タグ頻度エントリ"""
+        tag: str
+        count: int
+        avg_weight: float = 1.0
+        last_used: str = ""
+
+    class ScoreTrendItem(BaseModel):
+        """スコアトレンド 1日分"""
+        date: str
+        avg_score: float
+        entry_count: int
+        top_tag: str = ""
+
+    class ProfileResponse(BaseModel):
+        """GET /profile レスポンス"""
+        tag_weight_count: int
+        excluded_tag_count: int
+        style_rule_count: int
+        tag_frequency_count: int
+        score_trend_count: int
+        last_learned: str | None
+        top_tags: list[TagFreqItem]
+        style_rules: list[StyleRuleItem]
+
+    class ProfileLearnResponse(BaseModel):
+        """POST /profile/learn レスポンス"""
+        learned: int
+        updated: int
+        total: int
+        trend_days: int
+
+    class ProfileRecommendResponse(BaseModel):
+        """GET /profile/recommendations レスポンス"""
+        recommendations: list[TagFreqItem]
+        total: int
+
+    class ProfileScoreTrendResponse(BaseModel):
+        """GET /profile/score-trend レスポンス"""
+        trends: list[ScoreTrendItem]
+        days: int
+        total: int
+
+    class SetTagWeightRequest(BaseModel):
+        """PUT /profile/tags/{tag}/weight リクエスト"""
+        weight: float = Field(..., ge=0.0, le=3.0)
+        reason: str = "manual"
+
+    class AddStyleRuleRequest(BaseModel):
+        """POST /profile/rules リクエスト"""
+        id: str = Field(..., min_length=1)
+        name: str = Field(..., min_length=1)
+        always_include: list[str] = []
+        always_exclude: list[str] = []
+        enabled: bool = True
+
+    class ProfileResetResponse(BaseModel):
+        """DELETE /profile/reset レスポンス"""
+        reset: bool
+        message: str
+
