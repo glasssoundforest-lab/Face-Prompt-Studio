@@ -47,6 +47,17 @@ class EventType(StrEnum):
     PLUGIN_REGISTERED = "plugin.registered"
     PLUGIN_SETUP_FAILED = "plugin.setup_failed"
 
+    # 履歴
+    HISTORY_RECORDED = "history.recorded"
+    HISTORY_DELETED  = "history.deleted"
+
+    # オプティマイザー
+    OPTIMIZER_ANALYZED = "optimizer.analyzed"
+
+    # WebSocket 接続
+    WS_CLIENT_CONNECTED    = "ws.client_connected"
+    WS_CLIENT_DISCONNECTED = "ws.client_disconnected"
+
     # 汎用（ユーザー独自イベント用）
     CUSTOM = "custom"
 
