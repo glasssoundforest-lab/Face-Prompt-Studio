@@ -92,6 +92,17 @@ from .models import (  # noqa: E402
     HistoryExportResponse,
     HistoryStatsResponse,
     TagFrequency,
+    TagWeightItem,
+    StyleRuleItem,
+    TagFreqItem,
+    ScoreTrendItem,
+    ProfileResponse,
+    ProfileLearnResponse,
+    ProfileRecommendResponse,
+    ProfileScoreTrendResponse,
+    SetTagWeightRequest,
+    AddStyleRuleRequest,
+    ProfileResetResponse,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -100,7 +111,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="1.9.0",
+        version="2.0.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -141,7 +152,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="1.9.0",
+            version="2.0.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1059,7 +1070,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="1.9.0",
+            version="2.0.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1069,6 +1080,180 @@ if _FASTAPI_AVAILABLE:
             top_tags=[TagFrequency(tag=t, count=c) for t, c in top_tags],
             recent_activity=recent,
         )
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.0 パーソナライゼーション — /profile
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_upm():
+        """UserProfileManager を CliContext 経由で取得する"""
+        return get_context().user_profile_manager
+
+    @app.get(
+        "/profile",
+        response_model=ProfileResponse,
+        summary="Get user profile",
+        tags=["profile"],
+    )
+    def get_profile() -> ProfileResponse:
+        """ユーザープロファイルの概要を返す（頻出タグ・スタイルルール・学習日時）。"""
+        upm = _get_upm()
+        p = upm.get_profile()
+        stats = upm.statistics()
+        top = upm.recommend(20)
+        return ProfileResponse(
+            tag_weight_count=stats["tag_weight_count"],
+            excluded_tag_count=stats["excluded_tag_count"],
+            style_rule_count=stats["style_rule_count"],
+            tag_frequency_count=stats["tag_frequency_count"],
+            score_trend_count=stats["score_trend_count"],
+            last_learned=stats["last_learned"],
+            top_tags=[TagFreqItem(tag=e.tag, count=e.count,
+                                  avg_weight=round(e.avg_weight, 3),
+                                  last_used=e.last_used.isoformat()) for e in top],
+            style_rules=[StyleRuleItem(id=r.id, name=r.name,
+                                       always_include=r.always_include,
+                                       always_exclude=r.always_exclude,
+                                       enabled=r.enabled)
+                         for r in p.style_rules],
+        )
+
+    @app.post(
+        "/profile/learn",
+        response_model=ProfileLearnResponse,
+        summary="Learn from history",
+        tags=["profile"],
+    )
+    def learn_from_history(
+        limit: int = Query(default=200, ge=10, le=1000,
+                           description="学習に使う履歴件数"),
+        days: int = Query(default=30, ge=1, le=365,
+                          description="スコアトレンド集計日数"),
+    ) -> ProfileLearnResponse:
+        """変換履歴からタグ頻度を学習し、スコアトレンドを更新する。"""
+        ctx = get_context()
+        upm = _get_upm()
+        entries = ctx.history_manager.list_entries(limit=limit)
+        result = upm.learn(entries)
+        upm.build_score_trends(entries, days=days)
+        return ProfileLearnResponse(
+            learned=result["learned"],
+            updated=result["updated"],
+            total=result["total"],
+            trend_days=days,
+        )
+
+    @app.get(
+        "/profile/recommendations",
+        response_model=ProfileRecommendResponse,
+        summary="Get tag recommendations",
+        tags=["profile"],
+    )
+    def get_recommendations(
+        n: int = Query(default=20, ge=1, le=50, description="推奨タグ件数"),
+    ) -> ProfileRecommendResponse:
+        """使用頻度と重みに基づく推奨タグリストを返す。"""
+        upm = _get_upm()
+        recs = upm.recommend(n)
+        return ProfileRecommendResponse(
+            recommendations=[TagFreqItem(tag=e.tag, count=e.count,
+                                         avg_weight=round(e.avg_weight, 3),
+                                         last_used=e.last_used.isoformat()) for e in recs],
+            total=len(recs),
+        )
+
+    @app.get(
+        "/profile/score-trend",
+        response_model=ProfileScoreTrendResponse,
+        summary="Get score trend",
+        tags=["profile"],
+    )
+    def get_score_trend(
+        days: int = Query(default=30, ge=1, le=365),
+    ) -> ProfileScoreTrendResponse:
+        """過去N日間のスコア傾向（日別集計）を返す。"""
+        ctx = get_context()
+        upm = _get_upm()
+        entries = ctx.history_manager.list_entries(limit=500)
+        trends = upm.build_score_trends(entries, days=days)
+        return ProfileScoreTrendResponse(
+            trends=[ScoreTrendItem(date=t.date, avg_score=t.avg_score,
+                                   entry_count=t.entry_count, top_tag=t.top_tag)
+                    for t in trends],
+            days=days,
+            total=len(trends),
+        )
+
+    @app.put(
+        "/profile/tags/{tag}/weight",
+        response_model=TagWeightItem,
+        summary="Set tag weight",
+        tags=["profile"],
+    )
+    def set_tag_weight(tag: str, body: SetTagWeightRequest) -> TagWeightItem:
+        """タグの重みを設定する（0.0 = 除外、1.0 = 標準、最大 3.0）。"""
+        upm = _get_upm()
+        tw = upm.set_tag_weight(tag, body.weight, body.reason)
+        return TagWeightItem(tag=tw.tag, weight=tw.weight, reason=tw.reason)
+
+    @app.delete(
+        "/profile/tags/{tag}/weight",
+        summary="Remove tag weight override",
+        tags=["profile"],
+    )
+    def remove_tag_weight(tag: str) -> dict:
+        """タグの重み設定を削除してデフォルトに戻す。"""
+        upm = _get_upm()
+        deleted = upm.remove_tag_weight(tag)
+        return {"tag": tag, "deleted": deleted}
+
+    @app.post(
+        "/profile/rules",
+        response_model=StyleRuleItem,
+        status_code=201,
+        summary="Add a style rule",
+        tags=["profile"],
+    )
+    def add_style_rule(body: AddStyleRuleRequest) -> StyleRuleItem:
+        """スタイルルール（常時include/exclude）を追加する。"""
+        from user.models import StyleRule as SR  # type: ignore[import]
+        upm = _get_upm()
+        rule = SR(id=body.id, name=body.name,
+                  always_include=body.always_include,
+                  always_exclude=body.always_exclude,
+                  enabled=body.enabled)
+        r = upm.add_style_rule(rule)
+        return StyleRuleItem(id=r.id, name=r.name,
+                             always_include=r.always_include,
+                             always_exclude=r.always_exclude,
+                             enabled=r.enabled)
+
+    @app.delete(
+        "/profile/rules/{rule_id}",
+        summary="Remove a style rule",
+        tags=["profile"],
+    )
+    def remove_style_rule(rule_id: str) -> dict:
+        """スタイルルールを削除する。"""
+        upm = _get_upm()
+        deleted = upm.remove_style_rule(rule_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail=f"Rule '{rule_id}' not found")
+        return {"id": rule_id, "deleted": True}
+
+    @app.delete(
+        "/profile/reset",
+        response_model=ProfileResetResponse,
+        summary="Reset user profile",
+        tags=["profile"],
+    )
+    def reset_profile() -> ProfileResetResponse:
+        """ユーザープロファイルを完全リセットする。"""
+        upm = _get_upm()
+        upm.reset()
+        return ProfileResetResponse(reset=True, message="プロファイルをリセットしました")
 
 
     # ══════════════════════════════════════════════════════════════
