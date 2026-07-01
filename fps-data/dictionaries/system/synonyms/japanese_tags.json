@@ -1,0 +1,1437 @@
+{
+  "version": "1.0",
+  "category": "synonyms",
+  "description": "日本語タグの英語キーへのマッピング（MeCab不要・キーワードマッチ方式）",
+  "entries": [
+    {
+      "key": "青い目",
+      "resolved": "Eyes.Blue",
+      "aliases": [
+        "青目",
+        "ブルーアイ",
+        "蒼い瞳",
+        "青瞳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "緑の目",
+      "resolved": "Eyes.Green",
+      "aliases": [
+        "緑目",
+        "グリーンアイ",
+        "翡翠色の瞳",
+        "緑眼"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "茶色の目",
+      "resolved": "Eyes.Brown",
+      "aliases": [
+        "茶目",
+        "ブラウンアイ",
+        "ヘーゼルの瞳",
+        "茶眼"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "赤い目",
+      "resolved": "Eyes.Red",
+      "aliases": [
+        "赤目",
+        "レッドアイ",
+        "紅い瞳",
+        "赤眼"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "金色の目",
+      "resolved": "Eyes.Golden",
+      "aliases": [
+        "金目",
+        "ゴールドアイ",
+        "琥珀色の瞳",
+        "黄金色の瞳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "紫の目",
+      "resolved": "Eyes.Purple",
+      "aliases": [
+        "紫目",
+        "パープルアイ",
+        "紫水晶の瞳",
+        "バイオレットアイ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "銀色の目",
+      "resolved": "Eyes.Silver",
+      "aliases": [
+        "銀目",
+        "シルバーアイ",
+        "灰色の瞳",
+        "グレーアイ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "黒い目",
+      "resolved": "Eyes.Black",
+      "aliases": [
+        "黒目",
+        "ブラックアイ",
+        "漆黒の瞳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "大きな目",
+      "resolved": "Eyes.Large",
+      "aliases": [
+        "大きい目",
+        "ビッグアイ",
+        "パッチリした目",
+        "大きな瞳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "細い目",
+      "resolved": "Eyes.Narrow",
+      "aliases": [
+        "切れ長の目",
+        "細目",
+        "ナローアイ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "きらきらした目",
+      "resolved": "Eyes.Sparkling",
+      "aliases": [
+        "輝く目",
+        "キラキラ瞳",
+        "星のような瞳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "潤んだ目",
+      "resolved": "Eyes.Teary",
+      "aliases": [
+        "涙目",
+        "うるうるした目",
+        "潤んだ瞳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "半目",
+      "resolved": "Eyes.HalfClosed",
+      "aliases": [
+        "半閉じ",
+        "眠そうな目",
+        "とろんとした目"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "オッドアイ",
+      "resolved": "Eyes.Heterochromia",
+      "aliases": [
+        "虹彩異色症",
+        "左右違う目の色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "金髪",
+      "resolved": "Hair.Blonde",
+      "aliases": [
+        "ブロンド",
+        "金色の髪",
+        "金の髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "黒髪",
+      "resolved": "Hair.Black",
+      "aliases": [
+        "黒い髪",
+        "漆黒の髪",
+        "ブラックヘア"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "銀髪",
+      "resolved": "Hair.Silver",
+      "aliases": [
+        "白銀の髪",
+        "シルバーヘア",
+        "白髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "茶髪",
+      "resolved": "Hair.Brown",
+      "aliases": [
+        "茶色の髪",
+        "ブラウンヘア",
+        "ブルネット"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "赤髪",
+      "resolved": "Hair.Red",
+      "aliases": [
+        "赤い髪",
+        "レッドヘア",
+        "朱色の髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "ピンク髪",
+      "resolved": "Hair.Pink",
+      "aliases": [
+        "桃色の髪",
+        "ピンクヘア",
+        "薄紅色の髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "紫髪",
+      "resolved": "Hair.Purple",
+      "aliases": [
+        "紫色の髪",
+        "パープルヘア",
+        "バイオレットヘア"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "青髪",
+      "resolved": "Hair.Blue",
+      "aliases": [
+        "青い髪",
+        "ブルーヘア",
+        "蒼い髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "緑髪",
+      "resolved": "Hair.Green",
+      "aliases": [
+        "緑色の髪",
+        "グリーンヘア"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "長い髪",
+      "resolved": "Hair.Long",
+      "aliases": [
+        "ロングヘア",
+        "長髪",
+        "ロング"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "短い髪",
+      "resolved": "Hair.Short",
+      "aliases": [
+        "ショートヘア",
+        "ショート",
+        "短髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "ミディアム",
+      "resolved": "Hair.Medium",
+      "aliases": [
+        "ミディアムヘア",
+        "中くらいの長さ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "ポニーテール",
+      "resolved": "Hair.Ponytail",
+      "aliases": [
+        "ポニテ",
+        "一つ結び"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "ツインテール",
+      "resolved": "Hair.Twintails",
+      "aliases": [
+        "ツイン",
+        "二つ結び",
+        "サイドテール二本"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "お団子",
+      "resolved": "Hair.Bun",
+      "aliases": [
+        "お団子ヘア",
+        "シニョン",
+        "丸まとめ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "サイドポニー",
+      "resolved": "Hair.SidePonytail",
+      "aliases": [
+        "横ポニー",
+        "サイドテール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "ウェーブ",
+      "resolved": "Hair.Wavy",
+      "aliases": [
+        "ウェービー",
+        "波状の髪",
+        "カール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "ストレート",
+      "resolved": "Hair.Straight",
+      "aliases": [
+        "直毛",
+        "サラサラ",
+        "ストレートヘア"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "横髪",
+      "resolved": "Hair.SideLocks",
+      "aliases": [
+        "おさげ",
+        "サイドロック"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "前髪",
+      "resolved": "Hair.Bangs",
+      "aliases": [
+        "バング",
+        "前髪あり"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "笑顔",
+      "resolved": "Expression.Smile",
+      "aliases": [
+        "スマイル",
+        "微笑み",
+        "にっこり",
+        "ほほえみ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "にやり",
+      "resolved": "Expression.Smirk",
+      "aliases": [
+        "ニヤリ",
+        "ニヤニヤ",
+        "悪そうな笑み"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "満面の笑み",
+      "resolved": "Expression.Grin",
+      "aliases": [
+        "大笑い",
+        "歯を見せた笑顔",
+        "破顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "真剣",
+      "resolved": "Expression.Serious",
+      "aliases": [
+        "真面目",
+        "シリアス",
+        "凛とした表情"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "照れ",
+      "resolved": "Expression.Blush",
+      "aliases": [
+        "恥ずかしい",
+        "赤面",
+        "照れ顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "驚き",
+      "resolved": "Expression.Surprised",
+      "aliases": [
+        "びっくり",
+        "目を見開いた",
+        "驚いた顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "怒り",
+      "resolved": "Expression.Angry",
+      "aliases": [
+        "怒った顔",
+        "怒り顔",
+        "激怒"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "悲しみ",
+      "resolved": "Expression.Sad",
+      "aliases": [
+        "悲しい顔",
+        "泣きそう",
+        "しょんぼり"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "眠そう",
+      "resolved": "Expression.Sleepy",
+      "aliases": [
+        "眠い顔",
+        "眠たい",
+        "うとうと"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "クール",
+      "resolved": "Expression.Cool",
+      "aliases": [
+        "無表情",
+        "クールな顔",
+        "ポーカーフェイス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "白い肌",
+      "resolved": "Skin.Fair",
+      "aliases": [
+        "色白",
+        "透明感のある肌",
+        "白肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "小麦色の肌",
+      "resolved": "Skin.Tan",
+      "aliases": [
+        "日焼け肌",
+        "タン肌",
+        "ブロンズ肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "浅黒い肌",
+      "resolved": "Skin.Dark",
+      "aliases": [
+        "濃い肌色",
+        "ダーク肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "オリーブ肌",
+      "resolved": "Skin.Olive",
+      "aliases": [
+        "地中海系の肌",
+        "オリーブ色"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "青白い肌",
+      "resolved": "Skin.Pale",
+      "aliases": [
+        "蒼白",
+        "病的な白さ",
+        "透き通る肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "なめらかな肌",
+      "resolved": "Skin.Smooth",
+      "aliases": [
+        "すべすべ",
+        "ツヤ肌",
+        "きめ細かい肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "卵型の顔",
+      "resolved": "FaceShape.Oval",
+      "aliases": [
+        "楕円形の顔",
+        "小顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "丸顔",
+      "resolved": "FaceShape.Round",
+      "aliases": [
+        "丸い顔",
+        "まん丸顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "面長",
+      "resolved": "FaceShape.Long",
+      "aliases": [
+        "細長い顔",
+        "縦長の顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "ハート型の顔",
+      "resolved": "FaceShape.Heart",
+      "aliases": [
+        "ハート形",
+        "逆三角形の顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "エラ張り",
+      "resolved": "FaceShape.Square",
+      "aliases": [
+        "四角い顔",
+        "スクエアフェイス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "face_shape"
+      ]
+    },
+    {
+      "key": "高品質",
+      "resolved": "Quality.High",
+      "aliases": [
+        "最高品質",
+        "マスターピース",
+        "傑作"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "低品質",
+      "resolved": "Quality.Low",
+      "aliases": [
+        "粗い",
+        "解像度が低い"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "quality"
+      ]
+    },
+    {
+      "key": "メガネ",
+      "resolved": "Accessories.Glasses",
+      "aliases": [
+        "眼鏡",
+        "ガネ",
+        "スペクタクル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "ピアス",
+      "resolved": "Accessories.Earring",
+      "aliases": [
+        "耳飾り",
+        "イヤリング"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "ネックレス",
+      "resolved": "Accessories.Necklace",
+      "aliases": [
+        "首飾り",
+        "チェーン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "リボン",
+      "resolved": "Accessories.Ribbon",
+      "aliases": [
+        "ヘアリボン",
+        "蝶結び"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "リップ",
+      "resolved": "Makeup.Lipstick",
+      "aliases": [
+        "口紅",
+        "ルージュ",
+        "リップグロス"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "赤リップ",
+      "resolved": "Makeup.RedLipstick",
+      "aliases": [
+        "赤い口紅",
+        "真紅のリップ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "アイシャドウ",
+      "resolved": "Makeup.Eyeshadow",
+      "aliases": [
+        "目の化粧",
+        "アイカラー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "ナチュラルメイク",
+      "resolved": "Makeup.Light",
+      "aliases": [
+        "薄化粧",
+        "ナチュラル",
+        "素顔に近い"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "濃いメイク",
+      "resolved": "Makeup.Heavy",
+      "aliases": [
+        "ヘビーメイク",
+        "しっかりメイク",
+        "フルメイク"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "猫耳",
+      "resolved": "Fantasy.CatEars",
+      "aliases": [
+        "ネコミミ",
+        "ねこ耳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "狐耳",
+      "resolved": "Fantasy.FoxEars",
+      "aliases": [
+        "キツネ耳",
+        "きつね耳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "翼",
+      "resolved": "Fantasy.Wings",
+      "aliases": [
+        "羽根",
+        "羽",
+        "天使の翼"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "角",
+      "resolved": "Fantasy.Horns",
+      "aliases": [
+        "ホーン",
+        "悪魔の角",
+        "鬼の角"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "しっぽ",
+      "resolved": "Fantasy.Tail",
+      "aliases": [
+        "尻尾",
+        "テール"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "魔女帽子",
+      "resolved": "Fantasy.WitchHat",
+      "aliases": [
+        "とんがり帽子",
+        "魔女の帽子"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "口を開けている",
+      "resolved": "Mouth.Open",
+      "aliases": [
+        "口開け",
+        "あんぐり",
+        "口が開いている"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mouth"
+      ]
+    },
+    {
+      "key": "口を閉じている",
+      "resolved": "Mouth.Closed",
+      "aliases": [
+        "口閉じ",
+        "閉口"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mouth"
+      ]
+    },
+    {
+      "key": "ふっくらした唇",
+      "resolved": "Mouth.FullLips",
+      "aliases": [
+        "豊かな唇",
+        "ぽってりリップ",
+        "プリプリした唇"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "mouth"
+      ]
+    },
+    {
+      "key": "歯を見せた",
+      "resolved": "Teeth.Visible",
+      "aliases": [
+        "歯を出した",
+        "歯見え"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "teeth"
+      ]
+    },
+    {
+      "key": "白い歯",
+      "resolved": "Teeth.White",
+      "aliases": [
+        "真っ白な歯",
+        "きれいな歯"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "teeth"
+      ]
+    },
+    {
+      "key": "くっきりした眉",
+      "resolved": "Eyebrows.Defined",
+      "aliases": [
+        "はっきりした眉",
+        "濃い眉"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyebrows"
+      ]
+    },
+    {
+      "key": "細い眉",
+      "resolved": "Eyebrows.Thin",
+      "aliases": [
+        "細眉",
+        "薄い眉"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyebrows"
+      ]
+    },
+    {
+      "key": "太い眉",
+      "resolved": "Eyebrows.Thick",
+      "aliases": [
+        "太眉",
+        "まっすぐな眉"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyebrows"
+      ]
+    },
+    {
+      "key": "長いまつ毛",
+      "resolved": "Eyelashes.Long",
+      "aliases": [
+        "長いまつげ",
+        "ロングラッシュ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyelashes"
+      ]
+    },
+    {
+      "key": "カールしたまつ毛",
+      "resolved": "Eyelashes.Curled",
+      "aliases": [
+        "カールまつ毛",
+        "クリクリまつ毛"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyelashes"
+      ]
+    },
+    {
+      "key": "フォトリアル",
+      "resolved": "Style.Photorealistic",
+      "aliases": [
+        "写実的",
+        "リアリスティック",
+        "写真風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "アニメ風",
+      "resolved": "Style.Anime",
+      "aliases": [
+        "アニメスタイル",
+        "二次元"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "水彩画",
+      "resolved": "Style.Watercolor",
+      "aliases": [
+        "水彩",
+        "水彩風",
+        "スケッチ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "イラスト",
+      "resolved": "Style.Illustration",
+      "aliases": [
+        "イラスト風",
+        "絵画風"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "style"
+      ]
+    },
+    {
+      "key": "まつ毛",
+      "resolved": "Eyelashes.Long",
+      "aliases": [
+        "まつげ",
+        "睫毛"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyelashes"
+      ]
+    },
+    {
+      "key": "赤いリップ",
+      "resolved": "Makeup.RedLipstick",
+      "aliases": [
+        "真紅の口紅",
+        "赤い唇"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "makeup"
+      ]
+    },
+    {
+      "key": "茶色の肌",
+      "resolved": "Skin.Tan",
+      "aliases": [
+        "褐色肌",
+        "浅黒い",
+        "小麦肌"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "skin"
+      ]
+    },
+    {
+      "key": "赤い瞳",
+      "resolved": "Eyes.Red",
+      "aliases": [
+        "紅眼",
+        "クリムゾンアイ"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "とがった耳",
+      "resolved": "Fantasy.ElfEars",
+      "aliases": [
+        "エルフ耳",
+        "尖った耳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "花飾り",
+      "resolved": "Accessories.FlowerHairpin",
+      "aliases": [
+        "花かんざし",
+        "ヘアフラワー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "花の髪飾り",
+      "resolved": "Accessories.FlowerHairpin",
+      "aliases": [
+        "花のヘアアクセ",
+        "髪飾り"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "スカーフ",
+      "resolved": "Accessories.Scarf",
+      "aliases": [
+        "ネックスカーフ",
+        "マフラー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "頬染め",
+      "resolved": "Expression.Blush",
+      "aliases": [
+        "頬が赤い",
+        "ほっぺた赤い",
+        "頬紅"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "無邪気な笑顔",
+      "resolved": "Expression.Grin",
+      "aliases": [
+        "はにかんだ笑顔",
+        "あどけない笑顔"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "expression"
+      ]
+    },
+    {
+      "key": "灰色の目",
+      "resolved": "Eyes.Silver",
+      "aliases": [
+        "グレーの目",
+        "鈍色の瞳",
+        "灰目"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "薄紫の目",
+      "resolved": "Eyes.Purple",
+      "aliases": [
+        "ラベンダー色の目",
+        "淡紫の瞳"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "eyes"
+      ]
+    },
+    {
+      "key": "白い髪",
+      "resolved": "Hair.Silver",
+      "aliases": [
+        "雪のような髪",
+        "真っ白な髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "ふわふわの髪",
+      "resolved": "Hair.Wavy",
+      "aliases": [
+        "ふわふわヘア",
+        "やわらかい髪"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "三つ編み",
+      "resolved": "Hair.Braid",
+      "aliases": [
+        "ブレード",
+        "おさげ三つ編み"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "hair"
+      ]
+    },
+    {
+      "key": "かんざし",
+      "resolved": "Accessories.Hairpin",
+      "aliases": [
+        "簪",
+        "ヘアピン"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "accessories"
+      ]
+    },
+    {
+      "key": "弓矢",
+      "resolved": "Fantasy.Bow",
+      "aliases": [
+        "弓",
+        "アーチェリー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "剣",
+      "resolved": "Fantasy.Sword",
+      "aliases": [
+        "刀",
+        "サーベル"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    },
+    {
+      "key": "魔法使い",
+      "resolved": "Fantasy.Mage",
+      "aliases": [
+        "ウィザード",
+        "魔術師",
+        "ソーサラー"
+      ],
+      "weight": 1.0,
+      "tags": [
+        "japanese",
+        "fantasy"
+      ]
+    }
+  ]
+}

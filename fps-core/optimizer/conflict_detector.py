@@ -124,3 +124,93 @@ def detect_conflicts(tags: list[dict[str, Any]]) -> list[OptimizationIssue]:
             )
 
     return issues
+
+
+# ── M6-1 ネガティブプロンプト クロスチェック ──────────────────────
+
+# ポジティブとネガティブで同時指定すると意味が打ち消し合う resolved グループ
+CROSS_CONFLICT_GROUPS: dict[str, set[str]] = {
+    "quality_level": {"Quality.High", "Quality.Medium", "Quality.Low"},
+    "eyes_color": {
+        "Eyes.Blue", "Eyes.Green", "Eyes.Brown", "Eyes.Red",
+        "Eyes.Golden", "Eyes.Purple", "Eyes.Silver", "Eyes.Black",
+    },
+    "hair_color": {
+        "Hair.Blonde", "Hair.Black", "Hair.Silver", "Hair.Brown",
+        "Hair.Red", "Hair.Pink", "Hair.Purple", "Hair.Blue", "Hair.Green",
+    },
+    "expression_smile": {"Expression.Smile", "Expression.Grin", "Expression.Smirk"},
+    "skin_tone": {"Skin.Fair", "Skin.Tan", "Skin.Dark", "Skin.Olive", "Skin.Pale"},
+}
+
+
+def detect_cross_conflicts(
+    positive_tags: list[dict],
+    negative_tags: list[dict],
+) -> list[OptimizationIssue]:
+    """ポジティブ/ネガティブプロンプト間の矛盾を検出する。
+
+    同一排他グループの値がポジティブとネガティブの両方に存在する場合、
+    プロンプトが打ち消し合う危険性を警告する。
+
+    Args:
+        positive_tags: ポジティブプロンプトのタグリスト
+        negative_tags: ネガティブプロンプトのタグリスト
+
+    Returns:
+        検出された CROSS_CONFLICT 問題リスト
+    """
+    from .models import IssueSeverity, IssueType, OptimizationIssue  # noqa: PLC0415
+
+    issues: list[OptimizationIssue] = []
+
+    def resolved_set(tags: list[dict]) -> set[str]:
+        return {
+            t.get("meta", {}).get("resolved") or t.get("resolved") or t.get("tag", "")
+            for t in tags
+        }
+
+    pos_resolved = resolved_set(positive_tags)
+    neg_resolved = resolved_set(negative_tags)
+
+    for group_name, group_values in CROSS_CONFLICT_GROUPS.items():
+        pos_match = pos_resolved & group_values
+        neg_match = neg_resolved & group_values
+        overlap = pos_match & neg_match
+
+        if overlap:
+            issues.append(
+                OptimizationIssue(
+                    type=IssueType.CROSS_CONFLICT,
+                    severity=IssueSeverity.WARNING,
+                    message=(
+                        f"ポジティブとネガティブが同じ属性を指定しています ({group_name}): "
+                        f"{', '.join(sorted(overlap))}"
+                    ),
+                    tags=sorted(overlap),
+                    category=group_name,
+                    suggestion=(
+                        "ポジティブとネガティブで同一属性を指定すると "
+                        "プロンプトの効果が打ち消し合います。"
+                    ),
+                )
+            )
+        elif pos_match and neg_match:
+            # 同グループ内の別属性がポジティブ/ネガティブに存在する場合も警告
+            issues.append(
+                OptimizationIssue(
+                    type=IssueType.CROSS_CONFLICT,
+                    severity=IssueSeverity.INFO,
+                    message=(
+                        f"ポジティブとネガティブが同一グループ内の異なる属性を指定しています "
+                        f"({group_name}): +"
+                        f"{', '.join(sorted(pos_match))} / −"
+                        f"{', '.join(sorted(neg_match))}"
+                    ),
+                    tags=sorted(pos_match | neg_match),
+                    category=group_name,
+                    suggestion="意図した表現かどうか確認してください。",
+                )
+            )
+
+    return issues

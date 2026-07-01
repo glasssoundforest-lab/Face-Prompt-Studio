@@ -13,7 +13,8 @@ from .models import DictEntry, DictFile
 
 # resolved の形式: "Category.Value" または "Category.Sub.Value"
 _RESOLVED_PATTERN = re.compile(r"^[A-Z][A-Za-z0-9]+(\.[A-Z][A-Za-z0-9]+)+$")
-_KEY_PATTERN = re.compile(r"^[a-z0-9_]+$")
+# ★M6-2: 日本語（ひらがな・カタカナ・漢字）を含む Unicode キーも許可
+_KEY_PATTERN = re.compile(r"^[a-z0-9_\u3000-\u9fff\uff00-\uffef\u3040-\u30ff]+$")
 
 
 def validate_dict_file(df: DictFile) -> None:

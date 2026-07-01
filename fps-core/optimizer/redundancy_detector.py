@@ -99,3 +99,75 @@ def detect_redundancy(tags: list[dict[str, Any]]) -> list[OptimizationIssue]:
             )
 
     return issues
+
+
+# ── M6-1 ネガティブプロンプト専用 冗長グループ ────────────────────
+
+NEGATIVE_REDUNDANT_GROUPS: dict[str, set[str]] = {
+    "neg_low_quality": {
+        "Quality.Low",
+        "Quality.Worst",
+        "Quality.Bad",
+    },
+    "neg_body_distortion": {
+        "Body.BadHands",
+        "Body.ExtraFingers",
+        "Body.MissingFingers",
+        "Body.BadAnatomy",
+    },
+    "neg_blur": {
+        "Style.Blur",
+        "Style.Blurry",
+        "Style.OutOfFocus",
+    },
+    "neg_text": {
+        "Style.Watermark",
+        "Style.Text",
+        "Style.Signature",
+    },
+    "neg_face_defect": {
+        "FaceShape.BadFace",
+        "Eyes.CrossEyed",
+        "Eyes.Asymmetric",
+    },
+}
+
+
+def detect_negative_redundancy(tags: list[dict]) -> list:
+    """ネガティブプロンプト専用の冗長検出。
+
+    意味的に近いネガティブタグが複数指定されている場合に警告する。
+
+    Args:
+        tags: ネガティブプロンプトのタグリスト
+
+    Returns:
+        冗長性の OptimizationIssue リスト
+    """
+    from .models import IssueSeverity, IssueType, OptimizationIssue  # noqa: PLC0415
+
+    issues = []
+    resolved_values = [
+        (t.get("meta", {}).get("resolved") or t.get("resolved") or t.get("tag", ""),
+         t.get("tag", ""))
+        for t in tags
+    ]
+
+    for group_name, group_values in NEGATIVE_REDUNDANT_GROUPS.items():
+        matched = [(r, t) for r, t in resolved_values if r in group_values]
+        if len({r for r, _ in matched}) > 1:
+            issues.append(
+                OptimizationIssue(
+                    type=IssueType.REDUNDANT,
+                    severity=IssueSeverity.INFO,
+                    message=(
+                        f"ネガティブプロンプトに意味的に近いタグが複数あります ({group_name}): "
+                        f"{', '.join(sorted({r for r, _ in matched}))}"
+                    ),
+                    tags=[t for _, t in matched],
+                    category=f"neg_{group_name}",
+                    suggestion="ネガティブタグを1つに絞ると簡潔になります。",
+                )
+            )
+
+    return issues

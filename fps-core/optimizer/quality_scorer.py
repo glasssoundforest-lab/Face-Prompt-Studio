@@ -120,3 +120,45 @@ def calculate_quality_score(
         redundancy_score=redundancy,
         overall_score=overall,
     )
+
+
+# ── M6-1 ネガティブプロンプト品質評価 ────────────────────────────
+
+# ネガティブプロンプトとして推奨されるカテゴリ（代表タグの resolved prefix）
+RECOMMENDED_NEGATIVE_PREFIXES: list[str] = [
+    "Quality.Low",
+    "Quality.Bad",
+    "Body.BadHands",
+    "Body.BadAnatomy",
+    "Style.Blur",
+    "Style.Watermark",
+]
+
+
+def calculate_negative_coverage_score(negative_tags: list[dict]) -> float:
+    """ネガティブプロンプトの網羅度をスコア化する（0-100）。
+
+    推奨ネガティブカテゴリのうち何割がカバーされているかを評価する。
+    ネガティブタグが空の場合は 0.0 を返す（罰則なし: 使わない選択も有効）。
+
+    Args:
+        negative_tags: ネガティブプロンプトのタグリスト
+
+    Returns:
+        0.0 - 100.0 の網羅度スコア
+    """
+    if not negative_tags:
+        return 0.0
+
+    neg_resolved = {
+        t.get("meta", {}).get("resolved") or t.get("resolved") or t.get("tag", "")
+        for t in negative_tags
+    }
+
+    # prefix マッチ（"Quality.Low" → Quality グループとして判定）
+    covered_prefixes = set()
+    for prefix in RECOMMENDED_NEGATIVE_PREFIXES:
+        if any(r.startswith(prefix.split(".")[0]) for r in neg_resolved):
+            covered_prefixes.add(prefix)
+
+    return round(len(covered_prefixes) / len(RECOMMENDED_NEGATIVE_PREFIXES) * 100, 2)

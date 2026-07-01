@@ -59,7 +59,12 @@ from .models import (  # noqa: E402
     PresetListResponse,
     PresetSummary,
     QualityScoreResponse,
+    RenderRequest,
+    RenderResponse,
     SynonymsResponse,
+    TemplateListResponse,
+    TemplateSummaryResponse,
+    TemplateVariableResponse,
     ValidationResponse,
 )
 
@@ -147,10 +152,36 @@ if _FASTAPI_AVAILABLE:
     # ── Optimize ─────────────────────────────────────────────
 
     @app.post("/optimize", response_model=OptimizeResponse)
-    def optimize_prompt(prompt: str) -> OptimizeResponse:
+    def optimize_prompt(
+        prompt: str,
+        negative_prompt: str | None = Query(default=None, description="★M6-1 ネガティブプロンプト（省略可）"),
+    ) -> OptimizeResponse:
+        """プロンプトを分析してスコア・問題・推奨事項を返す。
+
+        Args:
+            prompt:          ポジティブプロンプト
+            negative_prompt: ★M6-1 ネガティブプロンプト（省略可）
+        """
         ctx = get_context()
+
+        # ポジティブプロンプトをパイプライン経由で解析
         pipeline_result = ctx.pipeline_manager.compile(prompt)
-        opt_result = ctx.optimizer_manager.analyze_pipeline_result(pipeline_result)
+
+        # M6-1: ネガティブプロンプトも同様にパイプライン処理
+        neg_tags: list[dict] = []
+        if negative_prompt and negative_prompt.strip():
+            neg_pipeline = ctx.pipeline_manager.compile(negative_prompt)
+            neg_tags = [
+                {"tag": t.tag, "category": t.category, "weight": t.weight, "meta": dict(t.meta)}
+                for t in neg_pipeline.tags
+            ]
+
+        pos_tags = [
+            {"tag": t.tag, "category": t.category, "weight": t.weight, "meta": dict(t.meta)}
+            for t in pipeline_result.tags
+        ]
+
+        opt_result = ctx.optimizer_manager.analyze(pos_tags, negative_tags=neg_tags or None)
 
         return OptimizeResponse(
             score=QualityScoreResponse(**opt_result.score.to_dict()),
@@ -458,6 +489,105 @@ if _FASTAPI_AVAILABLE:
         if not deleted:
             raise HTTPException(status_code=404, detail=f"History entry '{entry_id}' not found")
         return DeleteHistoryResponse(id=entry_id, deleted=True)
+
+    # ── M6-3 Template Engine ─────────────────────────────────────
+
+    def _get_template_manager():  # noqa: ANN201
+        """TemplateManager をシングルトンで取得する"""
+        ctx = get_context()
+        if not hasattr(ctx, "_template_manager") or ctx._template_manager is None:
+            import sys
+            tm_path = str(_ROOT / "fps-core")
+            if tm_path not in sys.path:
+                sys.path.insert(0, tm_path)
+            from template.manager import TemplateManager  # type: ignore[import]
+            tm_data = _ROOT / "fps-data" / "templates" / "system"
+            ctx._template_manager = TemplateManager(system_dir=tm_data if tm_data.exists() else None)
+            ctx._template_manager.load()
+        return ctx._template_manager
+
+    @app.get(
+        "/templates",
+        response_model=TemplateListResponse,
+        summary="List prompt templates",
+        tags=["templates"],
+    )
+    def list_templates(
+        category: str | None = Query(default=None, description="カテゴリで絞り込み"),
+    ) -> TemplateListResponse:
+        """利用可能なテンプレート一覧を返す。"""
+        tm = _get_template_manager()
+        templates = tm.list_templates(category=category)
+        return TemplateListResponse(
+            templates=[
+                TemplateSummaryResponse(
+                    id=t.id,
+                    name=t.name,
+                    description=t.description,
+                    body=t.body,
+                    variables=[
+                        TemplateVariableResponse(
+                            name=v.name,
+                            description=v.description,
+                            default=v.default,
+                            examples=v.examples,
+                            required=v.required,
+                        )
+                        for v in t.variables
+                    ],
+                    tags=t.tags,
+                    category=t.category,
+                )
+                for t in templates
+            ],
+            total=len(templates),
+        )
+
+    @app.post(
+        "/templates/{template_id}/render",
+        response_model=RenderResponse,
+        summary="Render a template with variables",
+        tags=["templates"],
+    )
+    def render_template(template_id: str, body: RenderRequest) -> RenderResponse:
+        """テンプレートIDと変数辞書からプロンプトを展開する。存在しない場合は 404。"""
+        tm = _get_template_manager()
+        try:
+            result = tm.render(template_id, body.variables)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        return RenderResponse(
+            template_id=result.template_id,
+            rendered=result.rendered,
+            variables_used=result.variables_used,
+            missing_variables=result.missing_variables,
+            warnings=result.warnings,
+            success=result.success,
+        )
+
+    @app.post(
+        "/templates/render",
+        response_model=RenderResponse,
+        summary="Render a template body directly",
+        tags=["templates"],
+    )
+    def render_template_body(
+        template_body: str = Query(..., description="テンプレート本文（{var} 形式）"),
+        body: RenderRequest = None,  # type: ignore[assignment]
+    ) -> RenderResponse:
+        """テンプレート本文を直接展開する（IDなし）。"""
+        if body is None:
+            body = RenderRequest()
+        tm = _get_template_manager()
+        result = tm.render_body(template_body, body.variables)
+        return RenderResponse(
+            template_id="",
+            rendered=result.rendered,
+            variables_used=result.variables_used,
+            missing_variables=result.missing_variables,
+            warnings=result.warnings,
+            success=result.success,
+        )
 
 else:
     app = None  # type: ignore[assignment]

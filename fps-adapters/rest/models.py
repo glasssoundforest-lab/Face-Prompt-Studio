@@ -44,6 +44,7 @@ if _PYDANTIC_AVAILABLE:
         coverage_score: float
         balance_score: float
         redundancy_score: float
+        negative_coverage_score: float = 0.0  # ★M6-1
 
     class OptimizationIssueResponse(BaseModel):
         type: str
@@ -184,3 +185,36 @@ if _PYDANTIC_AVAILABLE:
 
         id: str
         deleted: bool
+
+    # ── M6-3 テンプレートエンジン ─────────────────────────────────
+
+    class TemplateVariableResponse(BaseModel):
+        name: str
+        description: str
+        default: str
+        examples: list[str] = []
+        required: bool = True
+
+    class TemplateSummaryResponse(BaseModel):
+        id: str
+        name: str
+        description: str
+        body: str
+        variables: list[TemplateVariableResponse] = []
+        tags: list[str] = []
+        category: str
+
+    class TemplateListResponse(BaseModel):
+        templates: list[TemplateSummaryResponse]
+        total: int
+
+    class RenderRequest(BaseModel):
+        variables: dict[str, str] = {}
+
+    class RenderResponse(BaseModel):
+        template_id: str
+        rendered: str
+        variables_used: dict[str, str] = {}
+        missing_variables: list[str] = []
+        warnings: list[str] = []
+        success: bool
