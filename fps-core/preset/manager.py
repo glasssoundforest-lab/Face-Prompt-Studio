@@ -8,7 +8,9 @@ Public API:
   - list()          プリセット一覧
   - search(query)   名前・説明で検索
   - save(preset)    ユーザープリセットを保存
+  - update(id, **) ★v1.7 部分更新
   - delete(id)      ユーザープリセットを削除
+  - add_tags(id)   ★v1.7 タグ追記
   - merge(ids)      複数プリセットをマージ
   - apply(id)       プリセットをタグリストに変換
   - statistics()    統計情報
@@ -140,7 +142,7 @@ class PresetManager:
             return preset_id in self._index
 
     # ══════════════════════════════════════════════════════════════
-    # Save / Delete
+    # Save / Update / Delete / Add Tags
     # ══════════════════════════════════════════════════════════════
 
     def save(self, preset: Preset, filename: str | None = None) -> Path:
@@ -184,6 +186,55 @@ class PresetManager:
         logger.info("Preset saved: %s → %s", preset.id, path)
         return path
 
+    def update(
+        self,
+        preset_id: str,
+        *,
+        name: str | None = None,
+        description: str | None = None,
+        tags: list[PresetTag] | None = None,
+        negative_tags: list[PresetTag] | None = None,
+        meta: dict[str, Any] | None = None,
+    ) -> Preset:
+        """
+        ★ v1.7 — 既存ユーザープリセットを部分更新する。
+        None のフィールドは変更しない。
+
+        Args:
+            preset_id:     更新対象プリセット ID
+            name:          新しい表示名（省略時は変更なし）
+            description:   新しい説明（省略時は変更なし）
+            tags:          新しいタグリスト（省略時は変更なし）
+            negative_tags: 新しいネガティブタグリスト（省略時は変更なし）
+            meta:          新しいメタ情報（省略時は変更なし）
+
+        Returns:
+            更新後の Preset オブジェクト
+
+        Raises:
+            PresetNotFoundError:  ID が存在しない
+            PresetError:          system プリセットへの変更試行
+        """
+        with self._lock:
+            current = self.get(preset_id)
+            if current.source == PresetSource.SYSTEM:
+                raise PresetError(
+                    f"システムプリセットは更新できません: '{preset_id}'"
+                )
+            updated = Preset(
+                id=current.id,
+                name=name if name is not None else current.name,
+                tags=list(tags) if tags is not None else list(current.tags),
+                negative_tags=list(negative_tags) if negative_tags is not None else list(current.negative_tags),
+                source=PresetSource.USER,
+                description=description if description is not None else current.description,
+                version=current.version,
+                meta=dict(meta) if meta is not None else dict(current.meta),
+            )
+        self.save(updated)
+        logger.info("Preset updated: %s", preset_id)
+        return updated
+
     def delete(self, preset_id: str) -> bool:
         """
         ユーザープリセットを削除する。
@@ -209,6 +260,46 @@ class PresetManager:
 
         logger.info("Preset deleted: %s", preset_id)
         return True
+
+    def add_tags(
+        self,
+        preset_id: str,
+        tags: list[PresetTag],
+        *,
+        negative: bool = False,
+    ) -> Preset:
+        """
+        ★ v1.7 — 既存プリセットにタグを追記する。
+        同一タグ名は重複追加しない（tag.tag フィールドで比較）。
+
+        Args:
+            preset_id: 対象プリセット ID
+            tags:      追加する PresetTag リスト
+            negative:  True の場合 negative_tags に追記
+
+        Returns:
+            更新後の Preset オブジェクト
+
+        Raises:
+            PresetNotFoundError: ID が存在しない
+            PresetError:         system プリセットへの変更試行
+        """
+        with self._lock:
+            current = self.get(preset_id)
+            if current.source == PresetSource.SYSTEM:
+                raise PresetError(
+                    f"システムプリセットは変更できません: '{preset_id}'"
+                )
+            if negative:
+                existing_names = {t.tag for t in current.negative_tags}
+                new_tags = [t for t in tags if t.tag not in existing_names]
+                merged = list(current.negative_tags) + new_tags
+                return self.update(preset_id, negative_tags=merged)
+            else:
+                existing_names = {t.tag for t in current.tags}
+                new_tags = [t for t in tags if t.tag not in existing_names]
+                merged = list(current.tags) + new_tags
+                return self.update(preset_id, tags=merged)
 
     # ══════════════════════════════════════════════════════════════
     # Merge / Apply
