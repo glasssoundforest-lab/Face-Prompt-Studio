@@ -101,3 +101,37 @@ if _PYDANTIC_AVAILABLE:
         version: str
         dictionary_keys: int
         rule_count: int
+
+    # ── M5-3 Knowledge Browser ────────────────────────────────────
+
+    class CategoryListResponse(BaseModel):
+        """GET /dictionary/categories レスポンス"""
+
+        categories: list[str]
+        total: int
+
+    class DictionaryEntryItem(BaseModel):
+        """辞書エントリ 1 件"""
+
+        key: str
+        resolved: str
+        weight: float
+        category: str
+        synonyms: list[str] = []
+
+    class EntriesResponse(BaseModel):
+        """GET /dictionary/entries レスポンス"""
+
+        entries: list[DictionaryEntryItem]
+        total: int
+        category: str | None = None
+        search: str | None = None
+
+    class SynonymsResponse(BaseModel):
+        """GET /dictionary/synonyms レスポンス"""
+
+        key: str
+        synonyms: list[str]
+        resolved: str
+        weight: float
+        category: str

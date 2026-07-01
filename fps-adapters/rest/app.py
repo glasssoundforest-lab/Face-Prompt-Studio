@@ -39,9 +39,12 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment,misc]
 
 from .models import (  # noqa: E402
+    CategoryListResponse,
     CompileResponse,
+    DictionaryEntryItem,
     DictionaryLookupResponse,
     DictionaryStatsResponse,
+    EntriesResponse,
     HealthResponse,
     HistoryEntryResponse,
     HistoryListResponse,
@@ -50,6 +53,7 @@ from .models import (  # noqa: E402
     PresetListResponse,
     PresetSummary,
     QualityScoreResponse,
+    SynonymsResponse,
     ValidationResponse,
 )
 
@@ -260,6 +264,100 @@ if _FASTAPI_AVAILABLE:
             errors["presets"] = preset_errors
 
         return ValidationResponse(success=len(errors) == 0, errors=errors)
+
+    # ── M5-3 Knowledge Browser ────────────────────────────────────
+
+    @app.get(
+        "/dictionary/categories",
+        response_model=CategoryListResponse,
+        summary="Get all dictionary categories",
+        tags=["dictionary"],
+    )
+    def get_dictionary_categories() -> CategoryListResponse:
+        """辞書に登録されているカテゴリ一覧を返す（ソート済み）。"""
+        ctx = get_context()
+        cats = ctx.dictionary_manager.categories()
+        return CategoryListResponse(categories=cats, total=len(cats))
+
+    @app.get(
+        "/dictionary/entries",
+        response_model=EntriesResponse,
+        summary="Browse dictionary entries",
+        tags=["dictionary"],
+    )
+    def get_dictionary_entries(
+        category: str | None = Query(default=None, description="絞り込むカテゴリ名"),
+        search: str | None = Query(default=None, description="タグ名に対する部分一致検索"),
+        limit: int = Query(default=50, ge=1, le=500, description="最大取得件数"),
+    ) -> EntriesResponse:
+        """カテゴリ絞り込み・テキスト検索でエントリ一覧を取得する。"""
+        ctx = get_context()
+        dm = ctx.dictionary_manager
+
+        # 内部インデックスから重複なしのエントリリストを構築
+        with dm._lock:
+            raw_index: dict = dict(dm._index)
+
+        seen: set[str] = set()
+        unique_entries = []
+        for entry in raw_index.values():
+            if entry.key not in seen:
+                seen.add(entry.key)
+                unique_entries.append(entry)
+
+        # カテゴリフィルタ
+        if category:
+            unique_entries = [e for e in unique_entries if e.category == category]
+
+        # テキスト検索（key / resolved に対して部分一致）
+        if search:
+            q = search.lower()
+            unique_entries = [
+                e for e in unique_entries
+                if q in e.key or q in e.resolved.lower()
+            ]
+
+        total = len(unique_entries)
+        unique_entries.sort(key=lambda e: e.key)
+
+        return EntriesResponse(
+            entries=[
+                DictionaryEntryItem(
+                    key=e.key,
+                    resolved=e.resolved,
+                    weight=e.weight,
+                    category=e.category,
+                    synonyms=e.aliases,
+                )
+                for e in unique_entries[:limit]
+            ],
+            total=total,
+            category=category,
+            search=search or None,
+        )
+
+    @app.get(
+        "/dictionary/synonyms",
+        response_model=SynonymsResponse,
+        summary="Get synonyms for a dictionary key",
+        tags=["dictionary"],
+    )
+    def get_dictionary_synonyms(
+        key: str = Query(..., description="辞書キー（例: blue_eyes）"),
+    ) -> SynonymsResponse:
+        """指定キーの同義語・詳細情報を返す。存在しない場合は 404。"""
+        ctx = get_context()
+        result = ctx.dictionary_manager.lookup(key)
+        if not result.found or result.entry is None:
+            raise HTTPException(status_code=404, detail=f"Key '{key}' not found in dictionary")
+
+        return SynonymsResponse(
+            key=result.key,
+            synonyms=result.entry.aliases,
+            resolved=result.resolved,  # type: ignore[arg-type]
+            weight=result.weight,
+            category=result.category,  # type: ignore[arg-type]
+        )
 
 else:
     app = None  # type: ignore[assignment]

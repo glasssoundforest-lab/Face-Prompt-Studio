@@ -21,7 +21,6 @@ sys.path.insert(0, str(ROOT / "fps-adapters"))
 fastapi = pytest.importorskip("fastapi")
 
 from fastapi.testclient import TestClient  # noqa: E402
-
 from rest.app import app  # noqa: E402
 
 
@@ -209,3 +208,128 @@ class TestResponseSchemas:
         score = r.json()["score"]
         for field in ("overall_score", "coverage_score", "balance_score", "redundancy_score"):
             assert field in score
+
+
+# ─────────────────────────────────────────────────────────────
+# M5-3 Knowledge Browser エンドポイントテスト (+20件)
+# ─────────────────────────────────────────────────────────────
+
+
+class TestDictionaryCategories:
+    """GET /dictionary/categories (5件)"""
+
+    def test_categories_status_200(self, client: TestClient):
+        r = client.get("/dictionary/categories")
+        assert r.status_code == 200
+
+    def test_categories_schema(self, client: TestClient):
+        body = client.get("/dictionary/categories").json()
+        assert "categories" in body
+        assert "total" in body
+        assert isinstance(body["categories"], list)
+
+    def test_categories_count_matches_total(self, client: TestClient):
+        body = client.get("/dictionary/categories").json()
+        assert len(body["categories"]) == body["total"]
+
+    def test_categories_sorted(self, client: TestClient):
+        cats = client.get("/dictionary/categories").json()["categories"]
+        assert cats == sorted(cats)
+
+    def test_categories_nonempty(self, client: TestClient):
+        total = client.get("/dictionary/categories").json()["total"]
+        assert total > 0
+
+
+class TestDictionaryEntries:
+    """GET /dictionary/entries (10件)"""
+
+    def test_entries_status_200(self, client: TestClient):
+        r = client.get("/dictionary/entries")
+        assert r.status_code == 200
+
+    def test_entries_schema(self, client: TestClient):
+        body = client.get("/dictionary/entries").json()
+        assert "entries" in body
+        assert "total" in body
+
+    def test_entries_item_fields(self, client: TestClient):
+        entries = client.get("/dictionary/entries?limit=1").json()["entries"]
+        if entries:
+            e = entries[0]
+            for f in ("key", "resolved", "weight", "category", "synonyms"):
+                assert f in e
+
+    def test_entries_category_filter(self, client: TestClient):
+        cats = client.get("/dictionary/categories").json()["categories"]
+        if not cats:
+            return
+        cat = cats[0]
+        entries = client.get(f"/dictionary/entries?category={cat}").json()["entries"]
+        for e in entries:
+            assert e["category"] == cat
+
+    def test_entries_search_filter(self, client: TestClient):
+        entries = client.get("/dictionary/entries?search=eyes").json()["entries"]
+        for e in entries:
+            assert "eyes" in e["key"] or "eyes" in e["resolved"].lower()
+
+    def test_entries_limit_respected(self, client: TestClient):
+        entries = client.get("/dictionary/entries?limit=5").json()["entries"]
+        assert len(entries) <= 5
+
+    def test_entries_limit_max_500(self, client: TestClient):
+        # limit=9999 は le=500 バリデーションで 422
+        assert client.get("/dictionary/entries?limit=9999").status_code == 422
+        # limit=500 は正常動作
+        r = client.get("/dictionary/entries?limit=500")
+        assert r.status_code == 200
+        assert len(r.json()["entries"]) <= 500
+
+    def test_entries_category_and_search_combined(self, client: TestClient):
+        cats = client.get("/dictionary/categories").json()["categories"]
+        if not cats:
+            return
+        body = client.get(f"/dictionary/entries?category={cats[0]}&search=a").json()
+        assert "entries" in body
+
+    def test_entries_unknown_category_returns_empty(self, client: TestClient):
+        body = client.get("/dictionary/entries?category=__no_such_cat__").json()
+        assert body["entries"] == []
+        assert body["total"] == 0
+
+    def test_entries_response_has_category_field(self, client: TestClient):
+        body = client.get("/dictionary/entries?category=eyes").json()
+        assert body["category"] == "eyes"
+
+
+class TestDictionarySynonyms:
+    """GET /dictionary/synonyms (5件)"""
+
+    def _first_key(self, client: TestClient) -> str:
+        entries = client.get("/dictionary/entries?limit=1").json()["entries"]
+        return entries[0]["key"] if entries else "blue_eyes"
+
+    def test_synonyms_status_200(self, client: TestClient):
+        key = self._first_key(client)
+        assert client.get(f"/dictionary/synonyms?key={key}").status_code == 200
+
+    def test_synonyms_schema(self, client: TestClient):
+        key = self._first_key(client)
+        body = client.get(f"/dictionary/synonyms?key={key}").json()
+        for f in ("key", "synonyms", "resolved", "weight", "category"):
+            assert f in body
+
+    def test_synonyms_key_matches_request(self, client: TestClient):
+        key = self._first_key(client)
+        body = client.get(f"/dictionary/synonyms?key={key}").json()
+        assert body["key"] == key
+
+    def test_synonyms_list_type(self, client: TestClient):
+        key = self._first_key(client)
+        body = client.get(f"/dictionary/synonyms?key={key}").json()
+        assert isinstance(body["synonyms"], list)
+
+    def test_synonyms_unknown_key_returns_404(self, client: TestClient):
+        r = client.get("/dictionary/synonyms?key=__not_a_real_key_xyz__")
+        assert r.status_code == 404

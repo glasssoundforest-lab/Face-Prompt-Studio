@@ -102,6 +102,41 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+/* ── M5-3 Knowledge Browser ─────────────────────────────── */
+#kb-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
+#kb-panel.active{display:grid;grid-template-columns:320px 1fr;gap:0;}
+.kb-left{display:flex;flex-direction:column;gap:0;border-right:1px solid var(--border);overflow:hidden;}
+.kb-toolbar{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+.kb-search-row{display:flex;align-items:center;gap:8px;}
+.kb-search{flex:1;padding:7px 11px;font-size:12px;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);outline:none;transition:border-color .2s;}
+.kb-search:focus{border-color:var(--accent);}
+.kb-count{font-size:11px;color:var(--muted);white-space:nowrap;min-width:48px;text-align:right;}
+.kb-cat-bar{display:flex;flex-wrap:wrap;gap:5px;max-height:96px;overflow-y:auto;}
+.kb-cat-btn{padding:3px 9px;font-size:11px;border-radius:10px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);transition:all .12s;white-space:nowrap;}
+.kb-cat-btn:hover{border-color:var(--accent);color:var(--text);}
+.kb-cat-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700;}
+.kb-entry-list{flex:1;overflow-y:auto;}
+.kb-entry-row{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.kb-entry-row:hover{background:var(--surface2);}
+.kb-entry-row.sel{background:var(--accent-lo);}
+.kb-entry-key{flex:1;font-family:var(--mono);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.kb-entry-cat{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);flex-shrink:0;}
+.kb-entry-w{font-size:11px;color:var(--accent);font-family:var(--mono);min-width:32px;text-align:right;flex-shrink:0;}
+.kb-right{display:flex;flex-direction:column;overflow-y:auto;padding:24px 28px;background:var(--surface);}
+.kb-right-ph{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;font-style:italic;}
+.kb-detail-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:12px;}
+.kb-detail-key{font-family:var(--mono);font-size:22px;color:var(--accent);word-break:break-all;}
+.kb-detail-catbadge{padding:4px 12px;border-radius:12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);flex-shrink:0;}
+.kb-section{margin-bottom:20px;}
+.kb-section-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.kb-section-val{font-family:var(--mono);font-size:14px;color:var(--text);}
+.kb-wbar{height:5px;border-radius:3px;background:var(--border);margin-top:8px;overflow:hidden;}
+.kb-wfill{height:100%;border-radius:3px;background:var(--accent);transition:width .3s;}
+.kb-synonym-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.kb-syn{padding:3px 9px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;transition:all .12s;}
+.kb-syn:hover{border-color:var(--accent);color:var(--text);}
+.kb-add-btn{margin-top:24px;padding:10px 0;width:100%;background:var(--accent);color:#000;border-radius:var(--r);font-size:13px;font-weight:700;transition:opacity .15s;}
+.kb-add-btn:hover{opacity:.85;}
 </style>
 </head>
 <body>
@@ -113,6 +148,7 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="optimize" onclick="showTab('optimize')">Optimize</button>
     <button class="nav-btn" data-tab="presets" onclick="showTab('presets')">Presets</button>
     <button class="nav-btn" data-tab="history" onclick="showTab('history')">History</button>
+    <button class="nav-btn" data-tab="kb" onclick="showTab('kb')">🔍 Knowledge</button>
   </nav>
   <div class="server-status">
     <div class="dot" id="status-dot"></div>
@@ -156,6 +192,26 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     </div>
   </div>
 </main>
+
+<!-- M5-3 Knowledge Browser (full-width overlay) -->
+<div id="kb-panel">
+  <div class="kb-left">
+    <div class="kb-toolbar">
+      <div class="kb-search-row">
+        <input id="kb-search" class="kb-search" type="text" placeholder="タグ名で検索…" oninput="kbOnSearch()">
+        <span id="kb-count" class="kb-count">–</span>
+      </div>
+      <div id="kb-cat-bar" class="kb-cat-bar"></div>
+    </div>
+    <div id="kb-entry-list" class="kb-entry-list">
+      <div class="empty" style="padding:20px 16px">カテゴリを選択するか、タグ名を検索してください</div>
+    </div>
+  </div>
+  <div id="kb-right" class="kb-right">
+    <div class="kb-right-ph">エントリを選択すると詳細を表示します</div>
+  </div>
+</div>
+
 </div>
 <div id="toast"></div>
 <script>
@@ -237,10 +293,122 @@ function showTab(tab){
   state.activeTab=tab;
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector(`.nav-btn[data-tab="${tab}"]`).classList.add('active');
-  if(tab==='presets')loadPresets();
-  else if(tab==='history')loadHistory();
-  else if(tab==='optimize'&&state.optimized)switchResult('issues');
-  else switchResult('result');
+  // KB パネルは main を隠してフルWidth表示
+  const mainEl=document.querySelector('main');
+  const kbEl=$('kb-panel');
+  if(tab==='kb'){
+    mainEl.style.display='none';
+    kbEl.classList.add('active');
+    initKb();
+  } else {
+    mainEl.style.display='';
+    kbEl.classList.remove('active');
+    if(tab==='presets')loadPresets();
+    else if(tab==='history')loadHistory();
+    else if(tab==='optimize'&&state.optimized)switchResult('issues');
+    else switchResult('result');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   M5-3 Knowledge Browser
+═══════════════════════════════════════════════════════ */
+const kb={cats:[],activeCat:null,selKey:null,timer:null,initialized:false};
+
+async function initKb(){
+  if(kb.initialized)return;
+  kb.initialized=true;
+  try{
+    const data=await api('/dictionary/categories');
+    kb.cats=data.categories||[];
+    renderKbCatBar();
+  }catch(e){console.error('[KB]',e);}
+}
+
+function renderKbCatBar(){
+  const bar=$('kb-cat-bar');
+  const all=`<button class="kb-cat-btn ${kb.activeCat===null?'active':''}" onclick="kbSetCat(null)">すべて</button>`;
+  const btns=kb.cats.map(c=>`<button class="kb-cat-btn ${kb.activeCat===c?'active':''}" onclick="kbSetCat('${c}')">${c}</button>`).join('');
+  bar.innerHTML=all+btns;
+}
+
+async function kbSetCat(cat){
+  kb.activeCat=cat;
+  renderKbCatBar();
+  await kbLoadEntries();
+}
+
+function kbOnSearch(){
+  clearTimeout(kb.timer);
+  kb.timer=setTimeout(kbLoadEntries,280);
+}
+
+async function kbLoadEntries(){
+  const search=$('kb-search').value.trim();
+  const params=new URLSearchParams({limit:200});
+  if(kb.activeCat)params.set('category',kb.activeCat);
+  if(search)params.set('search',search);
+  try{
+    const data=await api('/dictionary/entries?'+params);
+    renderKbEntryList(data.entries||[],data.total||0);
+  }catch(e){console.error('[KB]',e);}
+}
+
+function renderKbEntryList(entries,total){
+  $('kb-count').textContent=total+' 件';
+  const list=$('kb-entry-list');
+  if(!entries.length){list.innerHTML='<div class="empty" style="padding:20px 16px">該当なし</div>';return;}
+  list.innerHTML=entries.map(e=>`
+    <div class="kb-entry-row${kb.selKey===e.key?' sel':''}" onclick="kbSelEntry('${escAttr(e.key)}')">
+      <span class="kb-entry-key" title="${escAttr(e.key)}">${escHtml(e.key)}</span>
+      <span class="kb-entry-cat">${escHtml(e.category)}</span>
+      <span class="kb-entry-w">${e.weight.toFixed(1)}</span>
+    </div>`).join('');
+}
+
+async function kbSelEntry(key){
+  kb.selKey=key;
+  // ハイライト更新
+  document.querySelectorAll('.kb-entry-row').forEach(r=>r.classList.toggle('sel',r.onclick?.toString().includes(`'${key}'`)));
+  try{
+    const d=await api('/dictionary/synonyms?key='+encodeURIComponent(key));
+    renderKbDetail(d);
+  }catch(e){$('kb-right').innerHTML='<div class="kb-right-ph">エントリが見つかりません</div>';}
+}
+
+function renderKbDetail(d){
+  const pct=Math.min(d.weight/2.0,1.0)*100;
+  const syns=d.synonyms.length
+    ?d.synonyms.map(s=>`<span class="kb-syn" onclick="kbAddToEditor('${escAttr(s)}')" title="エディタに追加">${escHtml(s)}</span>`).join('')
+    :'<span style="color:var(--muted);font-size:12px">なし</span>';
+  $('kb-right').innerHTML=`
+    <div class="kb-detail-head">
+      <div class="kb-detail-key">${escHtml(d.key)}</div>
+      <div class="kb-detail-catbadge">${escHtml(d.category)}</div>
+    </div>
+    <div class="kb-section">
+      <div class="kb-section-label">Resolved</div>
+      <div class="kb-section-val">${escHtml(d.resolved)}</div>
+    </div>
+    <div class="kb-section">
+      <div class="kb-section-label">Weight <span style="color:var(--accent)">${d.weight.toFixed(2)}</span></div>
+      <div class="kb-wbar"><div class="kb-wfill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="kb-section">
+      <div class="kb-section-label">Synonyms (${d.synonyms.length})</div>
+      <div class="kb-synonym-list">${syns}</div>
+    </div>
+    <button class="kb-add-btn" onclick="kbAddToEditor('${escAttr(d.key)}')">+ このタグをエディタに追加</button>
+  `;
+}
+
+function kbAddToEditor(tag){
+  const ed=$('prompt-input');
+  const cur=ed.value.trim();
+  ed.value=cur?cur+', '+tag:tag;
+  showTab('editor');
+  previewTags();
+  toast('"'+tag+'" をエディタに追加しました');
 }
 async function loadPresets(){
   const body=$('result-body');
