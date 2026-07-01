@@ -12,17 +12,69 @@ Clean Architecture を採用しています。
 
 ## ステータス
 
-**v1.8.0** — バックアップ Web UI + History 強化 + ダッシュボード完了（2026-07-02）
+**v1.9.0** — WebSocket リアルタイム更新完了（2026-07-02）
 
 | 指標 | 値 |
 |---|---|
-| テスト | **1182 PASS / 0 FAILED** |
-| REST API | **35 エンドポイント**（+7） |
+| テスト | **1212 PASS / 0 FAILED** |
+| REST API | **39 エンドポイント**（+4） |
 | 辞書キー総数 | **2793キー**（英語 + 日本語） |
 | 日本語エントリ | **1002件**（41カテゴリ） |
 | ComfyUI ノード | **11種** |
 | テンプレート | **5種**（組み込み） |
 | Python ファイル | 132本 |
+
+---
+
+## v1.9.0 新機能
+
+### ① WebSocket 3チャンネル
+
+| チャンネル | URL | 配信内容 |
+|---|---|---|
+| pipeline | `WS /ws/pipeline` | コンパイル開始・ステージ進捗・完了・キャッシュヒット |
+| history  | `WS /ws/history`  | 新規履歴エントリ（接続直後は最新5件スナップショット） |
+| events   | `WS /ws/events`   | 全 EventBus イベント（type フィルタ可） |
+
+```javascript
+// コンパイル進捗をリアルタイム受信
+const ws = new WebSocket("ws://localhost:8420/ws/pipeline");
+ws.onmessage = (e) => {
+  const { type, data } = JSON.parse(e.data);
+  if (type === "stage.after_run") console.log("✓", data.stage);
+  if (type === "pipeline.after_compile") console.log("完了");
+};
+
+// 新規履歴を自動受信
+const wsH = new WebSocket("ws://localhost:8420/ws/history");
+wsH.onmessage = (e) => {
+  const msg = JSON.parse(e.data);
+  if (msg.type === "history.recorded") appendEntry(msg.data);
+};
+```
+
+### ② EventBus 統合強化
+
+- `CliContext.event_bus` プロパティ追加（スレッドセーフ遅延初期化）
+- `PipelineManager` に EventBus を自動注入（`context.event_bus`）
+- `compile` エンドポイントが `history.recorded` を emit
+- `optimize` エンドポイントが `optimizer.analyzed` を emit
+- 新 EventType: `HISTORY_RECORDED` / `HISTORY_DELETED` / `OPTIMIZER_ANALYZED` / `WS_CLIENT_*`
+
+### ③ Web UI リアルタイム化
+
+- **接続インジケーター** — ナビバー右端に WS 接続状態（🟢接続中 / 🟡接続中 / 🔴エラー）
+- **パイプライン進捗バー** — 画面最上部に細い進捗ライン
+- **ステージトースト** — 各ステージ完了をポップアップ通知
+- **History 自動更新** — 新規エントリが追加されると History タブが自動リフレッシュ
+- **NEW バッジ** — History タブを見ていない間に新規エントリがあればバッジ表示
+- **自動再接続** — 切断後3秒で自動リトライ
+
+### ④ `GET /ws/stats`（WS 接続数監視）
+
+```
+GET /ws/stats → {"connections": {"pipeline": 2, "history": 1}, "total": 3}
+```
 
 ---
 
@@ -117,6 +169,7 @@ tm = ctx.template_manager   # 遅延初期化・スレッドセーフ
 | v1.6.0 | 日本語辞書大規模拡充（228 → 517件、21カテゴリ） |
 | **v1.7.0** | **Preset エディタ Web UI / PresetManager CRUD / CliContext 統合** |
 | **v1.8.0** | **バックアップ Web UI / History 強化（検索・エクスポート・統計）/ ダッシュボード** |
+| **v1.9.0** | **WebSocket リアルタイム更新（pipeline / history / events 3チャンネル）** |
 
 ---
 
@@ -164,6 +217,10 @@ tm = ctx.template_manager   # 遅延初期化・スレッドセーフ
 | **GET** | **`/history/stats`** | **統計 ★v1.8** |
 | **GET** | **`/history/export`** | **CSV/JSONエクスポート ★v1.8** |
 | **GET** | **`/dashboard`** | **ダッシュボード ★v1.8** |
+| **WS** | **`/ws/pipeline`** | **コンパイル進捗ストリーム ★v1.9** |
+| **WS** | **`/ws/history`** | **新規履歴プッシュ ★v1.9** |
+| **WS** | **`/ws/events`** | **全イベントサブスクライブ ★v1.9** |
+| GET | `/ws/stats` | WS 接続数 ★v1.9 |
 | GET | `/history` | 履歴一覧 |
 | GET | `/history/{id}` | 履歴詳細 |
 | POST | `/history/{id}/favorite` | お気に入りトグル |
