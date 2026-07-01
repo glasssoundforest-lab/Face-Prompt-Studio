@@ -300,3 +300,77 @@ if _PYDANTIC_AVAILABLE:
         """DELETE /dictionary/user/entries/{key} レスポンス"""
         key: str
         deleted: bool
+
+    # ── v1.8 Backup ──────────────────────────────────────────────
+
+    class BackupEntryResponse(BaseModel):
+        """バックアップエントリ 1件"""
+        id: str
+        target: str
+        source_path: str
+        created_at: str
+        size_kb: float
+
+    class BackupListResponse(BaseModel):
+        """GET /backup レスポンス"""
+        entries: list[BackupEntryResponse]
+        total: int
+
+    class BackupCreateRequest(BaseModel):
+        """POST /backup リクエスト"""
+        target: str = "all"   # "all" | "dictionary" | "rules" | "presets" | "config"
+
+    class BackupCreateResponse(BaseModel):
+        """POST /backup レスポンス"""
+        success: bool
+        entry_count: int
+        total_kb: float
+        entries: list[BackupEntryResponse]
+        error: str = ""
+
+    class BackupDeleteResponse(BaseModel):
+        """DELETE /backup/{id} レスポンス"""
+        id: str
+        deleted: bool
+
+    class BackupRestoreResponse(BaseModel):
+        """POST /backup/{id}/restore レスポンス"""
+        success: bool
+        restored_files: int
+        error: str = ""
+
+    # ── v1.8 History 強化 ─────────────────────────────────────────
+
+    class TagFrequency(BaseModel):
+        """タグ使用頻度 1件"""
+        tag: str
+        count: int
+        avg_weight: float = 1.0
+
+    class HistoryStatsResponse(BaseModel):
+        """GET /history/stats レスポンス"""
+        total_entries: int
+        favorite_count: int
+        avg_score: float
+        top_tags: list[TagFrequency]
+        score_distribution: dict[str, int]   # "excellent"/"good"/"fair"/"poor" → count
+
+    class HistoryExportResponse(BaseModel):
+        """GET /history/export レスポンス"""
+        format: str
+        total: int
+        data: str    # CSV or JSON string
+
+    # ── v1.8 Dashboard ───────────────────────────────────────────
+
+    class DashboardResponse(BaseModel):
+        """GET /dashboard レスポンス"""
+        version: str
+        dictionary_keys: int
+        japanese_entries: int
+        preset_count: int
+        history_count: int
+        backup_count: int
+        avg_score: float
+        top_tags: list[TagFrequency]
+        recent_activity: list[str]
