@@ -126,7 +126,134 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
 .kb-conflict-group-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;}
 .kb-conflict-tags{display:flex;flex-wrap:wrap;gap:5px;}
 .kb-conflict-tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:8px;background:rgba(255,200,0,.1);border:1px solid rgba(255,200,0,.3);color:#e0b800;}
-</style>
+
+    /* ── v1.8 History 強化 ── */
+    #ht-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--bg-secondary);border-bottom:1px solid var(--border);}
+    #ht-toolbar input,#ht-toolbar select{padding:5px 9px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;}
+    #ht-toolbar input{flex:1;min-width:140px;}
+    .ht-export-btn{padding:5px 12px;border-radius:6px;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:12px;}
+    .ht-stat-bar{display:flex;gap:16px;padding:8px 14px;font-size:12px;background:var(--bg-secondary);border-bottom:1px solid var(--border);}
+    .ht-stat-item{display:flex;flex-direction:column;align-items:center;gap:2px;}
+    .ht-stat-num{font-size:18px;font-weight:700;color:var(--accent);}
+    .ht-stat-lbl{color:var(--muted);}
+    .ht-score-dist{display:flex;gap:4px;align-items:center;}
+    .ht-dist-bar{height:8px;border-radius:4px;}
+
+    /* ── v1.8 Backup タブ ── */
+    #backup-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;padding:20px;}
+    #backup-panel.active{display:block;}
+    .bk-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+    .bk-header h2{margin:0;font-size:1.1rem;}
+    .bk-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+    .bk-btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600;}
+    .bk-btn-primary{background:var(--accent);color:#fff;}
+    .bk-btn-secondary{background:var(--bg-secondary);color:var(--text);border:1px solid var(--border);}
+    .bk-btn-danger{background:#e74c3c;color:#fff;}
+    .bk-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .bk-table th{padding:8px 12px;text-align:left;background:var(--bg-secondary);border-bottom:2px solid var(--border);font-weight:600;color:var(--muted);}
+    .bk-table td{padding:8px 12px;border-bottom:1px solid var(--border);}
+    .bk-table tr:hover td{background:var(--bg-secondary);}
+    .bk-target-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);}
+    .bk-empty{text-align:center;padding:40px;color:var(--muted);}
+    .bk-progress{display:none;align-items:center;gap:10px;padding:10px 14px;background:color-mix(in srgb,var(--accent) 10%,var(--bg-secondary));border-radius:8px;margin-bottom:12px;font-size:13px;}
+    .bk-progress.show{display:flex;}
+    .bk-spinner{width:18px;height:18px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ── v1.8 Dashboard タブ ── */
+    #dashboard-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;padding:20px;}
+    #dashboard-panel.active{display:block;}
+    .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+    .dash-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;}
+    .dash-card-num{font-size:2rem;font-weight:700;color:var(--accent);}
+    .dash-card-lbl{font-size:12px;color:var(--muted);margin-top:4px;}
+    .dash-section{margin-bottom:24px;}
+    .dash-section h3{font-size:0.95rem;margin:0 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+    .dash-tag-bar{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;}
+    .dash-tag-name{width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .dash-tag-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+    .dash-tag-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s;}
+    .dash-tag-count{width:36px;text-align:right;color:var(--muted);font-size:12px;}
+    .dash-activity{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;}
+    .dash-activity-item{padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .dash-activity-item:last-child{border:none;}
+    .dash-score-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:13px;}
+    .dash-score-label{width:80px;color:var(--muted);}
+
+    
+    /* ── v1.9 WebSocket インジケーター ── */
+    #ws-indicator{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-left:auto;padding:0 12px;}
+    .ws-dot{width:8px;height:8px;border-radius:50%;background:#555;transition:background .3s;}
+    .ws-dot.connected{background:#2ecc71;box-shadow:0 0 6px #2ecc71;}
+    .ws-dot.connecting{background:#f39c12;animation:pulse 1s infinite;}
+    .ws-dot.error{background:#e74c3c;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* ── v1.9 パイプライン進捗バー ── */
+    #pipeline-progress{display:none;position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:9999;}
+    #pipeline-progress-bar{height:100%;width:0;background:var(--accent);transition:width .3s;}
+    #pipeline-progress.active{display:block;}
+
+    /* ── v1.9 ステージトースト ── */
+    #stage-toasts{position:fixed;bottom:70px;right:16px;display:flex;flex-direction:column;gap:6px;z-index:9998;pointer-events:none;}
+    .stage-toast{background:var(--bg-secondary);border:1px solid var(--border);border-left:3px solid var(--accent);padding:6px 12px;border-radius:6px;font-size:12px;opacity:0;transform:translateX(20px);transition:all .25s;max-width:260px;}
+    .stage-toast.show{opacity:1;transform:translateX(0);}
+    .stage-toast.done{border-left-color:#2ecc71;}
+    .stage-toast.error{border-left-color:#e74c3c;}
+
+    /* ── v1.9 History リアルタイムバッジ ── */
+    .ht-new-badge{display:inline-block;padding:1px 6px;background:var(--accent);color:#fff;border-radius:8px;font-size:10px;margin-left:6px;animation:fadein .4s;}
+    @keyframes fadein{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+    
+    /* ── v2.0 Profile タブ ── */
+    #profile-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;}
+    #profile-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;height:100%;}
+    .pf-sidebar{padding:16px;border-right:1px solid var(--border);overflow-y:auto;}
+    .pf-sidebar h3{font-size:0.85rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;}
+    .pf-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+    .pf-stat{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;}
+    .pf-stat-num{font-size:1.4rem;font-weight:700;color:var(--accent);}
+    .pf-stat-lbl{font-size:11px;color:var(--muted);}
+    .pf-btn{width:100%;padding:8px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:6px;}
+    .pf-btn-primary{background:var(--accent);color:#fff;}
+    .pf-btn-secondary{background:var(--bg-secondary);color:var(--text);border:1px solid var(--border);}
+    .pf-btn-danger{background:#e74c3c;color:#fff;}
+    .pf-main{padding:16px;overflow-y:auto;}
+    .pf-section{margin-bottom:24px;}
+    .pf-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .pf-section-title{font-size:0.9rem;font-weight:600;}
+    /* 推奨タグ */
+    .pf-rec-grid{display:flex;flex-wrap:wrap;gap:6px;}
+    .pf-rec-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+                background:var(--bg-secondary);border:1px solid var(--border);
+                border-radius:14px;font-size:12px;cursor:pointer;transition:all .15s;}
+    .pf-rec-tag:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--bg-secondary));}
+    .pf-rec-cnt{font-size:10px;color:var(--muted);}
+    /* スコアトレンドグラフ */
+    .pf-trend-wrap{position:relative;height:160px;background:var(--bg-secondary);
+                   border:1px solid var(--border);border-radius:8px;overflow:hidden;padding:8px 12px 24px;}
+    .pf-trend-svg{width:100%;height:100%;}
+    .pf-trend-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;}
+    /* スタイルルール */
+    .pf-rule{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;
+             padding:10px 14px;margin-bottom:8px;}
+    .pf-rule-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    .pf-rule-name{font-weight:600;font-size:13px;}
+    .pf-rule-tags{font-size:11px;color:var(--muted);}
+    /* タグ重み */
+    .pf-weight-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;}
+    .pf-weight-tag{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .pf-weight-val{width:44px;text-align:right;color:var(--accent);font-weight:600;}
+    .pf-weight-zero{color:#e74c3c;}
+    /* add-rule form */
+    .pf-add-rule{background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;}
+    .pf-add-rule input,.pf-add-rule textarea{width:100%;padding:6px 9px;border:1px solid var(--border);
+      border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;margin-bottom:6px;box-sizing:border-box;}
+    .pf-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);
+                border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-left:6px;}
+
+    </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
 .ht-left{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;}
@@ -238,6 +365,10 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="optimize" onclick="showTab('optimize')">Optimize</button>
     <button class="nav-btn" data-tab="presets" onclick="showTab('presets')">Presets</button>
     <button class="nav-btn" data-tab="history" onclick="showTab('history')">History</button>
+    <button class="nav-btn" data-tab="backup" onclick="showTab('backup')">Backup</button>
+    <div id="ws-indicator"><div class="ws-dot" id="ws-dot"></div><span id="ws-label">WS 未接続</span></div>
+    <button class="nav-btn" data-tab="profile" onclick="showTab('profile')">Profile</button>
+    <button class="nav-btn" data-tab="dashboard" onclick="showTab('dashboard')">Dashboard</button>
     <button class="nav-btn" data-tab="kb" onclick="showTab('kb')">🔍 Knowledge</button>
   </nav>
   <div class="server-status">
@@ -281,7 +412,99 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
       <div class="empty">プロンプトを入力して Compile してください</div>
     </div>
   </div>
-</main>
+
+    <!-- v1.8 Backup Panel -->
+    <div id="backup-panel">
+      <div class="bk-header">
+        <h2>🗄 バックアップ管理</h2>
+      </div>
+      <div id="bk-progress" class="bk-progress">
+        <div class="bk-spinner"></div>
+        <span id="bk-progress-msg">処理中…</span>
+      </div>
+      <div class="bk-actions">
+        <button class="bk-btn bk-btn-primary" onclick="bkCreate('all')">📦 全体バックアップ</button>
+        <button class="bk-btn bk-btn-secondary" onclick="bkCreate('dictionary')">📖 辞書のみ</button>
+        <button class="bk-btn bk-btn-secondary" onclick="bkCreate('presets')">⚙ プリセットのみ</button>
+        <button class="bk-btn bk-btn-secondary" onclick="bkCreate('rules')">📋 ルールのみ</button>
+        <button class="bk-btn bk-btn-secondary" onclick="bkLoad()">🔄 一覧更新</button>
+      </div>
+      <div id="bk-list">
+        <div class="bk-empty">読み込み中…</div>
+      </div>
+    </div>
+
+
+    <!-- v2.0 Profile Panel -->
+    <div id="profile-panel">
+      <div class="pf-sidebar">
+        <h3>📊 プロファイル統計</h3>
+        <div class="pf-stat-grid">
+          <div class="pf-stat"><div class="pf-stat-num" id="pf-s-freq">—</div><div class="pf-stat-lbl">学習タグ</div></div>
+          <div class="pf-stat"><div class="pf-stat-num" id="pf-s-rules">—</div><div class="pf-stat-lbl">ルール</div></div>
+          <div class="pf-stat"><div class="pf-stat-num" id="pf-s-exc">—</div><div class="pf-stat-lbl">除外タグ</div></div>
+          <div class="pf-stat"><div class="pf-stat-num" id="pf-s-weights">—</div><div class="pf-stat-lbl">重み設定</div></div>
+        </div>
+        <div id="pf-last-learned" style="font-size:11px;color:var(--muted);margin-bottom:12px;">最終学習: 未実施</div>
+        <button class="pf-btn pf-btn-primary" onclick="pfLearn()">🧠 履歴から学習</button>
+        <button class="pf-btn pf-btn-secondary" onclick="pfLoad()">🔄 更新</button>
+        <button class="pf-btn pf-btn-danger" onclick="pfReset()">🗑 プロファイルをリセット</button>
+      </div>
+      <div class="pf-main">
+        <!-- スコアトレンド -->
+        <div class="pf-section">
+          <div class="pf-section-header">
+            <span class="pf-section-title">📈 スコアトレンド（30日）</span>
+            <select id="pf-trend-days" onchange="pfLoadTrend()" style="font-size:12px;padding:3px 7px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);">
+              <option value="14">14日</option>
+              <option value="30" selected>30日</option>
+              <option value="60">60日</option>
+              <option value="90">90日</option>
+            </select>
+          </div>
+          <div class="pf-trend-wrap"><svg class="pf-trend-svg" id="pf-trend-svg"></svg></div>
+        </div>
+        <!-- 推奨タグ -->
+        <div class="pf-section">
+          <div class="pf-section-header">
+            <span class="pf-section-title">⭐ 推奨タグ（頻出 Top20）</span>
+            <button style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg-secondary);cursor:pointer;" onclick="pfInsertAllRecs()">全部追加</button>
+          </div>
+          <div id="pf-rec-grid" class="pf-rec-grid"></div>
+        </div>
+        <!-- スタイルルール -->
+        <div class="pf-section">
+          <div class="pf-section-header">
+            <span class="pf-section-title">📋 スタイルルール</span>
+            <button style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg-secondary);cursor:pointer;" onclick="pfToggleAddRule()">＋ 追加</button>
+          </div>
+          <div id="pf-rules-list"></div>
+          <div id="pf-add-rule-form" class="pf-add-rule" style="display:none;">
+            <input id="pf-rule-id" placeholder="ルールID（英数字）" />
+            <input id="pf-rule-name" placeholder="ルール名" />
+            <textarea id="pf-rule-include" rows="2" placeholder="常に追加するタグ（カンマ区切り）"></textarea>
+            <textarea id="pf-rule-exclude" rows="2" placeholder="常に除外するタグ（カンマ区切り）"></textarea>
+            <button class="pf-btn pf-btn-primary" style="margin-top:4px" onclick="pfAddRule()">保存</button>
+          </div>
+        </div>
+        <!-- タグ重み -->
+        <div class="pf-section">
+          <div class="pf-section-header">
+            <span class="pf-section-title">⚖ タグ重み設定</span>
+          </div>
+          <div id="pf-weights-list" style="max-height:200px;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- v1.8 Dashboard Panel -->
+    <div id="dashboard-panel">
+      <div id="dash-content">
+        <div class="bk-empty" style="padding:60px">読み込み中…</div>
+      </div>
+    </div>
+
+  </main>
 
 <!-- M5-3 Knowledge Browser (full-width overlay) -->
 <div id="kb-panel">
@@ -450,7 +673,16 @@ function showTab(tab){
   mainEl.style.display='';kbEl.classList.remove('active');htEl.classList.remove('active');
   if(tab==='kb'){
     mainEl.style.display='none';kbEl.classList.add('active');initKb();
-  } else if(tab==='history'){
+  } else if(tab==='profile'){
+      await pfLoad();
+      await pfLoadTrend();
+    } else if(tab==='backup'){
+      await bkLoad();
+    } else if(tab==='dashboard'){
+      await dashLoad();
+    } else if(tab==='history'){
+      const tb=document.getElementById('ht-toolbar');
+      if(tb) tb.style.display='flex';
     mainEl.style.display='none';htEl.classList.add('active');htLoad();
   } else {
     if(tab==='presets')loadPresets();
@@ -921,6 +1153,511 @@ async function copyText(text){await navigator.clipboard.writeText(text);toast('�
 function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escAttr(s){return String(s??'').replace(/'/g,"\\'").replace(/\n/g,' ');}
 checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
-</script>
+
+  // ══════════════════════════════════════════════
+  // v1.8 History 強化
+  // ══════════════════════════════════════════════
+  async function htExport(fmt){
+    const favOnly = document.getElementById('ht-fav-filter')?.value === '1';
+    const minScore = parseFloat(document.getElementById('ht-score-filter')?.value || '0');
+    try {
+      const res = await api('/history/export', {
+        params: { format: fmt, limit: 500,
+                  favorite_only: favOnly, min_score: minScore }
+      });
+      const blob = new Blob([res.data],
+        {type: fmt === 'json' ? 'application/json' : 'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `fps_history_${Date.now()}.${fmt}`;
+      a.click();
+      toast(`${res.total}件をエクスポートしました`);
+    } catch(e){ toast('エクスポート失敗: ' + e.message, true); }
+  }
+
+  async function htShowStats(){
+    try {
+      const s = await api('/history/stats');
+      const bar = document.getElementById('ht-stat-bar');
+      if(bar){
+        bar.style.display = 'flex';
+        document.getElementById('ht-s-total').textContent = s.total_entries;
+        document.getElementById('ht-s-fav').textContent   = s.favorite_count;
+        document.getElementById('ht-s-avg').textContent   = s.avg_score.toFixed(1);
+      }
+      toast(`統計取得: ${s.total_entries}件, 平均${s.avg_score.toFixed(1)}点`);
+    } catch(e){ toast('統計取得失敗: ' + e.message, true); }
+  }
+
+  // ══════════════════════════════════════════════
+  // v1.8 Backup
+  // ══════════════════════════════════════════════
+  async function bkLoad(){
+    const el = document.getElementById('bk-list');
+    if(!el) return;
+    try {
+      const res = await api('/backup');
+      if(!res.entries.length){
+        el.innerHTML = '<div class="bk-empty">バックアップがありません。「全体バックアップ」から作成できます。</div>';
+        return;
+      }
+      el.innerHTML = `
+        <table class="bk-table">
+          <thead><tr>
+            <th>ID</th><th>ターゲット</th><th>作成日時</th>
+            <th>サイズ</th><th>操作</th>
+          </tr></thead>
+          <tbody>
+            ${res.entries.map(e => `
+              <tr>
+                <td style="font-family:monospace;font-size:11px">${escHtml(e.id.slice(0,40))}</td>
+                <td><span class="bk-target-badge">${escHtml(e.target)}</span></td>
+                <td>${escHtml(e.created_at)}</td>
+                <td>${e.size_kb.toFixed(1)} KB</td>
+                <td style="display:flex;gap:6px">
+                  <button class="bk-btn bk-btn-secondary" style="padding:4px 10px;font-size:12px"
+                    onclick="bkRestore('${escHtml(e.id)}')">リストア</button>
+                  <button class="bk-btn bk-btn-danger" style="padding:4px 10px;font-size:12px"
+                    onclick="bkDelete('${escHtml(e.id)}')">削除</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    } catch(e){ document.getElementById('bk-list').innerHTML =
+      `<div class="bk-empty">読み込み失敗: ${escHtml(e.message)}</div>`; }
+  }
+
+  async function bkCreate(target){
+    const prog = document.getElementById('bk-progress');
+    const msg  = document.getElementById('bk-progress-msg');
+    if(prog){ prog.classList.add('show'); msg.textContent = `${target} をバックアップ中…`; }
+    try {
+      const res = await api('/backup', {method:'POST', body:{target}});
+      toast(`✅ ${res.entry_count}件バックアップ完了（${res.total_kb.toFixed(1)} KB）`);
+      await bkLoad();
+    } catch(e){ toast('バックアップ失敗: ' + e.message, true); }
+    finally { if(prog) prog.classList.remove('show'); }
+  }
+
+  async function bkRestore(id){
+    if(!confirm(`「${id.slice(0,30)}…」からリストアします。\n現在のデータが上書きされます。よろしいですか？`)) return;
+    const prog = document.getElementById('bk-progress');
+    if(prog){ prog.classList.add('show');
+              document.getElementById('bk-progress-msg').textContent = 'リストア中…'; }
+    try {
+      const res = await api(`/backup/${encodeURIComponent(id)}/restore`, {method:'POST'});
+      toast(`✅ ${res.restored_files}件リストア完了`);
+    } catch(e){ toast('リストア失敗: ' + e.message, true); }
+    finally { if(prog) prog.classList.remove('show'); }
+  }
+
+  async function bkDelete(id){
+    if(!confirm('このバックアップを削除しますか？')) return;
+    try {
+      await api(`/backup/${encodeURIComponent(id)}`, {method:'DELETE'});
+      toast('削除しました');
+      await bkLoad();
+    } catch(e){ toast('削除失敗: ' + e.message, true); }
+  }
+
+  // ══════════════════════════════════════════════
+  // v1.8 Dashboard
+  // ══════════════════════════════════════════════
+  async function dashLoad(){
+    const el = document.getElementById('dash-content');
+    if(!el) return;
+    try {
+      const d = await api('/dashboard');
+      const maxTag = d.top_tags.length ? d.top_tags[0].count : 1;
+      const scoreColor = s => s >= 80 ? '#2ecc71' : s >= 60 ? '#3498db' : s >= 40 ? '#f39c12' : '#e74c3c';
+      el.innerHTML = `
+        <h2 style="margin:0 0 16px;font-size:1.1rem">📊 ダッシュボード <small style="color:var(--muted);font-size:12px">v${escHtml(d.version)}</small></h2>
+
+        <div class="dash-grid">
+          <div class="dash-card"><div class="dash-card-num">${d.dictionary_keys.toLocaleString()}</div><div class="dash-card-lbl">辞書キー総数</div></div>
+          <div class="dash-card"><div class="dash-card-num">${d.japanese_entries.toLocaleString()}</div><div class="dash-card-lbl">日本語辞書件数</div></div>
+          <div class="dash-card"><div class="dash-card-num">${d.preset_count}</div><div class="dash-card-lbl">プリセット数</div></div>
+          <div class="dash-card"><div class="dash-card-num">${d.history_count}</div><div class="dash-card-lbl">変換履歴</div></div>
+          <div class="dash-card"><div class="dash-card-num">${d.backup_count}</div><div class="dash-card-lbl">バックアップ</div></div>
+          <div class="dash-card"><div class="dash-card-num" style="color:${scoreColor(d.avg_score)}">${d.avg_score.toFixed(1)}</div><div class="dash-card-lbl">平均スコア</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="dash-section">
+            <h3>頻出タグ Top10</h3>
+            ${d.top_tags.map(t => `
+              <div class="dash-tag-bar">
+                <span class="dash-tag-name" title="${escHtml(t.tag)}">${escHtml(t.tag)}</span>
+                <div class="dash-tag-track">
+                  <div class="dash-tag-fill" style="width:${(t.count/maxTag*100).toFixed(1)}%"></div>
+                </div>
+                <span class="dash-tag-count">${t.count}</span>
+              </div>`).join('') || '<div style="color:var(--muted);font-size:13px">履歴なし</div>'}
+          </div>
+          <div>
+            <div class="dash-section">
+              <h3>最近の変換</h3>
+              <div class="dash-activity">
+                ${d.recent_activity.length
+                  ? d.recent_activity.map(a => `<div class="dash-activity-item">▸ ${escHtml(a)}</div>`).join('')
+                  : '<div class="dash-activity-item" style="text-align:center">履歴なし</div>'}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch(e){
+      el.innerHTML = `<div class="bk-empty">ダッシュボード取得失敗: ${escHtml(e.message)}</div>`;
+    }
+  }
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v1.9 WebSocket クライアント
+  // ══════════════════════════════════════════════════════════════
+
+  const WS_BASE = (() => {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${location.host}`;
+  })();
+
+  // ── 接続状態管理 ─────────────────────────────────────────────
+  const wsState = { pipeline: null, history: null, reconnectTimer: null };
+  let pipelineStages = [];
+
+  function wsSetIndicator(status) {
+    const dot   = document.getElementById('ws-dot');
+    const label = document.getElementById('ws-label');
+    if (!dot) return;
+    dot.className = 'ws-dot ' + status;
+    const labels = { connected: 'WS 接続中', connecting: '接続中…', error: 'WS エラー', '': '未接続' };
+    if (label) label.textContent = labels[status] || status;
+  }
+
+  // ── /ws/pipeline ─────────────────────────────────────────────
+  function wsConnectPipeline() {
+    if (wsState.pipeline && wsState.pipeline.readyState < 2) return;
+    wsSetIndicator('connecting');
+    const ws = new WebSocket(`${WS_BASE}/ws/pipeline`);
+    wsState.pipeline = ws;
+
+    ws.onopen = () => {
+      wsSetIndicator('connected');
+      clearTimeout(wsState.reconnectTimer);
+    };
+
+    ws.onmessage = (ev) => {
+      const msg = JSON.parse(ev.data);
+      handlePipelineEvent(msg);
+    };
+
+    ws.onclose = () => {
+      wsSetIndicator('');
+      wsState.pipeline = null;
+      wsState.reconnectTimer = setTimeout(wsConnectPipeline, 3000);
+    };
+
+    ws.onerror = () => { wsSetIndicator('error'); };
+
+    // keepalive ping
+    setInterval(() => {
+      if (ws.readyState === 1) ws.send('ping');
+    }, 25000);
+  }
+
+  function handlePipelineEvent(msg) {
+    const type = msg.type;
+    const bar  = document.getElementById('pipeline-progress');
+    const fill = document.getElementById('pipeline-progress-bar');
+
+    if (type === 'pipeline.before_compile') {
+      pipelineStages = [];
+      if (bar) { bar.classList.add('active'); }
+      if (fill) fill.style.width = '5%';
+      showStageToast('🔄 コンパイル開始', 'active');
+    }
+    else if (type === 'stage.before_run') {
+      const stage = msg.data?.stage || '';
+      pipelineStages.push(stage);
+      const pct = Math.min(10 + pipelineStages.length * 8, 85);
+      if (fill) fill.style.width = pct + '%';
+      showStageToast(`▶ ${stage}`, 'active', 1200);
+    }
+    else if (type === 'stage.after_run') {
+      const stage = msg.data?.stage || '';
+      showStageToast(`✓ ${stage}`, 'done', 1000);
+    }
+    else if (type === 'stage.error') {
+      showStageToast(`✗ ${msg.data?.stage || 'error'}: ${msg.data?.error || ''}`, 'error', 3000);
+    }
+    else if (type === 'pipeline.after_compile') {
+      if (fill) fill.style.width = '100%';
+      setTimeout(() => {
+        if (bar) bar.classList.remove('active');
+        if (fill) fill.style.width = '0';
+      }, 600);
+    }
+    else if (type === 'pipeline.cache_hit') {
+      showStageToast('⚡ キャッシュヒット', 'done', 1000);
+      if (bar) bar.classList.remove('active');
+    }
+    else if (type === 'optimizer.analyzed') {
+      const score = msg.data?.overall_score;
+      if (score !== undefined) showStageToast(`📊 スコア: ${score.toFixed(1)}点`, 'done', 2000);
+    }
+  }
+
+  // ── /ws/history ──────────────────────────────────────────────
+  function wsConnectHistory() {
+    if (wsState.history && wsState.history.readyState < 2) return;
+    const ws = new WebSocket(`${WS_BASE}/ws/history`);
+    wsState.history = ws;
+
+    ws.onmessage = (ev) => {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === 'history.recorded') {
+        // History タブが表示中なら自動リフレッシュ
+        const histPanel = document.getElementById('history-panel');
+        if (histPanel && histPanel.classList.contains('active')) {
+          loadHistory();
+        }
+        // History タブボタンにバッジ
+        const btn = document.querySelector('[data-tab="history"]');
+        if (btn && !histPanel?.classList.contains('active')) {
+          if (!btn.querySelector('.ht-new-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'ht-new-badge';
+            badge.textContent = 'NEW';
+            btn.appendChild(badge);
+          }
+        }
+        toast('📝 新規履歴が追加されました');
+      }
+      else if (msg.type === 'history.deleted') {
+        const histPanel = document.getElementById('history-panel');
+        if (histPanel?.classList.contains('active')) loadHistory();
+      }
+    };
+
+    ws.onclose = () => {
+      wsState.history = null;
+      setTimeout(wsConnectHistory, 4000);
+    };
+
+    setInterval(() => {
+      if (ws.readyState === 1) ws.send('ping');
+    }, 25000);
+  }
+
+  // ── ステージトースト ──────────────────────────────────────────
+  function showStageToast(msg, type = '', duration = 1800) {
+    const container = document.getElementById('stage-toasts');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = `stage-toast ${type}`;
+    el.textContent = msg;
+    container.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => {
+      el.classList.remove('show');
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  }
+
+  // History タブ表示時に NEW バッジを消す
+  const _origShowTab = showTab;
+  function showTab(tab) {
+    _origShowTab(tab);
+    if (tab === 'history') {
+      const btn = document.querySelector('[data-tab="history"]');
+      const badge = btn?.querySelector('.ht-new-badge');
+      if (badge) badge.remove();
+    }
+  }
+
+  // ── 初期接続 ─────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      wsConnectPipeline();
+      wsConnectHistory();
+    }, 500);
+  });
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v2.0 Profile
+  // ══════════════════════════════════════════════════════════════
+  async function pfLoad() {
+    try {
+      const p = await api('/profile');
+      document.getElementById('pf-s-freq').textContent    = p.tag_frequency_count;
+      document.getElementById('pf-s-rules').textContent   = p.style_rule_count;
+      document.getElementById('pf-s-exc').textContent     = p.excluded_tag_count;
+      document.getElementById('pf-s-weights').textContent = p.tag_weight_count;
+      const ll = document.getElementById('pf-last-learned');
+      if (ll) ll.textContent = p.last_learned
+        ? '最終学習: ' + p.last_learned.slice(0, 16).replace('T', ' ')
+        : '最終学習: 未実施';
+
+      // 推奨タグ
+      const grid = document.getElementById('pf-rec-grid');
+      if (grid) {
+        if (!p.top_tags.length) {
+          grid.innerHTML = '<span style="color:var(--muted);font-size:13px">「履歴から学習」を実行してください</span>';
+        } else {
+          grid.innerHTML = p.top_tags.map(t => `
+            <span class="pf-rec-tag" onclick="pfInsertTag('${escHtml(t.tag)}')">
+              ${escHtml(t.tag)} <span class="pf-rec-cnt">${t.count}</span>
+            </span>`).join('');
+        }
+      }
+
+      // スタイルルール
+      const rulesList = document.getElementById('pf-rules-list');
+      if (rulesList) {
+        rulesList.innerHTML = p.style_rules.length
+          ? p.style_rules.map(r => `
+            <div class="pf-rule">
+              <div class="pf-rule-header">
+                <span class="pf-rule-name">${escHtml(r.name)}</span>
+                <button style="font-size:11px;padding:2px 8px;background:#e74c3c;color:#fff;border:none;border-radius:4px;cursor:pointer"
+                  onclick="pfDeleteRule('${escHtml(r.id)}')">削除</button>
+              </div>
+              ${r.always_include.length ? `<div class="pf-rule-tags">✅ ${r.always_include.join(', ')}</div>` : ''}
+              ${r.always_exclude.length ? `<div class="pf-rule-tags">🚫 ${r.always_exclude.join(', ')}</div>` : ''}
+            </div>`).join('')
+          : '<div style="color:var(--muted);font-size:13px">スタイルルールなし</div>';
+      }
+    } catch(e) { toast('Profile 読み込み失敗: ' + e.message, true); }
+  }
+
+  async function pfLearn() {
+    const btn = document.querySelector('.pf-btn-primary');
+    if (btn) btn.innerHTML = '学習中… <span class="pf-spinner"></span>';
+    try {
+      const days = parseInt(document.getElementById('pf-trend-days')?.value || '30');
+      const r = await api('/profile/learn', {method:'POST', params:{limit:300, days}});
+      toast(`✅ 学習完了 — 新規:${r.learned}件 更新:${r.updated}件`);
+      await pfLoad();
+      await pfLoadTrend();
+    } catch(e) { toast('学習失敗: ' + e.message, true); }
+    finally { if (btn) btn.textContent = '🧠 履歴から学習'; }
+  }
+
+  async function pfLoadTrend() {
+    const days = parseInt(document.getElementById('pf-trend-days')?.value || '30');
+    try {
+      const res = await api('/profile/score-trend', {params:{days}});
+      pfDrawTrend(res.trends);
+    } catch(e) {
+      const svg = document.getElementById('pf-trend-svg');
+      if (svg) svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--muted)" font-size="13">データなし</text>';
+    }
+  }
+
+  function pfDrawTrend(trends) {
+    const svgEl = document.getElementById('pf-trend-svg');
+    if (!svgEl || !trends.length) {
+      if (svgEl) svgEl.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--muted)" font-size="13">データなし</text>';
+      return;
+    }
+    const W = svgEl.clientWidth || 500, H = svgEl.clientHeight || 120;
+    const PAD = {l:36, r:12, t:10, b:22};
+    const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
+    const scores = trends.map(t => t.avg_score);
+    const minS = Math.max(0, Math.min(...scores) - 10);
+    const maxS = Math.min(100, Math.max(...scores) + 10);
+    const scaleX = i => PAD.l + (i / (trends.length - 1 || 1)) * iW;
+    const scaleY = s => PAD.t + iH - ((s - minS) / (maxS - minS || 1)) * iH;
+
+    const pts = trends.map((t, i) => `${scaleX(i).toFixed(1)},${scaleY(t.avg_score).toFixed(1)}`).join(' ');
+    const area = `M${scaleX(0)},${scaleY(minS)} ` +
+      trends.map((t, i) => `L${scaleX(i)},${scaleY(t.avg_score)}`).join(' ') +
+      ` L${scaleX(trends.length-1)},${scaleY(minS)} Z`;
+
+    // Y軸ラベル
+    const yLabels = [minS, (minS+maxS)/2, maxS].map(v =>
+      `<text x="${PAD.l-4}" y="${scaleY(v)+4}" text-anchor="end" font-size="9" fill="var(--muted)">${v.toFixed(0)}</text>`
+    ).join('');
+
+    // X軸ラベル（最初・中間・最後）
+    const xIdx = [0, Math.floor(trends.length/2), trends.length-1];
+    const xLabels = xIdx.filter(i => trends[i]).map(i =>
+      `<text x="${scaleX(i)}" y="${H-4}" text-anchor="middle" font-size="9" fill="var(--muted)">${trends[i].date.slice(5)}</text>`
+    ).join('');
+
+    svgEl.innerHTML = `
+      <defs>
+        <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity=".25"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${area}" fill="url(#trendGrad)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+      ${trends.map((t,i) => `<circle cx="${scaleX(i)}" cy="${scaleY(t.avg_score)}" r="3" fill="var(--accent)">
+        <title>${t.date}: ${t.avg_score.toFixed(1)}点 (${t.entry_count}件)</title></circle>`).join('')}
+      ${yLabels}${xLabels}
+    `;
+  }
+
+  function pfInsertTag(tag) {
+    const ta = document.getElementById('tag-input') || document.querySelector('textarea');
+    if (!ta) { toast(tag + ' をコピーしました'); navigator.clipboard?.writeText(tag); return; }
+    const cur = ta.value.trim();
+    ta.value = cur ? cur + ', ' + tag : tag;
+    toast('✅ ' + tag + ' を追加しました');
+  }
+
+  function pfInsertAllRecs() {
+    const tags = [...document.querySelectorAll('.pf-rec-tag')]
+      .map(el => el.childNodes[0].textContent.trim()).filter(Boolean);
+    if (!tags.length) return;
+    const ta = document.getElementById('tag-input') || document.querySelector('textarea');
+    if (!ta) { navigator.clipboard?.writeText(tags.join(', ')); return; }
+    const cur = ta.value.trim();
+    ta.value = cur ? cur + ', ' + tags.join(', ') : tags.join(', ');
+    toast(`✅ ${tags.length}件を追加しました`);
+  }
+
+  async function pfReset() {
+    if (!confirm('プロファイルを完全にリセットしますか？\n学習データ・スタイルルール・タグ重みがすべて削除されます。')) return;
+    try {
+      await api('/profile/reset', {method:'DELETE'});
+      toast('✅ プロファイルをリセットしました');
+      await pfLoad();
+      await pfLoadTrend();
+    } catch(e) { toast('リセット失敗: ' + e.message, true); }
+  }
+
+  function pfToggleAddRule() {
+    const f = document.getElementById('pf-add-rule-form');
+    if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  }
+
+  async function pfAddRule() {
+    const id   = document.getElementById('pf-rule-id')?.value.trim();
+    const name = document.getElementById('pf-rule-name')?.value.trim();
+    const inc  = (document.getElementById('pf-rule-include')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+    const exc  = (document.getElementById('pf-rule-exclude')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+    if (!id || !name) { toast('ID と名前は必須です', true); return; }
+    try {
+      await api('/profile/rules', {method:'POST', body:{id, name, always_include:inc, always_exclude:exc}});
+      toast('✅ スタイルルールを追加しました');
+      pfToggleAddRule();
+      await pfLoad();
+    } catch(e) { toast('追加失敗: ' + e.message, true); }
+  }
+
+  async function pfDeleteRule(ruleId) {
+    if (!confirm('このスタイルルールを削除しますか？')) return;
+    try {
+      await api(`/profile/rules/${encodeURIComponent(ruleId)}`, {method:'DELETE'});
+      toast('✅ ルールを削除しました');
+      await pfLoad();
+    } catch(e) { toast('削除失敗: ' + e.message, true); }
+  }
+
+  </script>
 </body>
 </html>
