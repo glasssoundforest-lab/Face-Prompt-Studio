@@ -7,6 +7,7 @@ CLI 全サブコマンドが共有する Manager 群の初期化処理。
 from __future__ import annotations
 
 import sys
+import threading
 from pathlib import Path
 
 _ROOT = Path(__file__).parents[2]
@@ -16,6 +17,8 @@ _ADAPTERS = _ROOT / "fps-adapters"
 for _p in (str(_CORE), str(_ADAPTERS)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
+
+_template_manager_lock = threading.Lock()
 
 
 class CliContext:
@@ -40,6 +43,7 @@ class CliContext:
         self._optimizer_manager = None
         self._history_manager = None
         self._plugin_manager = None
+        self._template_manager = None  # ★v1.7
 
     @property
     def dictionary_manager(self):
@@ -150,3 +154,21 @@ class CliContext:
 
             self._plugin_manager = PluginManager()
         return self._plugin_manager
+
+    @property
+    def template_manager(self):
+        """
+        ★ v1.7 — TemplateManager プロパティ（負債4解消）。
+        初回アクセス時にスレッドセーフな遅延初期化を行う。
+        """
+        if self._template_manager is None:
+            with _template_manager_lock:
+                if self._template_manager is None:
+                    from template.manager import TemplateManager  # type: ignore[import]
+                    system_dir = self.data_root / "templates" / "system"
+                    tm = TemplateManager(
+                        system_dir=system_dir if system_dir.exists() else None
+                    )
+                    tm.load()
+                    self._template_manager = tm
+        return self._template_manager
