@@ -385,6 +385,34 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     .ac-cat{font-size:11px;color:var(--muted);margin-left:auto;}
     .ac-weight{font-size:11px;color:var(--accent);}
 
+    
+    /* ── v2.5 AI タブ ── */
+    #ai-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;}
+    #ai-panel.active{display:grid;grid-template-columns:1fr 1fr;gap:0;height:100%;}
+    .ai-sidebar{padding:16px;border-right:1px solid var(--border);overflow-y:auto;}
+    .ai-main{padding:16px;overflow-y:auto;}
+    .ai-section{margin-bottom:20px;}
+    .ai-section-title{font-size:0.85rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.05em;color:var(--muted);margin-bottom:10px;}
+    .ai-status-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;}
+    .ai-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .ai-status-ok{background:#2ecc71;}
+    .ai-status-ng{background:#555;}
+    .ai-tag-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+    .ai-tag-pill{padding:3px 9px;border-radius:12px;font-size:11px;
+      background:var(--bg-secondary);border:1px solid var(--border);cursor:pointer;}
+    .ai-tag-pill:hover{border-color:var(--accent);}
+    .ai-tag-score{font-size:10px;color:var(--muted);margin-left:3px;}
+    .ai-score-ring{width:64px;height:64px;flex-shrink:0;}
+    .ai-score-large{font-size:1.8rem;font-weight:700;text-align:center;}
+    .ai-inconsistency{background:color-mix(in srgb,#e74c3c 12%,var(--bg-secondary));
+      border:1px solid color-mix(in srgb,#e74c3c 30%,transparent);border-radius:7px;
+      padding:8px 12px;font-size:12px;margin-bottom:8px;}
+    .ai-lora-card{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:8px;padding:12px;margin-bottom:10px;}
+    .ai-lora-name{font-weight:700;font-size:13px;margin-bottom:4px;}
+    .ai-lora-trigger{font-size:12px;color:var(--accent);margin-bottom:6px;}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -500,6 +528,7 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="backup" onclick="showTab('backup')">Backup</button>
     <div id="ws-indicator"><div class="ws-dot" id="ws-dot"></div><span id="ws-label">WS 未接続</span></div>
     <button class="nav-btn" data-tab="profile" onclick="showTab('profile')">Profile</button>
+    <button class="nav-btn" data-tab="ai" onclick="showTab('ai')">AI</button>
     <button class="nav-btn" data-tab="batch" onclick="showTab('batch')">Batch</button>
     <button class="nav-btn" data-tab="community" onclick="showTab('community')">Community</button>
     <button class="nav-btn" data-tab="user" onclick="showTab('user')">User</button>
@@ -673,6 +702,76 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     </div>
 
 
+
+
+    <!-- v2.5 AI Panel -->
+    <div id="ai-panel">
+      <div class="ai-sidebar">
+        <!-- AI ステータス -->
+        <div class="ai-section">
+          <div class="ai-section-title">🤖 AI タガー状態</div>
+          <div id="ai-status-list">
+            <div class="ai-status-row"><div class="ai-status-dot ai-status-ng"></div>読み込み中…</div>
+          </div>
+          <button class="pf-btn pf-btn-secondary" style="width:auto;padding:5px 12px;font-size:12px;margin-top:8px"
+            onclick="aiLoadStatus()">🔄 更新</button>
+        </div>
+        <!-- タグ提案 -->
+        <div class="ai-section">
+          <div class="ai-section-title">✨ AI タグ提案</div>
+          <select id="ai-tagger-model" style="width:100%;padding:6px 9px;border:1px solid var(--border);
+            border-radius:6px;background:var(--bg-secondary);color:var(--text);font-size:12px;margin-bottom:6px;">
+            <option value="dictionary">辞書ベース（常に利用可）</option>
+            <option value="wd14">WD14 Tagger</option>
+            <option value="joycaption">JoyCaption</option>
+            <option value="florence2">Florence2</option>
+          </select>
+          <input id="ai-image-url" placeholder="画像 URL（省略時は辞書提案）"
+            style="width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-secondary);color:var(--text);font-size:12px;box-sizing:border-box;margin-bottom:6px;" />
+          <button class="pf-btn pf-btn-primary" style="width:100%;padding:7px" onclick="aiGetTags()">提案を取得</button>
+          <div id="ai-tag-results" class="ai-tag-grid" style="margin-top:8px;"></div>
+        </div>
+        <!-- Negative 推奨 -->
+        <div class="ai-section">
+          <div class="ai-section-title">🚫 ネガティブ推奨</div>
+          <button class="pf-btn pf-btn-secondary" style="width:100%;padding:6px;font-size:12px"
+            onclick="aiNegLearn()">🧠 履歴から学習</button>
+          <button class="pf-btn pf-btn-secondary" style="width:100%;padding:6px;font-size:12px;margin-top:4px"
+            onclick="aiNegSuggest()">📋 ネガティブ候補を表示</button>
+          <div id="ai-neg-results" class="ai-tag-grid" style="margin-top:8px;"></div>
+        </div>
+      </div>
+      <div class="ai-main">
+        <!-- LoRA アナライザー -->
+        <div class="ai-section">
+          <div class="ai-section-title">🔍 LoRA アナライザー</div>
+          <input id="ai-lora-path" placeholder="/path/to/lora.safetensors"
+            style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-secondary);color:var(--text);font-size:12px;box-sizing:border-box;margin-bottom:6px;" />
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <button class="pf-btn pf-btn-primary" style="width:auto;padding:6px 14px"
+              onclick="aiAnalyzeLora()">分析</button>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;">
+              <input type="checkbox" id="ai-lora-register"> 辞書に登録
+            </label>
+          </div>
+          <div id="ai-lora-result"></div>
+        </div>
+        <!-- 一貫性チェック -->
+        <div class="ai-section">
+          <div class="ai-section-title">🔄 スタイル一貫性チェック</div>
+          <textarea id="ai-consistency-input" rows="5"
+            placeholder="1行に1プロンプト:&#10;masterpiece, 1girl, blue_eyes, blonde_hair&#10;masterpiece, 1girl, blue_eyes, black_hair"
+            style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+            background:var(--bg-secondary);color:var(--text);font-size:12px;resize:vertical;
+            box-sizing:border-box;"></textarea>
+          <button class="pf-btn pf-btn-primary" style="width:auto;padding:7px 16px;margin-top:8px"
+            onclick="aiCheckConsistency()">✓ 一貫性チェック</button>
+          <div id="ai-consistency-result" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- v2.4 Batch Panel -->
     <div id="batch-panel">
@@ -2642,6 +2741,183 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
       if (ta) initTagAutocomplete(ta);
     }, 800);
   });
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v2.5 — AI タブ
+  // ══════════════════════════════════════════════════════════════
+
+  async function aiLoadStatus() {
+    try {
+      const s = await api('/ai/status');
+      const el = document.getElementById('ai-status-list');
+      if (!el) return;
+      const models = [
+        { key: 'wd14',        label: 'WD14 Tagger', ok: s.wd14_available },
+        { key: 'joycaption',  label: 'JoyCaption',  ok: s.joycaption_available },
+        { key: 'florence2',   label: 'Florence2',   ok: s.florence2_available },
+        { key: 'dictionary',  label: '辞書ベース',   ok: true },
+      ];
+      el.innerHTML = models.map(m => `
+        <div class="ai-status-row">
+          <div class="ai-status-dot ${m.ok ? 'ai-status-ok' : 'ai-status-ng'}"></div>
+          <span>${m.label}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--muted)">${m.ok ? '利用可' : '未起動'}</span>
+        </div>`).join('');
+    } catch(e) { console.warn('aiLoadStatus:', e); }
+  }
+
+  async function aiGetTags() {
+    const model    = document.getElementById('ai-tagger-model')?.value || 'dictionary';
+    const imageUrl = document.getElementById('ai-image-url')?.value.trim() || '';
+    const ta       = document.getElementById('tag-input') || document.querySelector('textarea');
+    const current  = ta ? ta.value.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const el       = document.getElementById('ai-tag-results');
+    if (el) el.innerHTML = '<span style="color:var(--muted);font-size:12px">取得中…</span>';
+    try {
+      const res = await api('/ai/tag', {
+        method: 'POST',
+        body: { model, image_url: imageUrl || null, current_tags: current, n: 25 },
+      });
+      if (!el) return;
+      if (!res.tags?.length) {
+        el.innerHTML = '<span style="color:var(--muted);font-size:12px">提案なし（先に学習を実行してください）</span>';
+        return;
+      }
+      el.innerHTML = res.tags.map(t => `
+        <span class="ai-tag-pill" onclick="aiInsertTag('${escHtml(t.tag)}')">
+          ${escHtml(t.tag)}<span class="ai-tag-score">${t.score.toFixed(2)}</span>
+        </span>`).join('');
+      toast(`✅ ${res.tags.length}件の提案を取得（${res.source}）`);
+    } catch(e) {
+      if (el) el.innerHTML = `<span style="color:#e74c3c;font-size:12px">${escHtml(e.message)}</span>`;
+    }
+  }
+
+  function aiInsertTag(tag) {
+    const ta = document.getElementById('tag-input') || document.querySelector('textarea');
+    if (!ta) { navigator.clipboard?.writeText(tag); return; }
+    const cur = ta.value.trim();
+    ta.value = cur ? cur + ', ' + tag : tag;
+    toast(`✅ "${tag}" を追加しました`);
+  }
+
+  async function aiNegLearn() {
+    try {
+      const res = await api('/ai/negative-learn', { method: 'POST' });
+      toast(`✅ ネガティブ学習完了 — neg:${res.neg_learned} avoid:${res.avoid_learned}`);
+    } catch(e) { toast('学習失敗: ' + e.message, true); }
+  }
+
+  async function aiNegSuggest() {
+    const el = document.getElementById('ai-neg-results');
+    try {
+      const res = await api('/ai/negative-suggest', { params: { n: 20 } });
+      if (!el) return;
+      if (!res.suggestions?.length) {
+        el.innerHTML = '<span style="color:var(--muted);font-size:12px">まず「履歴から学習」を実行してください</span>';
+        return;
+      }
+      el.innerHTML = res.suggestions.map(t => `
+        <span class="ai-tag-pill" style="border-color:#e74c3c55;color:#e74c3c"
+          onclick="aiInsertNeg('${escHtml(t.tag)}')">
+          ${escHtml(t.tag)}<span class="ai-tag-score">${t.priority.toFixed(0)}</span>
+        </span>`).join('');
+    } catch(e) {
+      if (el) el.innerHTML = `<span style="color:#e74c3c;font-size:12px">${escHtml(e.message)}</span>`;
+    }
+  }
+
+  function aiInsertNeg(tag) {
+    const negEl = document.getElementById('output-neg') ||
+                  document.querySelector('[placeholder*="ネガティブ"]');
+    if (!negEl) { navigator.clipboard?.writeText(tag); return; }
+    const cur = negEl.value.trim();
+    negEl.value = cur ? cur + ', ' + tag : tag;
+    toast(`🚫 "${tag}" をネガティブに追加しました`);
+  }
+
+  async function aiAnalyzeLora() {
+    const path = document.getElementById('ai-lora-path')?.value.trim();
+    const reg  = document.getElementById('ai-lora-register')?.checked || false;
+    const el   = document.getElementById('ai-lora-result');
+    if (!path) { toast('LoRA ファイルパスを入力してください', true); return; }
+    if (el) el.innerHTML = '<span style="color:var(--muted);font-size:12px">分析中…</span>';
+    try {
+      const res = await api('/lora/analyze', {
+        method: 'POST',
+        body: { file_path: path, register_to_dict: reg }
+      });
+      if (!el) return;
+      if (!res.success) {
+        el.innerHTML = `<div style="color:#e74c3c;font-size:12px">❌ ${escHtml(res.error)}</div>`;
+        return;
+      }
+      el.innerHTML = `
+        <div class="ai-lora-card">
+          <div class="ai-lora-name">📦 ${escHtml(res.file_name)}</div>
+          ${res.model_name ? `<div style="font-size:12px;color:var(--muted)">${escHtml(res.model_name)}</div>` : ''}
+          ${res.base_model ? `<div style="font-size:11px;color:var(--muted)">Base: ${escHtml(res.base_model)}</div>` : ''}
+          <div class="ai-lora-trigger">🏷 トリガー: ${res.trigger_words.length
+            ? res.trigger_words.map(t => `<span class="ai-tag-pill" onclick="aiInsertTag('${escHtml(t)}')">${escHtml(t)}</span>`).join(' ')
+            : 'なし'}</div>
+          <div style="font-size:12px;color:var(--muted)">タグ候補: ${res.total_tags}件
+            ${reg && res.registered ? ` | 辞書登録: ${res.registered}件` : ''}</div>
+          <div class="ai-tag-grid" style="margin-top:6px">
+            ${res.tag_candidates.slice(0, 20).map(c =>
+              `<span class="ai-tag-pill" onclick="aiInsertTag('${escHtml(c.tag)}')"
+                title="${c.source} (${c.confidence.toFixed(2)})">${escHtml(c.tag)}</span>`
+            ).join('')}
+          </div>
+        </div>`;
+      toast(`✅ LoRA 分析完了: ${res.total_tags}件のタグ候補`);
+    } catch(e) {
+      if (el) el.innerHTML = `<div style="color:#e74c3c;font-size:12px">❌ ${escHtml(e.message)}</div>`;
+    }
+  }
+
+  async function aiCheckConsistency() {
+    const text    = document.getElementById('ai-consistency-input')?.value || '';
+    const prompts = text.split('\n').map(s => s.trim()).filter(Boolean);
+    const el      = document.getElementById('ai-consistency-result');
+    if (prompts.length < 2) { toast('2件以上のプロンプトを入力してください', true); return; }
+    if (el) el.innerHTML = '<span style="color:var(--muted)">チェック中…</span>';
+    try {
+      const res = await api('/consistency/check', { method: 'POST', body: { prompts } });
+      const score = res.overall_score;
+      const col   = score >= 80 ? '#2ecc71' : score >= 60 ? '#f39c12' : '#e74c3c';
+      if (!el) return;
+      el.innerHTML = `
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+          <div style="text-align:center;">
+            <div class="ai-score-large" style="color:${col}">${score.toFixed(0)}</div>
+            <div style="font-size:11px;color:var(--muted)">一貫性スコア</div>
+          </div>
+          <div style="flex:1">
+            ${res.recommendations.map(r =>
+              `<div style="font-size:12px;padding:3px 0">${score < 80 ? '⚠ ' : '✅ '}${escHtml(r)}</div>`
+            ).join('')}
+          </div>
+        </div>
+        ${res.inconsistent_tags?.length ? `
+          <div class="ai-inconsistency">
+            <strong>矛盾するタグ:</strong> ${res.inconsistent_tags.map(t => escHtml(t)).join(', ')}
+          </div>` : ''}
+        <div style="font-size:12px;color:var(--muted)">
+          共通タグ: ${res.common_tags?.length || 0}件 /
+          要注意: ${res.missing_tags?.length || 0}件
+        </div>`;
+    } catch(e) {
+      if (el) el.innerHTML = `<div style="color:#e74c3c">${escHtml(e.message)}</div>`;
+    }
+  }
+
+  // showTab に ai 追加
+  const _origShowTabV25 = showTab;
+  function showTab(tab) {
+    _origShowTabV25(tab);
+    if (tab === 'ai') aiLoadStatus();
+  }
 
   </script>
 </body>
