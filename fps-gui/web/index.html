@@ -413,6 +413,34 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     .ai-lora-name{font-weight:700;font-size:13px;margin-bottom:4px;}
     .ai-lora-trigger{font-size:12px;color:var(--accent);margin-bottom:6px;}
 
+    
+    /* ── v2.6 Wildcard タブ ── */
+    #wildcard-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;}
+    #wildcard-panel.active{display:grid;grid-template-columns:280px 1fr;gap:0;height:100%;}
+    .wc-sidebar{padding:14px;border-right:1px solid var(--border);overflow-y:auto;}
+    .wc-main{padding:16px;overflow-y:auto;}
+    .wc-list-item{padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;
+      display:flex;align-items:center;gap:8px;font-size:13px;}
+    .wc-list-item:hover{background:var(--bg-secondary);}
+    .wc-list-item.selected{background:color-mix(in srgb,var(--accent) 12%,transparent);}
+    .wc-count{font-size:11px;color:var(--muted);margin-left:auto;}
+    .wc-section{margin-bottom:18px;}
+    .wc-section-title{font-size:0.85rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.05em;color:var(--muted);margin-bottom:8px;}
+    .wc-values-list{max-height:200px;overflow-y:auto;background:var(--bg-secondary);
+      border:1px solid var(--border);border-radius:7px;padding:8px;}
+    .wc-value-row{display:flex;align-items:center;gap:6px;padding:3px 0;
+      border-bottom:1px solid var(--border);font-size:12px;}
+    .wc-value-row:last-child{border:none;}
+    .wc-value-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .wc-value-weight{font-size:11px;color:var(--muted);width:28px;text-align:right;}
+    .wc-expand-result{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:8px;padding:10px;margin-top:8px;font-size:13px;white-space:pre-wrap;}
+    .wc-variant{padding:4px 0;border-bottom:1px solid var(--border);font-size:12px;}
+    .wc-variant:last-child{border:none;}
+    .wc-syntax-ref{font-size:11px;color:var(--muted);background:var(--bg-secondary);
+      border:1px solid var(--border);border-radius:6px;padding:8px;font-family:monospace;line-height:1.8;}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -528,6 +556,7 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="backup" onclick="showTab('backup')">Backup</button>
     <div id="ws-indicator"><div class="ws-dot" id="ws-dot"></div><span id="ws-label">WS 未接続</span></div>
     <button class="nav-btn" data-tab="profile" onclick="showTab('profile')">Profile</button>
+    <button class="nav-btn" data-tab="wildcard" onclick="showTab('wildcard')">Wildcard</button>
     <button class="nav-btn" data-tab="ai" onclick="showTab('ai')">AI</button>
     <button class="nav-btn" data-tab="batch" onclick="showTab('batch')">Batch</button>
     <button class="nav-btn" data-tab="community" onclick="showTab('community')">Community</button>
@@ -703,6 +732,84 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
 
 
 
+
+
+    <!-- v2.6 Wildcard Panel -->
+    <div id="wildcard-panel">
+      <div class="wc-sidebar">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span style="font-weight:700;font-size:0.9rem">🎲 Wildcards</span>
+          <button class="pf-btn pf-btn-secondary" style="width:auto;padding:3px 8px;font-size:11px;margin-left:auto"
+            onclick="wcLoad()">🔄</button>
+          <button class="pf-btn pf-btn-primary" style="width:auto;padding:3px 8px;font-size:11px"
+            onclick="wcShowCreate()">＋ 新規</button>
+        </div>
+        <div id="wc-list"></div>
+      </div>
+      <div class="wc-main">
+        <!-- 展開プレビュー -->
+        <div class="wc-section">
+          <div class="wc-section-title">✨ 展開プレビュー</div>
+          <textarea id="wc-preview-input" rows="3"
+            placeholder="__style__, [[anime|realistic]] art, {{quality:masterpiece}}"
+            style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;
+            background:var(--bg-secondary);color:var(--text);font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>
+          <div style="display:flex;gap:8px;margin-top:6px;align-items:center;">
+            <button class="pf-btn pf-btn-primary" style="width:auto;padding:7px 14px" onclick="wcExpand()">展開</button>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;">
+              件数: <input id="wc-expand-n" type="number" value="5" min="1" max="10"
+                style="width:44px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;
+                background:var(--bg-secondary);color:var(--text);font-size:12px;" />
+            </label>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;">
+              Seed: <input id="wc-seed" type="number" value="-1"
+                style="width:68px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;
+                background:var(--bg-secondary);color:var(--text);font-size:12px;" />
+            </label>
+          </div>
+          <div id="wc-expand-results"></div>
+        </div>
+        <!-- 選択中 Wildcard の詳細 -->
+        <div class="wc-section" id="wc-detail" style="display:none;">
+          <div class="wc-section-title" id="wc-detail-title">Wildcard 詳細</div>
+          <div id="wc-values-list" class="wc-values-list"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="pf-btn pf-btn-secondary" style="width:auto;padding:5px 10px;font-size:12px"
+              onclick="wcCopyRef()">📋 __name__ をコピー</button>
+            <button class="pf-btn pf-btn-danger" style="width:auto;padding:5px 10px;font-size:12px"
+              onclick="wcDeleteCurrent()">削除</button>
+          </div>
+        </div>
+        <!-- 新規作成フォーム -->
+        <div class="wc-section" id="wc-create-form" style="display:none;">
+          <div class="wc-section-title">＋ 新規 Wildcard 作成</div>
+          <input id="wc-new-name" placeholder="名前（英数字/_）"
+            style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-secondary);color:var(--text);font-size:13px;box-sizing:border-box;margin-bottom:6px;" />
+          <textarea id="wc-new-values" rows="5" placeholder="1行に1値&#10;anime_style&#10;photorealistic&#10;oil_painting"
+            style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-secondary);color:var(--text);font-size:12px;resize:vertical;box-sizing:border-box;margin-bottom:6px;"></textarea>
+          <input id="wc-new-desc" placeholder="説明（省略可）"
+            style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-secondary);color:var(--text);font-size:12px;box-sizing:border-box;margin-bottom:8px;" />
+          <div style="display:flex;gap:8px;">
+            <button class="pf-btn pf-btn-primary" style="width:auto;padding:6px 14px" onclick="wcCreate()">作成</button>
+            <button class="pf-btn pf-btn-secondary" style="width:auto;padding:6px 14px"
+              onclick="document.getElementById('wc-create-form').style.display='none'">キャンセル</button>
+          </div>
+        </div>
+        <!-- 構文リファレンス -->
+        <div class="wc-section">
+          <div class="wc-section-title">📖 構文リファレンス</div>
+          <div class="wc-syntax-ref">__name__              → Wildcard からランダム選択
+[[A|B|C]]             → インラインランダム選択
+[[A|B|C]]:2           → 2件ランダム選択
+[[A:2|B:1|C:3]]       → 重み付きランダム選択
+{{var:default}}       → 変数展開
+{A|B|C}               → A1111 互換ランダム</div>
+        </div>
+      </div>
+    </div>
 
     <!-- v2.5 AI Panel -->
     <div id="ai-panel">
@@ -2917,6 +3024,142 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
   function showTab(tab) {
     _origShowTabV25(tab);
     if (tab === 'ai') aiLoadStatus();
+  }
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v2.6 — Wildcard タブ
+  // ══════════════════════════════════════════════════════════════
+
+  let _wcSelected = null;
+
+  async function wcLoad() {
+    try {
+      const res = await api('/wildcards');
+      const el  = document.getElementById('wc-list');
+      if (!el) return;
+      if (!res.wildcards?.length) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:10px">Wildcard がありません。＋ 新規から作成してください。</div>';
+        return;
+      }
+      el.innerHTML = res.wildcards.map(wf => `
+        <div class="wc-list-item" onclick="wcSelect('${escHtml(wf.name)}')">
+          <span>🎲 ${escHtml(wf.name)}</span>
+          <span class="wc-count">${wf.entry_count}件</span>
+        </div>`).join('');
+    } catch(e) { console.warn('wcLoad:', e); }
+  }
+
+  async function wcSelect(name) {
+    _wcSelected = name;
+    // アクティブ表示
+    document.querySelectorAll('.wc-list-item').forEach(el => {
+      el.classList.toggle('selected', el.textContent.includes(name));
+    });
+    try {
+      const wf = await api(`/wildcards/${encodeURIComponent(name)}`);
+      const detail = document.getElementById('wc-detail');
+      const title  = document.getElementById('wc-detail-title');
+      const list   = document.getElementById('wc-values-list');
+      if (detail) detail.style.display = 'block';
+      if (title)  title.textContent = `🎲 ${wf.name}（${wf.entry_count}件）`;
+      if (list) {
+        list.innerHTML = wf.entries.map(e => `
+          <div class="wc-value-row">
+            <span class="wc-value-text">${escHtml(e.value)}</span>
+            <span class="wc-value-weight">×${e.weight.toFixed(1)}</span>
+          </div>`).join('') || '<div style="color:var(--muted)">エントリなし</div>';
+      }
+      // プレビュー入力に自動入力
+      const previewInput = document.getElementById('wc-preview-input');
+      if (previewInput && !previewInput.value) {
+        previewInput.value = `__${name}__`;
+      }
+    } catch(e) { console.warn('wcSelect:', e); }
+  }
+
+  async function wcExpand() {
+    const prompt = document.getElementById('wc-preview-input')?.value || '';
+    const n      = parseInt(document.getElementById('wc-expand-n')?.value || '5');
+    const seed   = parseInt(document.getElementById('wc-seed')?.value || '-1');
+    const el     = document.getElementById('wc-expand-results');
+    if (!prompt.trim()) { toast('プロンプトを入力してください', true); return; }
+    if (el) el.innerHTML = '<div style="color:var(--muted);font-size:12px">展開中…</div>';
+    try {
+      const res = await api('/wildcards/expand', {
+        method: 'POST',
+        body: { prompt, n, seed: seed >= 0 ? seed : null },
+      });
+      if (!el) return;
+      el.innerHTML = `<div class="wc-expand-result">${
+        res.expanded.map((v, i) => `<div class="wc-variant"><span style="color:var(--muted);font-size:11px">#${i+1}</span> ${escHtml(v)}
+          <button onclick="wcUseVariant('${escHtml(v)}')" style="font-size:10px;padding:1px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);cursor:pointer;margin-left:6px;">使用</button>
+          </div>`).join('')
+      }</div>`;
+      if (res.wildcards_used?.length) {
+        toast(`✅ 展開完了 (使用: ${res.wildcards_used.join(', ')})`);
+      } else {
+        toast(`✅ ${n}件展開しました`);
+      }
+    } catch(e) {
+      if (el) el.innerHTML = `<div style="color:#e74c3c;font-size:12px">${escHtml(e.message)}</div>`;
+    }
+  }
+
+  function wcUseVariant(text) {
+    const ta = document.getElementById('tag-input') || document.querySelector('textarea:not(#wc-preview-input):not(#wc-new-values)');
+    if (!ta) { navigator.clipboard?.writeText(text); return; }
+    ta.value = text;
+    showTab('editor');
+    toast('✅ エディタにコピーしました');
+  }
+
+  function wcShowCreate() {
+    const f = document.getElementById('wc-create-form');
+    if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  }
+
+  async function wcCreate() {
+    const name   = document.getElementById('wc-new-name')?.value.trim();
+    const values = (document.getElementById('wc-new-values')?.value || '').split('
+').map(s => s.trim()).filter(Boolean);
+    const desc   = document.getElementById('wc-new-desc')?.value.trim();
+    if (!name)          { toast('名前を入力してください', true); return; }
+    if (!values.length) { toast('値を入力してください', true); return; }
+    try {
+      await api('/wildcards', { method: 'POST', body: { name, values, description: desc } });
+      toast(`✅ "${name}" を作成しました（${values.length}件）`);
+      document.getElementById('wc-create-form').style.display = 'none';
+      document.getElementById('wc-new-name').value = '';
+      document.getElementById('wc-new-values').value = '';
+      await wcLoad();
+    } catch(e) { toast('作成失敗: ' + e.message, true); }
+  }
+
+  function wcCopyRef() {
+    if (!_wcSelected) return;
+    const ref = `__${_wcSelected}__`;
+    navigator.clipboard?.writeText(ref);
+    toast(`📋 "${ref}" をコピーしました`);
+  }
+
+  async function wcDeleteCurrent() {
+    if (!_wcSelected) return;
+    if (!confirm(`"${_wcSelected}" を削除しますか？`)) return;
+    try {
+      await api(`/wildcards/${encodeURIComponent(_wcSelected)}`, { method: 'DELETE' });
+      toast('✅ 削除しました');
+      _wcSelected = null;
+      document.getElementById('wc-detail').style.display = 'none';
+      await wcLoad();
+    } catch(e) { toast('削除失敗: ' + e.message, true); }
+  }
+
+  // showTab に wildcard 追加
+  const _origShowTabV26 = showTab;
+  function showTab(tab) {
+    _origShowTabV26(tab);
+    if (tab === 'wildcard') wcLoad();
   }
 
   </script>
