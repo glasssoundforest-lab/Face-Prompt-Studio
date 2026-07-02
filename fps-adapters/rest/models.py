@@ -474,3 +474,53 @@ if _PYDANTIC_AVAILABLE:
         apply_profile_default: bool | None = None
         recommendation_threshold: int | None = Field(default=None, ge=1, le=10)
 
+    # ── v2.2 高度検索 ────────────────────────────────────────────
+
+    class RelatedTagItem(BaseModel):
+        """関連タグ 1件"""
+        tag: str
+        score: float        # 関連度スコア（0.0〜1.0）
+        co_count: int = 0   # 同時出現回数
+        category: str = ""
+
+    class RelatedTagsResponse(BaseModel):
+        """GET /dictionary/related/{tag} レスポンス"""
+        tag: str
+        related: list[RelatedTagItem]
+        total: int
+
+    class HistorySearchResponse(BaseModel):
+        """GET /history/search レスポンス"""
+        entries: list[HistoryEntryResponse]
+        total: int
+        query: str = ""
+
+    # ── v2.2 プリセット v2 ───────────────────────────────────────
+
+    class SaveAsPresetRequest(BaseModel):
+        """POST /profile/save-as-preset リクエスト"""
+        preset_id: str = Field(..., min_length=1)
+        name: str = Field(..., min_length=1)
+        top_n: int = Field(default=20, ge=1, le=50)
+        category: str = "personal"
+        description: str = ""
+
+    class SaveAsPresetResponse(BaseModel):
+        """POST /profile/save-as-preset レスポンス"""
+        preset_id: str
+        name: str
+        tag_count: int
+        negative_tag_count: int
+        category: str
+
+    # ── v2.2 DB 統計 ─────────────────────────────────────────────
+
+    class StorageStatsResponse(BaseModel):
+        """GET /profile/storage レスポンス"""
+        storage: str          # "json" | "sqlite"
+        tag_frequency_count: int
+        tag_weight_count: int
+        style_rule_count: int
+        score_trend_count: int
+        db_path: str = ""
+
