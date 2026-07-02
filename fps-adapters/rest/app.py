@@ -103,6 +103,8 @@ from .models import (  # noqa: E402
     SetTagWeightRequest,
     AddStyleRuleRequest,
     ProfileResetResponse,
+    ProfileSettingsResponse,
+    ProfileSettingsUpdateRequest,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -111,7 +113,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.0.0",
+        version="2.1.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -136,6 +138,7 @@ if _FASTAPI_AVAILABLE:
         setup_event_bridge(ctx.event_bus)
 
     _ctx: CliContext | None = None
+    _compile_count: int = 0   # ★v2.1 compile 実行回数カウンター
 
     def get_context() -> CliContext:
         global _ctx
@@ -152,7 +155,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.0.0",
+            version="2.1.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -178,37 +181,120 @@ if _FASTAPI_AVAILABLE:
         return None
 
     @app.post("/compile", response_model=CompileResponse)
-    def compile_prompt(prompt: str, adapter: str | None = None) -> CompileResponse:
+    def compile_prompt(
+        prompt: str,
+        adapter: str | None = None,
+        apply_profile: bool = Query(
+            default=False,
+            description="★v2.1 プロファイル適用（除外タグ除去・追加タグ挿入）"),
+        negative_profile: bool = Query(
+            default=False,
+            description="★v2.1 スタイルルールの always_exclude をネガティブに追加"),
+    ) -> CompileResponse:
+        """
+        プロンプトをコンパイルして pos/neg テキストを返す。
+
+        apply_profile=true の場合:
+          1. スタイルルールの always_include を先頭に追加
+          2. 除外設定（weight=0.0 / always_exclude）のタグを pos から除去
+          3. always_exclude タグを neg に追加（negative_profile=true 時）
+        """
+        global _compile_count
         ctx = get_context()
+
+        # ── ★v2.1 Profile 適用（compile 前処理）────────────────
+        profile_applied = False
+        excluded_tags: list[str] = []
+        added_tags: list[str] = []
+
+        if apply_profile:
+            try:
+                upm = _get_upm()
+                original_tags = [t.strip() for t in prompt.split(",") if t.strip()]
+                applied_tags  = upm.apply_profile(original_tags)
+                excluded_tags = [t for t in original_tags if t not in applied_tags]
+                added_tags    = [t for t in applied_tags  if t not in original_tags]
+                # プロファイル適用済みのタグ文字列で再コンパイル
+                prompt = ", ".join(applied_tags)
+                profile_applied = True
+            except Exception:
+                pass  # プロファイル未設定時はスキップ
+
         result = ctx.pipeline_manager.compile(prompt)
+
+        # ── negative_profile: always_exclude を neg に追加 ───────
+        final_negative = result.negative
+        if negative_profile and apply_profile:
+            try:
+                upm = _get_upm()
+                p = upm.get_profile()
+                neg_adds: list[str] = []
+                for rule in p.style_rules:
+                    if rule.enabled:
+                        neg_adds.extend(rule.always_exclude)
+                if neg_adds:
+                    existing_neg = {t.strip() for t in final_negative.split(",") if t.strip()}
+                    new_neg_tags = [t for t in neg_adds if t not in existing_neg]
+                    if new_neg_tags:
+                        final_negative = (
+                            (final_negative.rstrip(", ") + ", " if final_negative.strip() else "")
+                            + ", ".join(new_neg_tags)
+                        )
+            except Exception:
+                pass
 
         adapter_output = None
         if adapter:
             adapter_output = _convert_with_adapter(result, adapter)
 
-        # v1.9: history に記録して WebSocket に emit
+        # ── v1.9: history 記録 + WS emit ────────────────────────
+        _compile_count += 1
+        auto_learned = False
         try:
             ctx.history_manager.record(
                 input_prompt=prompt,
                 output_prompt=result.prompt,
-                output_negative=result.negative,
+                output_negative=final_negative,
                 tag_count=result.tag_count,
                 overall_score=0.0,
             )
             ctx.event_bus.emit(
                 "history.recorded",
-                {"input": prompt, "output": result.prompt, "tag_count": result.tag_count},
+                {
+                    "input": prompt,
+                    "output": result.prompt,
+                    "negative": final_negative,
+                    "tag_count": result.tag_count,
+                    "profile_applied": profile_applied,
+                },
                 source="compile",
             )
+            # ── ★v2.1 自動学習チェック ──────────────────────────
+            upm = _get_upm()
+            if upm.should_auto_learn(_compile_count):
+                entries = ctx.history_manager.list_entries(limit=100)
+                upm.learn(entries)
+                upm.build_score_trends(entries, days=30)
+                ctx.event_bus.emit(
+                    "profile.auto_learned",
+                    {"compile_count": _compile_count, "entry_count": len(entries)},
+                    source="compile",
+                )
+                auto_learned = True
         except Exception:
             pass
+
         return CompileResponse(
             success=result.success,
             prompt=result.prompt,
-            negative=result.negative,
+            negative=final_negative,
             tag_count=result.tag_count,
             errors=result.errors,
             adapter_output=adapter_output,
+            profile_applied=profile_applied,
+            excluded_tags=excluded_tags,
+            added_tags=added_tags,
+            auto_learned=auto_learned,
         )
 
     # ── Optimize ─────────────────────────────────────────────
@@ -1070,7 +1156,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.0.0",
+            version="2.1.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1388,6 +1474,55 @@ if _FASTAPI_AVAILABLE:
             ws_manager.disconnect(websocket, "events")
         except Exception:
             ws_manager.disconnect(websocket, "events")
+
+    @app.get(
+        "/profile/settings",
+        response_model=ProfileSettingsResponse,
+        summary="Get profile settings",
+        tags=["profile"],
+    )
+    def get_profile_settings() -> ProfileSettingsResponse:
+        """
+        ★ v2.1 — プロファイル設定を返す。
+
+        auto_learn=true のとき、compile が auto_learn_interval 件ごとに
+        自動で学習を実行する。
+        apply_profile_default=true のとき、Web UI の apply_profile トグルが
+        デフォルトで ON になる。
+        """
+        upm = _get_upm()
+        s = upm.get_settings()
+        return ProfileSettingsResponse(
+            auto_learn=s.get("auto_learn", False),
+            auto_learn_interval=s.get("auto_learn_interval", 10),
+            apply_profile_default=s.get("apply_profile_default", False),
+            recommendation_threshold=s.get("recommendation_threshold", 2),
+            compile_count=_compile_count,
+        )
+
+    @app.put(
+        "/profile/settings",
+        response_model=ProfileSettingsResponse,
+        summary="Update profile settings",
+        tags=["profile"],
+    )
+    def update_profile_settings(body: ProfileSettingsUpdateRequest) -> ProfileSettingsResponse:
+        """
+        ★ v2.1 — プロファイル設定を更新する。None のフィールドは変更しない。
+        """
+        upm = _get_upm()
+        current = upm.get_settings()
+        patch = {k: v for k, v in body.model_dump().items() if v is not None}
+        merged = {**current, **patch}
+        saved = upm.save_settings(merged)
+        return ProfileSettingsResponse(
+            auto_learn=saved.get("auto_learn", False),
+            auto_learn_interval=saved.get("auto_learn_interval", 10),
+            apply_profile_default=saved.get("apply_profile_default", False),
+            recommendation_threshold=saved.get("recommendation_threshold", 2),
+            compile_count=_compile_count,
+        )
+
 
     @app.get(
         "/ws/stats",
