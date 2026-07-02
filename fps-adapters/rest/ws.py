@@ -194,6 +194,7 @@ def setup_event_bridge(event_bus: Any) -> None:
         "backup.created", "backup.restored", "backup.failed",
         "history.recorded", "history.deleted",
         "optimizer.analyzed",
+        "profile.auto_learned",
     ]
     for et in all_event_types:
         try:
