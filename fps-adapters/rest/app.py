@@ -137,6 +137,12 @@ from .models import (  # noqa: E402
     ProfileImportResponse,
     PresetVersionItem,
     PresetVersionsResponse,
+    CharacterFeatureItem,
+    CharacterCreateRequest,
+    CharacterUpdateRequest,
+    CharacterResponse,
+    CharacterListResponse,
+    CharacterToPresetRequest,
     RestoreVersionResponse,
     LoraAnalyzeRequest,
     LoraAnalyzeResponse,
@@ -1406,6 +1412,138 @@ if _FASTAPI_AVAILABLE:
 
 
 
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.7 キャラクターシート（/characters）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_cm():
+        """CharacterManager を CliContext 経由で取得する"""
+        return get_context().character_manager
+
+    def _char_to_response(char: Any) -> CharacterResponse:
+        return CharacterResponse(
+            id=char.id, name=char.name, description=char.description,
+            features=[CharacterFeatureItem(tag=f.tag, weight=f.weight,
+                       category=f.category, note=f.note) for f in char.features],
+            neg_features=[CharacterFeatureItem(tag=f.tag, weight=f.weight,
+                           category=f.category, note=f.note) for f in char.neg_features],
+            tags=char.tags,
+            pos_prompt=char.to_pos_prompt(),
+            neg_prompt=char.to_neg_prompt(),
+            feature_count=len(char.features),
+            created_at=char.created_at, updated_at=char.updated_at,
+        )
+
+    @app.get(
+        "/characters",
+        response_model=CharacterListResponse,
+        summary="List all characters",
+        tags=["characters"],
+    )
+    def list_characters() -> CharacterListResponse:
+        """★ v2.7 — キャラクターシート一覧を返す。"""
+        cm = _get_cm()
+        chars = cm.list_all()
+        return CharacterListResponse(
+            characters=[_char_to_response(c) for c in chars],
+            total=len(chars), stats=cm.statistics(),
+        )
+
+    @app.post(
+        "/characters",
+        response_model=CharacterResponse,
+        status_code=201,
+        summary="Create a character",
+        tags=["characters"],
+    )
+    def create_character(body: CharacterCreateRequest) -> CharacterResponse:
+        """★ v2.7 — キャラクターシートを新規作成する。"""
+        cm = _get_cm()
+        char = cm.create(
+            id=body.id, name=body.name, description=body.description,
+            features=[f.model_dump() for f in body.features],
+            neg_features=[f.model_dump() for f in body.neg_features],
+            tags=body.tags,
+        )
+        return _char_to_response(char)
+
+    @app.get(
+        "/characters/{character_id}",
+        response_model=CharacterResponse,
+        summary="Get a character",
+        tags=["characters"],
+    )
+    def get_character(character_id: str) -> CharacterResponse:
+        """★ v2.7 — 指定キャラクターを取得する。"""
+        cm   = _get_cm()
+        char = cm.get(character_id)
+        if char is None:
+            raise HTTPException(status_code=404,
+                                detail=f"Character '{character_id}' not found")
+        return _char_to_response(char)
+
+    @app.put(
+        "/characters/{character_id}",
+        response_model=CharacterResponse,
+        summary="Update a character",
+        tags=["characters"],
+    )
+    def update_character(
+        character_id: str, body: CharacterUpdateRequest
+    ) -> CharacterResponse:
+        """★ v2.7 — キャラクターシートを部分更新する。"""
+        cm   = _get_cm()
+        char = cm.update(
+            character_id,
+            name=body.name, description=body.description,
+            features=[f.model_dump() for f in body.features] if body.features else None,
+            neg_features=[f.model_dump() for f in body.neg_features] if body.neg_features else None,
+            tags=body.tags,
+        )
+        if char is None:
+            raise HTTPException(status_code=404,
+                                detail=f"Character '{character_id}' not found")
+        return _char_to_response(char)
+
+    @app.delete(
+        "/characters/{character_id}",
+        summary="Delete a character",
+        tags=["characters"],
+    )
+    def delete_character(character_id: str) -> dict:
+        """★ v2.7 — キャラクターシートを削除する。"""
+        cm = _get_cm()
+        if not cm.delete(character_id):
+            raise HTTPException(status_code=404,
+                                detail=f"Character '{character_id}' not found")
+        return {"id": character_id, "deleted": True}
+
+    @app.post(
+        "/characters/{character_id}/to-preset",
+        response_model=None,
+        status_code=201,
+        summary="Convert character to preset",
+        tags=["characters"],
+    )
+    def character_to_preset(
+        character_id: str, body: CharacterToPresetRequest
+    ) -> dict:
+        """★ v2.7 — キャラクターシートをプリセットに変換して保存する。"""
+        ctx  = get_context()
+        cm   = _get_cm()
+        preset = cm.to_preset(character_id, ctx.preset_manager,
+                              preset_id=body.preset_id)
+        if preset is None:
+            raise HTTPException(status_code=404,
+                                detail=f"Character '{character_id}' not found")
+        return {
+            "preset_id":  preset.id,
+            "name":       preset.name,
+            "tag_count":  len(preset.tags),
+        }
 
 
     # ══════════════════════════════════════════════════════════════
