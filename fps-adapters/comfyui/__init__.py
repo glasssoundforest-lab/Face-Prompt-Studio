@@ -68,6 +68,9 @@ except Exception as e:
 FacePromptAITaggerNode = _safe_import("face_prompt_tagger", "FacePromptAITaggerNode")
 
 # Character ノード（v2.7）
+FacePromptExportNode       = _safe_import("face_prompt_export",  "FacePromptExportNode")
+FacePromptSessionSaveNode  = _safe_import("face_prompt_session", "FacePromptSessionSaveNode")
+FacePromptSessionLoadNode  = _safe_import("face_prompt_session", "FacePromptSessionLoadNode")
 FacePromptCharacterNode = _safe_import("face_prompt_character", "FacePromptCharacterNode")
 
 # ── NODE_CLASS_MAPPINGS — None のエントリを除外して登録 ──────────────
@@ -92,6 +95,9 @@ _all_nodes = {
     "FacePromptConsistency":    FacePromptConsistencyNode,
     "FacePromptWildcard":       FacePromptWildcardNode,
     "FacePromptCharacter":      FacePromptCharacterNode,
+    "FacePromptExport":         FacePromptExportNode,
+    "FacePromptSessionSave":    FacePromptSessionSaveNode,
+    "FacePromptSessionLoad":    FacePromptSessionLoadNode,
 }
 
 NODE_CLASS_MAPPINGS = {k: v for k, v in _all_nodes.items() if v is not None}
@@ -117,6 +123,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptConsistency":    "🎭 Face Prompt Consistency Checker",
     "FacePromptWildcard":       "🎭 Face Prompt Wildcard",
     "FacePromptCharacter":      "🎭 Face Prompt Character",
+    "FacePromptExport":         "🎭 Face Prompt Export",
+    "FacePromptSessionSave":    "🎭 Face Prompt Session Save",
+    "FacePromptSessionLoad":    "🎭 Face Prompt Session Load",
 }
 # ロードできなかったノードは表示名からも除外
 NODE_DISPLAY_NAME_MAPPINGS = {
