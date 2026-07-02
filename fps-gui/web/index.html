@@ -253,6 +253,50 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     .pf-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);
                 border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-left:6px;}
 
+    
+    /* ── v2.1 apply_profile トグル ── */
+    .pf-toggle-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;
+      background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:8px;margin-bottom:10px;font-size:13px;}
+    .pf-toggle-bar label{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;}
+    .toggle-switch{position:relative;width:38px;height:20px;flex-shrink:0;}
+    .toggle-switch input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:20px;
+      cursor:pointer;transition:.3s;}
+    .toggle-slider:before{content:"";position:absolute;height:14px;width:14px;left:3px;
+      bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+    input:checked + .toggle-slider{background:var(--accent);}
+    input:checked + .toggle-slider:before{transform:translateX(18px);}
+    .pf-badge{font-size:10px;padding:1px 7px;border-radius:8px;font-weight:600;}
+    .pf-badge-on{background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);}
+    .pf-badge-off{background:var(--border);color:var(--muted);}
+
+    /* ── v2.1 compile 結果パネル ── */
+    #compile-profile-info{display:none;margin-top:8px;padding:8px 12px;font-size:12px;
+      background:color-mix(in srgb,var(--accent) 8%,var(--bg-secondary));
+      border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:7px;}
+    .pf-tag-pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;margin:2px;}
+    .pf-tag-added{background:color-mix(in srgb,#2ecc71 20%,transparent);color:#2ecc71;}
+    .pf-tag-excluded{background:color-mix(in srgb,#e74c3c 20%,transparent);color:#e74c3c;}
+
+    /* ── v2.1 重みスライダー ── */
+    .pf-weight-slider-row{display:flex;align-items:center;gap:8px;
+      padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+    .pf-weight-slider-tag{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .pf-weight-slider{flex:0 0 100px;accent-color:var(--accent);}
+    .pf-weight-num{width:30px;text-align:right;font-weight:700;color:var(--accent);}
+    .pf-weight-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:0 4px;}
+    .pf-weight-del:hover{color:#e74c3c;}
+    .pf-weight-add-row{display:flex;gap:6px;margin-top:8px;}
+    .pf-weight-add-row input{flex:1;padding:5px 8px;border:1px solid var(--border);
+      border-radius:5px;background:var(--bg);color:var(--text);font-size:12px;}
+
+    /* ── v2.1 自動学習バナー ── */
+    .auto-learn-banner{position:fixed;top:44px;left:50%;transform:translateX(-50%);
+      background:var(--accent);color:#fff;padding:6px 18px;border-radius:0 0 10px 10px;
+      font-size:12px;font-weight:600;z-index:9997;opacity:0;transition:opacity .3s;pointer-events:none;}
+    .auto-learn-banner.show{opacity:1;}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -391,7 +435,7 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
         <span class="score-val" id="score-val">—</span>
       </div>
       <div class="action-bar">
-        <button class="btn-primary" id="compile-btn" onclick="compile()">Compile</button>
+        <button class="btn-primary" id="compile-btn" style="margin-top:4px" onclick="compile()">Compile</button>
         <select class="adapter-select" id="adapter-sel">
           <option value="">no adapter</option>
           <option value="comfyui">ComfyUI</option>
@@ -492,7 +536,47 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
           <div class="pf-section-header">
             <span class="pf-section-title">⚖ タグ重み設定</span>
           </div>
-          <div id="pf-weights-list" style="max-height:200px;overflow-y:auto;"></div>
+          <div id="pf-weights-list" style="max-height:220px;overflow-y:auto;"></div>
+          <div class="pf-weight-add-row">
+            <input id="pf-new-tag" placeholder="タグ名…" />
+            <input id="pf-new-weight" type="number" placeholder="重み" value="0" min="0" max="3" step="0.1"
+              style="width:70px;" />
+            <button class="pf-btn pf-btn-secondary" style="width:auto;padding:5px 12px"
+              onclick="pfAddWeight()">追加</button>
+          </div>
+        </div>
+
+        <!-- apply_profile 設定 -->
+        <div class="pf-section">
+          <div class="pf-section-title" style="margin-bottom:10px">⚙ compile 統合設定</div>
+          <div class="pf-toggle-bar">
+            <label>
+              <span class="toggle-switch">
+                <input type="checkbox" id="pf-auto-learn-toggle" onchange="pfSaveSettings()">
+                <span class="toggle-slider"></span>
+              </span>
+              <span>自動学習モード</span>
+            </label>
+            <span id="pf-auto-learn-badge" class="pf-badge pf-badge-off">OFF</span>
+          </div>
+          <div class="pf-toggle-bar">
+            <label>
+              <span class="toggle-switch">
+                <input type="checkbox" id="pf-default-apply-toggle" onchange="pfSaveSettings()">
+                <span class="toggle-slider"></span>
+              </span>
+              <span>compile 時にデフォルトで Profile を適用</span>
+            </label>
+            <span id="pf-default-apply-badge" class="pf-badge pf-badge-off">OFF</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">
+            自動学習: compile
+            <input id="pf-learn-interval" type="number" value="10" min="1" max="100"
+              style="width:44px;padding:1px 4px;border:1px solid var(--border);
+              border-radius:4px;background:var(--bg);color:var(--text);font-size:11px;"
+              onchange="pfSaveSettings()">
+            件ごとに実行
+          </div>
         </div>
       </div>
     </div>
@@ -1657,6 +1741,258 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
       await pfLoad();
     } catch(e) { toast('削除失敗: ' + e.message, true); }
   }
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v2.1 — compile × Profile 統合
+  // ══════════════════════════════════════════════════════════════
+
+  // Editor タブ: apply_profile トグルを動的に挿入
+  function ensureProfileToggle() {
+    if (document.getElementById('apply-profile-toggle')) return;
+    const compileBtn = document.getElementById('compile-btn');
+    if (!compileBtn) return;
+    const bar = document.createElement('div');
+    bar.className = 'pf-toggle-bar';
+    bar.style.marginBottom = '8px';
+    bar.innerHTML = `
+      <label>
+        <span class="toggle-switch">
+          <input type="checkbox" id="apply-profile-toggle" onchange="onApplyProfileToggle(this)">
+          <span class="toggle-slider"></span>
+        </span>
+        <span>Profile を適用して compile</span>
+      </label>
+      <span id="apply-profile-badge" class="pf-badge pf-badge-off">OFF</span>
+      <label style="font-size:12px;display:flex;align-items:center;gap:4px;">
+        <input type="checkbox" id="negative-profile-toggle" style="accent-color:var(--accent)">
+        Neg にも反映
+      </label>`;
+    compileBtn.parentNode.insertBefore(bar, compileBtn);
+
+    // compile 結果情報パネル
+    const infoPanel = document.createElement('div');
+    infoPanel.id = 'compile-profile-info';
+    infoPanel.innerHTML = '<strong>Profile 適用結果:</strong> <span id="pf-info-text"></span>';
+    compileBtn.parentNode.insertBefore(infoPanel, compileBtn.nextSibling);
+  }
+
+  function onApplyProfileToggle(el) {
+    const badge = document.getElementById('apply-profile-badge');
+    if (badge) {
+      badge.textContent = el.checked ? 'ON' : 'OFF';
+      badge.className = 'pf-badge ' + (el.checked ? 'pf-badge-on' : 'pf-badge-off');
+    }
+  }
+
+  // ── compile 実行（v2.1 拡張版） ────────────────────────────
+  async function runCompile(prompt) {
+    const applyProfile  = document.getElementById('apply-profile-toggle')?.checked || false;
+    const negProfile    = document.getElementById('negative-profile-toggle')?.checked || false;
+    const params = new URLSearchParams({ prompt });
+    if (applyProfile)  params.append('apply_profile',  'true');
+    if (negProfile)    params.append('negative_profile', 'true');
+
+    const res = await fetch('/compile?' + params.toString(), { method: 'POST' });
+    const data = await res.json();
+
+    // compile 結果情報パネルを更新
+    const infoPanel = document.getElementById('compile-profile-info');
+    const infoText  = document.getElementById('pf-info-text');
+    if (infoPanel && infoText && applyProfile) {
+      infoPanel.style.display = 'block';
+      let html = '';
+      if (data.added_tags?.length)
+        html += '追加: ' + data.added_tags.map(t =>
+          `<span class="pf-tag-pill pf-tag-added">+${t}</span>`).join('') + ' ';
+      if (data.excluded_tags?.length)
+        html += '除外: ' + data.excluded_tags.map(t =>
+          `<span class="pf-tag-pill pf-tag-excluded">−${t}</span>`).join('');
+      infoText.innerHTML = html || 'プロファイル変更なし';
+    } else if (infoPanel) {
+      infoPanel.style.display = 'none';
+    }
+
+    return data;
+  }
+
+  // ── Profile タブ: 重みスライダー ────────────────────────────
+  async function pfLoadWeights() {
+    try {
+      const p = await api('/profile');
+      const el = document.getElementById('pf-weights-list');
+      if (!el) return;
+
+      // tag_frequencies から重みが設定されているもの + tag_weights を結合
+      const weightRes = await api('/profile');
+      // tag_weights は /profile に含まれないので settings から推定
+      // 代わりに tag_frequencies を使ってスライダーを表示
+      const tags = weightRes.top_tags || [];
+      if (!tags.length) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:12px">まず「履歴から学習」を実行してください</div>';
+        return;
+      }
+      el.innerHTML = tags.map(t => `
+        <div class="pf-weight-slider-row" id="pf-wrow-${CSS.escape(t.tag)}">
+          <span class="pf-weight-slider-tag" title="${escHtml(t.tag)}">${escHtml(t.tag)}</span>
+          <input type="range" class="pf-weight-slider" min="0" max="3" step="0.1"
+            value="1.0" id="pf-ws-${CSS.escape(t.tag)}"
+            oninput="pfUpdateWeightDisplay('${escHtml(t.tag)}', this.value)"
+            onchange="pfSetWeight('${escHtml(t.tag)}', this.value)" />
+          <span class="pf-weight-num" id="pf-wn-${CSS.escape(t.tag)}">1.0</span>
+          <button class="pf-weight-del" title="除外（weight=0）"
+            onclick="pfSetWeight('${escHtml(t.tag)}', 0)">🚫</button>
+        </div>`).join('');
+    } catch(e) { console.warn('pfLoadWeights:', e); }
+  }
+
+  function pfUpdateWeightDisplay(tag, val) {
+    const el = document.getElementById('pf-wn-' + CSS.escape(tag));
+    if (el) { el.textContent = parseFloat(val).toFixed(1);
+               el.style.color = val == 0 ? '#e74c3c' : 'var(--accent)'; }
+  }
+
+  async function pfSetWeight(tag, weight) {
+    pfUpdateWeightDisplay(tag, weight);
+    const slider = document.getElementById('pf-ws-' + CSS.escape(tag));
+    if (slider) slider.value = weight;
+    try {
+      await api(`/profile/tags/${encodeURIComponent(tag)}/weight`, {
+        method: 'PUT', body: { weight: parseFloat(weight), reason: 'manual' }
+      });
+      toast(weight == 0
+        ? `🚫 "${tag}" を除外設定しました`
+        : `⚖ "${tag}" の重みを ${parseFloat(weight).toFixed(1)} に設定しました`);
+    } catch(e) { toast('重み設定失敗: ' + e.message, true); }
+  }
+
+  async function pfAddWeight() {
+    const tag    = document.getElementById('pf-new-tag')?.value.trim();
+    const weight = parseFloat(document.getElementById('pf-new-weight')?.value || '0');
+    if (!tag) { toast('タグ名を入力してください', true); return; }
+    try {
+      await api(`/profile/tags/${encodeURIComponent(tag)}/weight`,
+        { method: 'PUT', body: { weight, reason: 'manual' } });
+      toast(`⚖ "${tag}" の重みを ${weight.toFixed(1)} に設定しました`);
+      document.getElementById('pf-new-tag').value = '';
+    } catch(e) { toast('設定失敗: ' + e.message, true); }
+  }
+
+  // ── Profile 設定（自動学習 on/off） ─────────────────────────
+  async function pfLoadSettings() {
+    try {
+      const s = await api('/profile/settings');
+      const alToggle = document.getElementById('pf-auto-learn-toggle');
+      const dToggle  = document.getElementById('pf-default-apply-toggle');
+      const alBadge  = document.getElementById('pf-auto-learn-badge');
+      const dBadge   = document.getElementById('pf-default-apply-badge');
+      const interval = document.getElementById('pf-learn-interval');
+      if (alToggle) alToggle.checked = s.auto_learn;
+      if (dToggle)  dToggle.checked  = s.apply_profile_default;
+      if (alBadge)  { alBadge.textContent = s.auto_learn ? 'ON' : 'OFF';
+                      alBadge.className = 'pf-badge ' + (s.auto_learn ? 'pf-badge-on' : 'pf-badge-off'); }
+      if (dBadge)   { dBadge.textContent = s.apply_profile_default ? 'ON' : 'OFF';
+                      dBadge.className = 'pf-badge ' + (s.apply_profile_default ? 'pf-badge-on' : 'pf-badge-off'); }
+      if (interval) interval.value = s.auto_learn_interval;
+
+      // Editor タブのデフォルトトグル状態を設定に合わせる
+      const applyToggle = document.getElementById('apply-profile-toggle');
+      if (applyToggle) applyToggle.checked = s.apply_profile_default;
+    } catch(e) { console.warn('pfLoadSettings:', e); }
+  }
+
+  async function pfSaveSettings() {
+    const s = {
+      auto_learn: document.getElementById('pf-auto-learn-toggle')?.checked || false,
+      apply_profile_default: document.getElementById('pf-default-apply-toggle')?.checked || false,
+      auto_learn_interval: parseInt(document.getElementById('pf-learn-interval')?.value || '10'),
+    };
+    const alBadge = document.getElementById('pf-auto-learn-badge');
+    const dBadge  = document.getElementById('pf-default-apply-badge');
+    if (alBadge) { alBadge.textContent = s.auto_learn ? 'ON' : 'OFF';
+                   alBadge.className = 'pf-badge ' + (s.auto_learn ? 'pf-badge-on' : 'pf-badge-off'); }
+    if (dBadge)  { dBadge.textContent = s.apply_profile_default ? 'ON' : 'OFF';
+                   dBadge.className = 'pf-badge ' + (s.apply_profile_default ? 'pf-badge-on' : 'pf-badge-off'); }
+    try {
+      await api('/profile/settings', { method: 'PUT', body: s });
+      toast(s.auto_learn
+        ? `🧠 自動学習 ON（${s.auto_learn_interval}件ごと）`
+        : '自動学習を無効にしました');
+    } catch(e) { toast('設定保存失敗: ' + e.message, true); }
+  }
+
+  // ── WS: auto_learned イベント受信 ───────────────────────────
+  const _origHandlePipelineEvent = typeof handlePipelineEvent === 'function'
+    ? handlePipelineEvent : null;
+
+  // history WS で auto_learned を受信したらバナーを表示してグラフ更新
+  const _wsHistoryOrigOnMessage = wsState?.history?.onmessage;
+  function handleHistoryWsMessage(msg) {
+    if (msg.type === 'profile.auto_learned') {
+      const banner = document.getElementById('auto-learn-banner');
+      if (banner) {
+        banner.classList.add('show');
+        setTimeout(() => banner.classList.remove('show'), 3000);
+      }
+      // Profile タブが表示中ならグラフを自動更新
+      const pfPanel = document.getElementById('profile-panel');
+      if (pfPanel?.classList.contains('active')) {
+        pfLoadTrend();
+      }
+    }
+  }
+
+  // ── Profile タブ表示時に設定・重みも読み込み ─────────────────
+  const _origPfLoad = pfLoad;
+  async function pfLoad() {
+    await _origPfLoad();
+    await pfLoadWeights();
+    await pfLoadSettings();
+  }
+
+  // ── Editor タブ表示時にトグルを挿入 ──────────────────────────
+  const _origShowTabV21 = showTab;
+  function showTab(tab) {
+    _origShowTabV21(tab);
+    if (tab === 'editor') {
+      setTimeout(ensureProfileToggle, 50);
+      pfLoadSettings();
+    }
+  }
+
+  // ── api ヘルパー（POST body / DELETE 対応） ──────────────────
+  // 既存の api() が GET のみの場合は拡張
+  if (typeof api !== 'function') {
+    window.api = async function(path, opts = {}) {
+      const { method = 'GET', body, params } = opts;
+      let url = path;
+      if (params) {
+        const p = new URLSearchParams(
+          Object.fromEntries(Object.entries(params).map(([k,v]) => [k, String(v)]))
+        );
+        url += '?' + p.toString();
+      }
+      const res = await fetch(url, {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || res.statusText);
+      }
+      if (res.status === 204) return null;
+      return res.json();
+    };
+  }
+
+  // 初期化: Editor タブのデフォルト設定を適用
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      ensureProfileToggle();
+      pfLoadSettings();
+    }, 600);
+  });
 
   </script>
 </body>
