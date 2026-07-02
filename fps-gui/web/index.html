@@ -441,6 +441,46 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     .wc-syntax-ref{font-size:11px;color:var(--muted);background:var(--bg-secondary);
       border:1px solid var(--border);border-radius:6px;padding:8px;font-family:monospace;line-height:1.8;}
 
+    
+    /* ── v2.8 エクスポートダイアログ ── */
+    .export-popup{position:fixed;inset:0;background:rgba(0,0,0,.5);
+      display:flex;align-items:center;justify-content:center;z-index:9990;}
+    .export-popup-inner{background:var(--bg);border:1px solid var(--border);
+      border-radius:12px;padding:20px;width:min(480px,92vw);}
+    .export-popup-inner h3{margin:0 0 12px;font-size:1rem;}
+    .export-fmt-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+    .export-fmt-btn{padding:9px 12px;border-radius:8px;border:1px solid var(--border);
+      background:var(--bg-secondary);cursor:pointer;font-size:13px;font-weight:600;
+      text-align:center;transition:all .15s;}
+    .export-fmt-btn:hover,.export-fmt-btn.selected{border-color:var(--accent);
+      background:color-mix(in srgb,var(--accent) 12%,var(--bg-secondary));}
+    .export-result-box{font-family:monospace;font-size:12px;background:var(--bg-secondary);
+      border:1px solid var(--border);border-radius:7px;padding:10px;
+      max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;
+      margin-top:10px;}
+
+    /* ── v2.8 セッションパネル ── */
+    #session-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;}
+    #session-panel.active{display:grid;grid-template-columns:260px 1fr;gap:0;height:100%;}
+    .sess-sidebar{padding:14px;border-right:1px solid var(--border);overflow-y:auto;}
+    .sess-main{padding:16px;overflow-y:auto;}
+    .sess-item{padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px;}
+    .sess-item:hover{background:var(--bg-secondary);}
+    .sess-item.selected{background:color-mix(in srgb,var(--accent) 12%,transparent);}
+    .sess-item-name{font-weight:600;}
+    .sess-item-meta{font-size:11px;color:var(--muted);}
+    .sess-pin{color:var(--accent);font-size:11px;margin-left:4px;}
+    .sess-entry{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;}
+    .sess-entry-header{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+    .sess-entry-score{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;
+      background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent);}
+    .sess-entry-prompt{color:var(--text);word-break:break-all;line-height:1.5;}
+    .sess-diff-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+    .sess-diff-only-a{color:#e74c3c;font-size:12px;}
+    .sess-diff-only-b{color:#2ecc71;font-size:12px;}
+    .sess-diff-common{color:var(--muted);font-size:12px;}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -556,6 +596,7 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="backup" onclick="showTab('backup')">Backup</button>
     <div id="ws-indicator"><div class="ws-dot" id="ws-dot"></div><span id="ws-label">WS 未接続</span></div>
     <button class="nav-btn" data-tab="profile" onclick="showTab('profile')">Profile</button>
+    <button class="nav-btn" data-tab="session" onclick="showTab('session')">Session</button>
     <button class="nav-btn" data-tab="wildcard" onclick="showTab('wildcard')">Wildcard</button>
     <button class="nav-btn" data-tab="ai" onclick="showTab('ai')">AI</button>
     <button class="nav-btn" data-tab="batch" onclick="showTab('batch')">Batch</button>
@@ -733,6 +774,72 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
 
 
 
+
+
+    <!-- v2.8 Session Panel -->
+    <div id="session-panel">
+      <div class="sess-sidebar">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span style="font-weight:700;font-size:0.9rem">💾 Sessions</span>
+          <button class="pf-btn pf-btn-primary" style="width:auto;padding:3px 8px;font-size:11px;margin-left:auto"
+            onclick="sessCreate()">＋ 新規</button>
+          <button class="pf-btn pf-btn-secondary" style="width:auto;padding:3px 8px;font-size:11px"
+            onclick="sessLoad()">🔄</button>
+        </div>
+        <div id="sess-list"></div>
+      </div>
+      <div class="sess-main">
+        <div id="sess-detail" style="display:none;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span id="sess-detail-name" style="font-weight:700;font-size:1rem;"></span>
+            <button class="pf-btn pf-btn-secondary" style="width:auto;padding:4px 10px;font-size:12px"
+              onclick="sessTogglePin()">📌 ピン</button>
+            <button class="pf-btn pf-btn-danger" style="width:auto;padding:4px 10px;font-size:12px"
+              onclick="sessDelete()">削除</button>
+          </div>
+          <!-- エントリ追加 -->
+          <div class="pf-section">
+            <div class="pf-section-title">➕ エントリを追加</div>
+            <textarea id="sess-add-pos" rows="2" placeholder="ポジティブプロンプト"
+              style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;
+              background:var(--bg-secondary);color:var(--text);font-size:12px;resize:vertical;box-sizing:border-box;margin-bottom:5px;"></textarea>
+            <div style="display:flex;gap:6px;margin-bottom:5px;">
+              <input id="sess-add-label" placeholder="ラベル"
+                style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:5px;
+                background:var(--bg-secondary);color:var(--text);font-size:12px;" />
+              <input id="sess-add-score" type="number" placeholder="スコア" value="0" min="0" max="100" step="0.1"
+                style="width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:5px;
+                background:var(--bg-secondary);color:var(--text);font-size:12px;" />
+              <button class="pf-btn pf-btn-primary" style="width:auto;padding:5px 12px" onclick="sessAddEntry()">追加</button>
+            </div>
+          </div>
+          <!-- エントリ一覧 -->
+          <div class="pf-section">
+            <div class="pf-section-title">📋 エントリ一覧</div>
+            <div id="sess-entries"></div>
+          </div>
+          <!-- 差分比較 -->
+          <div class="pf-section" id="sess-compare-section" style="display:none;">
+            <div class="pf-section-title">🔍 差分比較</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px;">
+              <span>Entry #</span>
+              <input id="sess-cmp-a" type="number" value="0" min="0"
+                style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;
+                background:var(--bg-secondary);color:var(--text);font-size:12px;" />
+              <span>vs #</span>
+              <input id="sess-cmp-b" type="number" value="1" min="0"
+                style="width:50px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;
+                background:var(--bg-secondary);color:var(--text);font-size:12px;" />
+              <button class="pf-btn pf-btn-secondary" style="width:auto;padding:5px 12px" onclick="sessCompare()">比較</button>
+            </div>
+            <div id="sess-compare-result"></div>
+          </div>
+        </div>
+        <div id="sess-empty" style="color:var(--muted);font-size:13px;padding:20px 0">
+          セッションを選択するか「＋ 新規」で作成してください。
+        </div>
+      </div>
+    </div>
 
     <!-- v2.6 Wildcard Panel -->
     <div id="wildcard-panel">
@@ -3161,6 +3268,261 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
     _origShowTabV26(tab);
     if (tab === 'wildcard') wcLoad();
   }
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v2.8 — エクスポートダイアログ
+  // ══════════════════════════════════════════════════════════════
+
+  function openExportDialog(pos, neg) {
+    const popup = document.createElement('div');
+    popup.className = 'export-popup'; popup.id = 'export-popup';
+    const fmts = [
+      { id:'a1111',  label:'🖥 A1111 WebUI', desc:'テキスト形式（Steps/CFG付き）' },
+      { id:'novelai',label:'📱 NovelAI',     desc:'JSON形式（{{強調}}変換）' },
+      { id:'json',   label:'📄 JSON',        desc:'FPS ネイティブ形式' },
+      { id:'yaml',   label:'📋 YAML',        desc:'人間可読テキスト形式' },
+    ];
+    popup.innerHTML = `
+      <div class="export-popup-inner">
+        <h3>📤 プロンプトをエクスポート</h3>
+        <div class="export-fmt-grid">
+          ${fmts.map(f => `
+            <div class="export-fmt-btn" data-fmt="${f.id}" onclick="exportSelectFmt(this)">
+              ${f.label}<br><span style="font-size:10px;color:var(--muted);font-weight:400">${f.desc}</span>
+            </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button class="pf-btn pf-btn-primary" style="flex:1" onclick="doExport('${escHtml(pos)}','${escHtml(neg)}')">エクスポート</button>
+          <button class="pf-btn pf-btn-secondary" onclick="doBundleExport('${escHtml(pos)}','${escHtml(neg)}')">📦 一括ZIP</button>
+          <button class="pf-btn pf-btn-secondary" onclick="closeExportDialog()">✕</button>
+        </div>
+        <div id="export-result-box" class="export-result-box" style="display:none;"></div>
+      </div>`;
+    document.body.appendChild(popup);
+    exportSelectFmt(popup.querySelector('.export-fmt-btn'));
+  }
+
+  function closeExportDialog() {
+    document.getElementById('export-popup')?.remove();
+  }
+
+  let _exportFmt = 'a1111';
+  function exportSelectFmt(el) {
+    document.querySelectorAll('.export-fmt-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    _exportFmt = el.dataset.fmt;
+  }
+
+  async function doExport(pos, neg) {
+    const boxEl = document.getElementById('export-result-box');
+    try {
+      const res = await api(`/export/${_exportFmt}`, {
+        method: 'POST',
+        body: { pos, neg, label: 'export', steps: 20, cfg: 7, width: 512, height: 512 },
+      });
+      if (boxEl) {
+        boxEl.style.display = 'block';
+        boxEl.textContent = res.content;
+      }
+      navigator.clipboard?.writeText(res.content);
+      toast(`✅ ${res.filename} をクリップボードにコピーしました`);
+    } catch(e) {
+      if (boxEl) { boxEl.style.display = 'block'; boxEl.textContent = 'エラー: ' + e.message; }
+    }
+  }
+
+  async function doBundleExport(pos, neg) {
+    try {
+      const res = await fetch('/export/bundle', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ pos, neg, label: 'fps_export' }),
+      });
+      if (!res.ok) throw new Error(res.statusText);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'fps_export_bundle.zip';
+      a.click();
+      toast('✅ Bundle ZIP をダウンロードしました');
+    } catch(e) { toast('Bundle エクスポート失敗: ' + e.message, true); }
+  }
+
+  // ── エディタにエクスポートボタンを注入 ──
+  function ensureExportBtn() {
+    if (document.getElementById('export-dialog-btn')) return;
+    const compileBtn = document.getElementById('compile-btn');
+    if (!compileBtn) return;
+    const btn = document.createElement('button');
+    btn.id = 'export-dialog-btn';
+    btn.className = 'pf-btn pf-btn-secondary';
+    btn.style.cssText = 'width:auto;padding:7px 14px;margin-left:6px';
+    btn.textContent = '📤 Export';
+    btn.onclick = () => {
+      const pos = document.getElementById('output-pos')?.value || '';
+      const neg = document.getElementById('output-neg')?.value || '';
+      if (!pos.trim()) { toast('先にコンパイルしてください', true); return; }
+      openExportDialog(pos, neg);
+    };
+    compileBtn.parentNode.appendChild(btn);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // v2.8 — セッション管理
+  // ══════════════════════════════════════════════════════════════
+
+  let _sessSelected = null;
+
+  async function sessLoad() {
+    try {
+      const res = await api('/sessions');
+      const el  = document.getElementById('sess-list');
+      if (!el) return;
+      if (!res.sessions?.length) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">セッションなし</div>';
+        return;
+      }
+      el.innerHTML = res.sessions.map(s => `
+        <div class="sess-item" onclick="sessSelect('${escHtml(s.id)}')">
+          <div class="sess-item-name">${escHtml(s.name)}${s.is_pinned ? '<span class="sess-pin">📌</span>' : ''}</div>
+          <div class="sess-item-meta">${s.entry_count}件 · ${s.updated_at?.slice(0,10)}</div>
+        </div>`).join('');
+    } catch(e) { console.warn('sessLoad:', e); }
+  }
+
+  async function sessSelect(id) {
+    _sessSelected = id;
+    document.querySelectorAll('.sess-item').forEach(el =>
+      el.classList.toggle('selected', el.onclick?.toString().includes(id)));
+    try {
+      const s = await api(`/sessions/${id}`);
+      document.getElementById('sess-empty').style.display  = 'none';
+      document.getElementById('sess-detail').style.display = 'block';
+      document.getElementById('sess-detail-name').textContent = s.name;
+      // エントリ一覧
+      const entries = document.getElementById('sess-entries');
+      if (entries) {
+        entries.innerHTML = !s.entries?.length
+          ? '<div style="color:var(--muted);font-size:12px">エントリなし</div>'
+          : s.entries.map(e => `
+            <div class="sess-entry">
+              <div class="sess-entry-header">
+                <span style="color:var(--muted);font-size:11px">#${e.index}</span>
+                <span>${escHtml(e.label)}</span>
+                <span class="sess-entry-score">${e.score.toFixed(1)}pt</span>
+                <button style="font-size:11px;padding:2px 8px;border:1px solid var(--border);
+                  border-radius:4px;background:var(--bg);cursor:pointer;margin-left:auto"
+                  onclick="sessUseEntry('${escHtml(e.pos)}','${escHtml(e.neg)}')">使用</button>
+              </div>
+              <div class="sess-entry-prompt">${escHtml(e.pos.slice(0,120))}${e.pos.length>120?'…':''}</div>
+            </div>`).join('');
+      }
+      if (s.entry_count >= 2)
+        document.getElementById('sess-compare-section').style.display = 'block';
+    } catch(e) { toast('セッション取得失敗: ' + e.message, true); }
+  }
+
+  async function sessCreate() {
+    const name = prompt('セッション名を入力してください:');
+    if (!name?.trim()) return;
+    try {
+      const s = await api('/sessions', { method: 'POST', body: { name: name.trim() } });
+      toast(`✅ セッション "${s.name}" を作成しました`);
+      await sessLoad();
+      sessSelect(s.id);
+    } catch(e) { toast('作成失敗: ' + e.message, true); }
+  }
+
+  async function sessTogglePin() {
+    if (!_sessSelected) return;
+    try {
+      const s = await api(`/sessions/${_sessSelected}`);
+      await api(`/sessions/${_sessSelected}`, {
+        method: 'PUT', body: { is_pinned: !s.is_pinned }
+      });
+      toast(s.is_pinned ? '📌 ピン留めを解除しました' : '📌 ピン留めしました');
+      await sessLoad();
+    } catch(e) { toast('ピン操作失敗: ' + e.message, true); }
+  }
+
+  async function sessDelete() {
+    if (!_sessSelected || !confirm('このセッションを削除しますか？')) return;
+    try {
+      await api(`/sessions/${_sessSelected}`, { method: 'DELETE' });
+      toast('✅ セッションを削除しました');
+      _sessSelected = null;
+      document.getElementById('sess-detail').style.display = 'none';
+      document.getElementById('sess-empty').style.display  = 'block';
+      await sessLoad();
+    } catch(e) { toast('削除失敗: ' + e.message, true); }
+  }
+
+  async function sessAddEntry() {
+    if (!_sessSelected) return;
+    const pos   = document.getElementById('sess-add-pos')?.value.trim();
+    const label = document.getElementById('sess-add-label')?.value.trim();
+    const score = parseFloat(document.getElementById('sess-add-score')?.value || '0');
+    if (!pos) { toast('プロンプトを入力してください', true); return; }
+    try {
+      await api(`/sessions/${_sessSelected}/entries`, {
+        method: 'POST', body: { pos, label: label || '', score }
+      });
+      toast(`✅ エントリを追加しました`);
+      document.getElementById('sess-add-pos').value   = '';
+      document.getElementById('sess-add-label').value = '';
+      await sessSelect(_sessSelected);
+    } catch(e) { toast('追加失敗: ' + e.message, true); }
+  }
+
+  function sessUseEntry(pos, neg) {
+    const posEl = document.getElementById('output-pos');
+    const negEl = document.getElementById('output-neg');
+    if (posEl) posEl.value = pos;
+    if (negEl) negEl.value = neg;
+    showTab('editor');
+    toast('✅ エディタに読み込みました');
+  }
+
+  async function sessCompare() {
+    if (!_sessSelected) return;
+    const a = parseInt(document.getElementById('sess-cmp-a')?.value || '0');
+    const b = parseInt(document.getElementById('sess-cmp-b')?.value || '1');
+    const el = document.getElementById('sess-compare-result');
+    try {
+      const res = await api(`/sessions/${_sessSelected}/compare/${a}/${b}`);
+      if (!el) return;
+      el.innerHTML = `
+        <div style="font-size:12px;margin-bottom:6px">
+          スコア差: <strong style="color:${res.score_diff>=0?'#2ecc71':'#e74c3c'}">
+          ${res.score_diff>=0?'+':''}${res.score_diff.toFixed(1)}</strong>
+        </div>
+        <div class="sess-diff-row">
+          <div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:4px">#${a} のみ</div>
+            <div class="sess-diff-only-a">${res.only_in_a.map(t=>escHtml(t)).join(', ') || '（なし）'}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;margin-bottom:4px">#${b} のみ</div>
+            <div class="sess-diff-only-b">${res.only_in_b.map(t=>escHtml(t)).join(', ') || '（なし）'}</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted)">
+          共通タグ (${res.common.length}件): ${res.common.slice(0,10).map(t=>escHtml(t)).join(', ')}${res.common.length>10?'…':''}
+        </div>`;
+    } catch(e) { if (el) el.innerHTML = '<div style="color:#e74c3c">'+escHtml(e.message)+'</div>'; }
+  }
+
+  const _origShowTabV28 = showTab;
+  function showTab(tab) {
+    _origShowTabV28(tab);
+    if (tab === 'session') sessLoad();
+    if (tab === 'editor') setTimeout(ensureExportBtn, 100);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(ensureExportBtn, 1000);
+  });
 
   </script>
 </body>
