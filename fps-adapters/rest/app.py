@@ -137,6 +137,15 @@ from .models import (  # noqa: E402
     ProfileImportResponse,
     PresetVersionItem,
     PresetVersionsResponse,
+    ExportRequest,
+    ExportResponse,
+    SessionCreateRequest,
+    SessionUpdateRequest,
+    SessionAddEntryRequest,
+    SessionEntryItem,
+    SessionResponse,
+    SessionListResponse,
+    SessionCompareResponse,
     CharacterFeatureItem,
     CharacterCreateRequest,
     CharacterUpdateRequest,
@@ -173,7 +182,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.7.0",
+        version="2.8.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -222,7 +231,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.7.0",
+            version="2.8.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1223,7 +1232,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.7.0",
+            version="2.8.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1413,6 +1422,231 @@ if _FASTAPI_AVAILABLE:
 
 
 
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.8 マルチフォーマット エクスポート（/export）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.post(
+        "/export/a1111",
+        response_model=ExportResponse,
+        summary="Export to Automatic1111 format",
+        tags=["export"],
+    )
+    def export_a1111(body: ExportRequest) -> ExportResponse:
+        """
+        ★ v2.8 — A1111 WebUI 互換テキスト形式でエクスポートする。
+
+        出力例:
+          masterpiece, 1girl, blue_eyes
+          Negative prompt: bad_quality, blurry
+          Steps: 20, Sampler: Euler a, CFG scale: 7, Size: 512x512
+        """
+        from export.exporters import A1111Exporter  # type: ignore
+        exporter = A1111Exporter(
+            steps=body.steps, sampler=body.sampler, cfg=body.cfg,
+            width=body.width, height=body.height,
+            model=body.model, seed=body.seed,
+        )
+        result = exporter.export(body.pos, body.neg, body.meta)
+        return ExportResponse(
+            format=result.format, content=result.content,
+            filename=result.filename, mime_type=result.mime_type,
+        )
+
+    @app.post(
+        "/export/novelai",
+        response_model=ExportResponse,
+        summary="Export to NovelAI format",
+        tags=["export"],
+    )
+    def export_novelai(body: ExportRequest) -> ExportResponse:
+        """
+        ★ v2.8 — NovelAI 互換 JSON 形式でエクスポートする。
+
+        A1111 の (tag:1.2) 記法を {{tag}} / [[tag]] に自動変換する。
+        """
+        from export.exporters import NovelAIExporter  # type: ignore
+        result = NovelAIExporter().export(body.pos, body.neg, body.meta)
+        return ExportResponse(
+            format=result.format, content=result.content,
+            filename=result.filename, mime_type=result.mime_type,
+        )
+
+    @app.post(
+        "/export/bundle",
+        summary="Export all formats as ZIP bundle",
+        tags=["export"],
+    )
+    def export_bundle(body: ExportRequest):
+        """
+        ★ v2.8 — 全形式（A1111/NovelAI/JSON/YAML/CSV）を ZIP で一括エクスポートする。
+        バイナリレスポンスとして返す。
+        """
+        from fastapi.responses import Response  # type: ignore
+        from export.exporters import BundleExporter  # type: ignore
+        result = BundleExporter().export(
+            body.pos, body.neg, body.meta, label=body.label
+        )
+        return Response(
+            content=result.content,
+            media_type="application/zip",
+            headers={"Content-Disposition": f"attachment; filename={result.filename}"},
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.8 セッション管理（/sessions）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_sm():
+        """SessionManager を CliContext 経由で取得する"""
+        return get_context().session_manager
+
+    def _session_to_response(
+        s: Any, include_entries: bool = False
+    ) -> SessionResponse:
+        return SessionResponse(
+            id=s.id, name=s.name, description=s.description,
+            tags=s.tags, entry_count=s.entry_count,
+            is_pinned=s.is_pinned,
+            created_at=s.created_at, updated_at=s.updated_at,
+            entries=[
+                SessionEntryItem(
+                    index=e.index, label=e.label,
+                    pos=e.pos, neg=e.neg,
+                    score=e.score, metadata=e.metadata,
+                    created_at=e.created_at,
+                )
+                for e in s.entries
+            ] if include_entries else [],
+        )
+
+    @app.get(
+        "/sessions",
+        response_model=SessionListResponse,
+        summary="List all sessions",
+        tags=["sessions"],
+    )
+    def list_sessions(
+        tag: str | None = Query(default=None, description="タグでフィルタ"),
+    ) -> SessionListResponse:
+        """★ v2.8 — セッション一覧（ピン留め優先、更新日時降順）。"""
+        sm = _get_sm()
+        sessions = sm.list_all(tag_filter=tag)
+        return SessionListResponse(
+            sessions=[_session_to_response(s) for s in sessions],
+            total=len(sessions), stats=sm.statistics(),
+        )
+
+    @app.post(
+        "/sessions",
+        response_model=SessionResponse,
+        status_code=201,
+        summary="Create a session",
+        tags=["sessions"],
+    )
+    def create_session(body: SessionCreateRequest) -> SessionResponse:
+        """★ v2.8 — 新しいセッションを作成する。"""
+        sm = _get_sm()
+        s  = sm.create(body.name, body.description, body.tags)
+        return _session_to_response(s)
+
+    @app.get(
+        "/sessions/{session_id}",
+        response_model=SessionResponse,
+        summary="Get a session with all entries",
+        tags=["sessions"],
+    )
+    def get_session(session_id: str) -> SessionResponse:
+        """★ v2.8 — セッションの全エントリを含む詳細を返す。"""
+        sm = _get_sm()
+        s  = sm.get(session_id)
+        if s is None:
+            raise HTTPException(status_code=404,
+                                detail=f"Session '{session_id}' not found")
+        return _session_to_response(s, include_entries=True)
+
+    @app.put(
+        "/sessions/{session_id}",
+        response_model=SessionResponse,
+        summary="Update a session",
+        tags=["sessions"],
+    )
+    def update_session(session_id: str,
+                       body: SessionUpdateRequest) -> SessionResponse:
+        """★ v2.8 — セッションのメタ情報を更新する（ピン留め/名前/タグ）。"""
+        sm = _get_sm()
+        s  = sm.update(session_id, body.name, body.description,
+                       body.tags, body.is_pinned)
+        if s is None:
+            raise HTTPException(status_code=404,
+                                detail=f"Session '{session_id}' not found")
+        return _session_to_response(s)
+
+    @app.delete(
+        "/sessions/{session_id}",
+        summary="Delete a session",
+        tags=["sessions"],
+    )
+    def delete_session(session_id: str) -> dict:
+        """★ v2.8 — セッションを削除する。"""
+        sm = _get_sm()
+        if not sm.delete(session_id):
+            raise HTTPException(status_code=404,
+                                detail=f"Session '{session_id}' not found")
+        return {"id": session_id, "deleted": True}
+
+    @app.post(
+        "/sessions/{session_id}/entries",
+        response_model=SessionEntryItem,
+        status_code=201,
+        summary="Add an entry to a session",
+        tags=["sessions"],
+    )
+    def add_session_entry(
+        session_id: str, body: SessionAddEntryRequest
+    ) -> SessionEntryItem:
+        """★ v2.8 — セッションにプロンプトエントリを追加する。"""
+        sm    = _get_sm()
+        entry = sm.add_entry(
+            session_id, body.pos, body.neg, body.label,
+            body.score, body.metadata,
+        )
+        if entry is None:
+            raise HTTPException(status_code=404,
+                                detail=f"Session '{session_id}' not found")
+        return SessionEntryItem(
+            index=entry.index, label=entry.label,
+            pos=entry.pos, neg=entry.neg,
+            score=entry.score, metadata=entry.metadata,
+            created_at=entry.created_at,
+        )
+
+    @app.get(
+        "/sessions/{session_id}/compare/{idx_a}/{idx_b}",
+        response_model=SessionCompareResponse,
+        summary="Compare two entries in a session",
+        tags=["sessions"],
+    )
+    def compare_session_entries(
+        session_id: str, idx_a: int, idx_b: int
+    ) -> SessionCompareResponse:
+        """
+        ★ v2.8 — セッション内の2エントリを比較する。
+
+        only_in_a: A にのみあるタグ
+        only_in_b: B にのみあるタグ
+        common:    両方にあるタグ
+        score_diff: B.score - A.score
+        """
+        sm     = _get_sm()
+        result = sm.compare(session_id, idx_a, idx_b)
+        if result is None:
+            raise HTTPException(status_code=404,
+                                detail="Session or entry not found")
+        return SessionCompareResponse(**result)
 
 
     # ══════════════════════════════════════════════════════════════
@@ -2227,7 +2461,7 @@ if _FASTAPI_AVAILABLE:
         stats   = upm.statistics()
         data = profile.to_dict()
         return ProfileExportResponse(
-            version="2.7.0",
+            version="2.8.0",
             exported_at=_dt.now().isoformat(),
             tag_frequency_count=stats.get("tag_frequency_count", 0),
             tag_weight_count=stats.get("tag_weight_count", 0),
