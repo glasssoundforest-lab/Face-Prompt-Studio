@@ -56,6 +56,9 @@ class CliContext:
         self._character_manager = None    # ★v2.7
         self._export_manager   = None    # ★v2.8
         self._session_manager  = None    # ★v2.8
+        self._translate_engine = None    # ★v2.9
+        self._chain_manager    = None    # ★v2.9
+        self._comfyui_client   = None    # ★v2.9
 
     @property
     def dictionary_manager(self):
@@ -305,6 +308,40 @@ class CliContext:
                 sessions_dir=self.data_root / "sessions"
             )
         return self._session_manager
+
+    @property
+    def translate_engine(self):
+        """★ v2.9 — TranslateEngine シングルトンプロパティ。"""
+        if self._translate_engine is None:
+            from translate.engine import TranslateEngine  # type: ignore
+            self._translate_engine = TranslateEngine(
+                dictionary_manager=self.dictionary_manager
+            )
+        return self._translate_engine
+
+    @property
+    def chain_manager(self):
+        """★ v2.9 — ChainManager シングルトンプロパティ。"""
+        if self._chain_manager is None:
+            from chain.manager import ChainManager  # type: ignore
+            self._chain_manager = ChainManager(
+                chains_dir=self.data_root / "chains"
+            )
+        return self._chain_manager
+
+    @property
+    def comfyui_client(self):
+        """★ v2.9 — ComfyUIClient シングルトンプロパティ。"""
+        if self._comfyui_client is None:
+            import sys
+            from pathlib import Path
+            _adp = str(Path(__file__).resolve().parents[1])
+            if _adp not in sys.path:
+                sys.path.insert(0, _adp)
+            from comfyui_api.client import ComfyUIClient  # type: ignore
+            self._comfyui_client = ComfyUIClient()
+        return self._comfyui_client
+
 
 
 
