@@ -1,0 +1,17 @@
+[project]
+name            = "fps-core"
+version         = "2.4.0"
+description     = "Face Prompt Studio Core Library — Pure Python, no adapter dependencies"
+requires-python = ">=3.11"
+dependencies    = []
+
+[project.optional-dependencies]
+yaml = ["pyyaml>=6.0"]
+dev  = ["pytest>=8.0", "pytest-cov>=5.0", "mypy>=1.10"]
+
+[build-system]
+requires      = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[tool.setuptools.packages.find]
+where = ["."]
