@@ -71,6 +71,7 @@ FacePromptAITaggerNode = _safe_import("face_prompt_tagger", "FacePromptAITaggerN
 FacePromptExportNode       = _safe_import("face_prompt_export",  "FacePromptExportNode")
 FacePromptSessionSaveNode  = _safe_import("face_prompt_session", "FacePromptSessionSaveNode")
 FacePromptSessionLoadNode  = _safe_import("face_prompt_session", "FacePromptSessionLoadNode")
+FacePromptTranslateNode = _safe_import("face_prompt_translate", "FacePromptTranslateNode")  # ★v2.9
 FacePromptCharacterNode = _safe_import("face_prompt_character", "FacePromptCharacterNode")
 
 # ── NODE_CLASS_MAPPINGS — None のエントリを除外して登録 ──────────────
@@ -95,6 +96,7 @@ _all_nodes = {
     "FacePromptConsistency":    FacePromptConsistencyNode,
     "FacePromptWildcard":       FacePromptWildcardNode,
     "FacePromptCharacter":      FacePromptCharacterNode,
+    "FacePromptTranslate":      FacePromptTranslateNode,
     "FacePromptExport":         FacePromptExportNode,
     "FacePromptSessionSave":    FacePromptSessionSaveNode,
     "FacePromptSessionLoad":    FacePromptSessionLoadNode,
@@ -123,6 +125,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptConsistency":    "🎭 Face Prompt Consistency Checker",
     "FacePromptWildcard":       "🎭 Face Prompt Wildcard",
     "FacePromptCharacter":      "🎭 Face Prompt Character",
+    "FacePromptTranslate":      "🎭 Face Prompt Translate",
     "FacePromptExport":         "🎭 Face Prompt Export",
     "FacePromptSessionSave":    "🎭 Face Prompt Session Save",
     "FacePromptSessionLoad":    "🎭 Face Prompt Session Load",
