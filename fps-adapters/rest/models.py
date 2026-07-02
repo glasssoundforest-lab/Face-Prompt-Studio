@@ -623,3 +623,107 @@ if _PYDANTIC_AVAILABLE:
         contributed: int
         message: str
 
+    # ── v2.4 バッチ処理 ─────────────────────────────────────────
+
+    class BatchCompileRequest(BaseModel):
+        """POST /batch/compile リクエスト"""
+        prompts: list[str] = Field(..., min_length=1, max_length=50)
+        apply_profile: bool = False
+        adapter: str | None = None
+
+    class BatchOptimizeRequest(BaseModel):
+        """POST /batch/optimize リクエスト"""
+        prompts: list[str] = Field(..., min_length=1, max_length=50)
+
+    class BatchItemResponse(BaseModel):
+        """バッチアイテム 1件レスポンス"""
+        index: int
+        input: str
+        prompt_out: str = ""
+        negative_out: str = ""
+        tag_count: int = 0
+        score: float = 0.0
+        issues: list[str] = []
+        error: str = ""
+        elapsed_ms: float = 0.0
+        success: bool = True
+
+    class BatchResultResponse(BaseModel):
+        """バッチ処理結果レスポンス"""
+        job_id: str
+        mode: str
+        total: int
+        succeeded: int
+        failed: int
+        avg_score: float = 0.0
+        avg_tag_count: float = 0.0
+        total_elapsed_ms: float
+        started_at: str
+        finished_at: str
+        items: list[BatchItemResponse]
+
+    # ── v2.4 タグ補完 ───────────────────────────────────────────
+
+    class AutocompleteItem(BaseModel):
+        key: str
+        resolved: str
+        category: str = ""
+        weight: float = 1.0
+
+    class AutocompleteResponse(BaseModel):
+        """GET /dictionary/autocomplete レスポンス"""
+        query: str
+        items: list[AutocompleteItem]
+        total: int
+
+    class SuggestResponse(BaseModel):
+        """GET /dictionary/suggest レスポンス"""
+        current_tags: list[str]
+        suggestions: list[AutocompleteItem]
+        total: int
+
+    # ── v2.4 プロファイル エクスポート/インポート ────────────────
+
+    class ProfileExportResponse(BaseModel):
+        """GET /profile/export レスポンス"""
+        version: str
+        exported_at: str
+        tag_frequency_count: int
+        tag_weight_count: int
+        style_rule_count: int
+        data: dict
+
+    class ProfileImportRequest(BaseModel):
+        """POST /profile/import リクエスト"""
+        data: dict
+        merge: bool = False  # True = 既存データにマージ / False = 上書き
+
+    class ProfileImportResponse(BaseModel):
+        imported_frequencies: int
+        imported_weights: int
+        imported_rules: int
+        merged: bool
+
+    # ── v2.4 プリセットバージョン管理 ────────────────────────────
+
+    class PresetVersionItem(BaseModel):
+        version_id: str
+        preset_id: str
+        created_at: str
+        label: str = ""
+        tag_count: int = 0
+        neg_count: int = 0
+
+    class PresetVersionsResponse(BaseModel):
+        """GET /presets/{id}/versions レスポンス"""
+        preset_id: str
+        versions: list[PresetVersionItem]
+        total: int
+
+    class RestoreVersionResponse(BaseModel):
+        """POST /presets/{id}/versions/{v}/restore レスポンス"""
+        preset_id: str
+        version_id: str
+        restored: bool
+        tag_count: int
+
