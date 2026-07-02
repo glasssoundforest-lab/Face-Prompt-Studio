@@ -47,6 +47,11 @@ class CliContext:
         self._template_manager = None  # ★v1.7
         self._event_bus = None            # ★v1.9
         self._user_profile_manager = None  # ★v2.0
+        self._user_manager = None         # ★v2.3
+        self._share_manager = None        # ★v2.3
+        self._batch_manager = None        # ★v2.4
+        self._preset_version_manager = None  # ★v2.4
+        self._ai_manager = None            # ★v2.5
 
     @property
     def dictionary_manager(self):
@@ -201,5 +206,65 @@ class CliContext:
             upm.load()
             self._user_profile_manager = upm
         return self._user_profile_manager
+
+    @property
+    def user_manager(self):
+        """★ v2.3 — UserManager シングルトンプロパティ。"""
+        if self._user_manager is None:
+            from user.auth import UserManager  # type: ignore[import]
+            um = UserManager(db_path=self.data_root / "user" / "users.db")
+            self._user_manager = um
+        return self._user_manager
+
+    @property
+    def share_manager(self):
+        """★ v2.3 — ShareManager シングルトンプロパティ。"""
+        if self._share_manager is None:
+            from user.share import ShareManager  # type: ignore[import]
+            sm = ShareManager(db_path=self.data_root / "user" / "share.db")
+            self._share_manager = sm
+        return self._share_manager
+
+    @property
+    def batch_manager(self):
+        """★ v2.4 — BatchManager シングルトンプロパティ。"""
+        if self._batch_manager is None:
+            from batch.manager import BatchManager  # type: ignore[import]
+            self._batch_manager = BatchManager(
+                pipeline_manager=self.pipeline_manager,
+                optimizer_manager=self.optimizer_manager,
+            )
+        return self._batch_manager
+
+    @property
+    def preset_version_manager(self):
+        """★ v2.4 — PresetVersionManager シングルトンプロパティ。"""
+        if self._preset_version_manager is None:
+            from preset.version_manager import PresetVersionManager  # type: ignore[import]
+            self._preset_version_manager = PresetVersionManager(
+                versions_dir=self.data_root / "presets" / "versions",
+                max_versions=20,
+            )
+        return self._preset_version_manager
+
+    @property
+    def ai_manager(self):
+        """★ v2.5 — AI マネージャー（LoRA/Tagger/Consistency/Negative）"""
+        if self._ai_manager is None:
+            from ai.lora_analyzer import LoraAnalyzer       # type: ignore
+            from ai.tagger_bridge import TaggerBridge        # type: ignore
+            from ai.consistency_checker import ConsistencyChecker  # type: ignore
+            from ai.negative_learner import NegativeLearner  # type: ignore
+            dm = self.dictionary_manager
+            self._ai_manager = {
+                "lora":        LoraAnalyzer(dictionary_manager=dm),
+                "tagger":      TaggerBridge(dictionary_manager=dm),
+                "consistency": ConsistencyChecker(dictionary_manager=dm),
+                "negative":    NegativeLearner(),
+            }
+        return self._ai_manager
+
+
+
 
 
