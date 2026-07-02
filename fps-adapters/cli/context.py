@@ -47,6 +47,8 @@ class CliContext:
         self._template_manager = None  # ★v1.7
         self._event_bus = None            # ★v1.9
         self._user_profile_manager = None  # ★v2.0
+        self._user_manager = None         # ★v2.3
+        self._share_manager = None        # ★v2.3
 
     @property
     def dictionary_manager(self):
@@ -201,5 +203,24 @@ class CliContext:
             upm.load()
             self._user_profile_manager = upm
         return self._user_profile_manager
+
+    @property
+    def user_manager(self):
+        """★ v2.3 — UserManager シングルトンプロパティ。"""
+        if self._user_manager is None:
+            from user.auth import UserManager  # type: ignore[import]
+            um = UserManager(db_path=self.data_root / "user" / "users.db")
+            self._user_manager = um
+        return self._user_manager
+
+    @property
+    def share_manager(self):
+        """★ v2.3 — ShareManager シングルトンプロパティ。"""
+        if self._share_manager is None:
+            from user.share import ShareManager  # type: ignore[import]
+            sm = ShareManager(db_path=self.data_root / "user" / "share.db")
+            self._share_manager = sm
+        return self._share_manager
+
 
 
