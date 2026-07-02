@@ -53,6 +53,7 @@ class CliContext:
         self._preset_version_manager = None  # ★v2.4
         self._ai_manager = None            # ★v2.5
         self._wildcard_manager = None     # ★v2.6
+        self._character_manager = None    # ★v2.7
 
     @property
     def dictionary_manager(self):
@@ -274,6 +275,17 @@ class CliContext:
                 wildcard_dir=self.data_root / "wildcards"
             )
         return self._wildcard_manager
+
+    @property
+    def character_manager(self):
+        """★ v2.7 — CharacterManager シングルトンプロパティ。"""
+        if self._character_manager is None:
+            from character.manager import CharacterManager  # type: ignore
+            self._character_manager = CharacterManager(
+                characters_dir=self.data_root / "characters"
+            )
+        return self._character_manager
+
 
 
 
