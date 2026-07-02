@@ -299,6 +299,137 @@ class UserProfileManager:
         with self._lock:
             return self._profile
 
+
+    # ══════════════════════════════════════════════════════════════
+    # ★ v2.2 — SQLite ストレージへの移行
+    # ══════════════════════════════════════════════════════════════
+
+    def use_sqlite(self, db_path: "Path | None" = None) -> "UserProfileManager":
+        """
+        SQLite モードに切り替える。
+
+        呼び出した後の learn() / set_tag_weight() などは
+        SQLite に直接書き込まれる（profile.json は使わない）。
+
+        Args:
+            db_path: SQLite ファイルパス（省略時は profile_dir/profile.db）
+        """
+        from .storage import SQLiteProfileStorage
+        path = Path(db_path) if db_path else self._dir / "profile.db"
+        self._sqlite = SQLiteProfileStorage(path)
+        # 既存 JSON データを SQLite に移行
+        self._migrate_json_to_sqlite()
+        return self
+
+    def _migrate_json_to_sqlite(self) -> None:
+        """profile.json の内容を SQLite に移行する（冪等）"""
+        if not hasattr(self, "_sqlite") or self._sqlite is None:
+            return
+        if not self._path.exists():
+            return
+        try:
+            with self._lock:
+                p = self._profile
+                for tag, freq in p.tag_frequencies.items():
+                    self._sqlite.upsert_tag_frequency(freq)
+                for tag, tw in p.tag_weights.items():
+                    self._sqlite.upsert_tag_weight(tw)
+                for rule in p.style_rules:
+                    self._sqlite.upsert_style_rule(rule)
+                for trend in p.score_trends:
+                    self._sqlite.upsert_score_trend(trend)
+                if p.last_learned:
+                    self._sqlite.set_meta("last_learned", p.last_learned.isoformat())
+                self._sqlite.set_meta("created_at", p.created_at.isoformat())
+        except Exception as e:
+            logger.warning("SQLite migration error: %s", e)
+
+    def _is_sqlite(self) -> bool:
+        return hasattr(self, "_sqlite") and self._sqlite is not None
+
+    def statistics(self) -> "dict[str, Any]":
+        """★v2.2: SQLite モード時は DB から統計を返す"""
+        if self._is_sqlite():
+            s = self._sqlite.stats()
+            excluded = [t for t, w in self._sqlite.get_all_weights().items() if w.weight == 0.0]
+            s["excluded_tag_count"] = len(excluded)
+            s["last_learned"] = self._sqlite.get_meta("last_learned") or None
+            s["storage"] = "sqlite"
+            return s
+        with self._lock:
+            p = self._profile
+            return {
+                "tag_frequency_count": len(p.tag_frequencies),
+                "tag_weight_count": len(p.tag_weights),
+                "excluded_tag_count": len(p.excluded_tags()),
+                "style_rule_count": len(p.style_rules),
+                "score_trend_count": len(p.score_trends),
+                "last_learned": p.last_learned.isoformat() if p.last_learned else None,
+                "storage": "json",
+            }
+
+    # ── ★ v2.2 — プリセット自動生成 ──────────────────────────────
+
+    def save_as_preset(
+        self,
+        preset_manager: "Any",
+        preset_id: str,
+        name: str,
+        top_n: int = 20,
+        category: str = "personal",
+        description: str = "",
+    ) -> "Any":
+        """
+        ★ v2.2 — プロファイルの推奨タグからプリセットを自動生成する。
+
+        Args:
+            preset_manager: PresetManager インスタンス
+            preset_id:      生成するプリセット ID
+            name:           プリセット名
+            top_n:          使用する推奨タグ件数
+            category:       プリセットカテゴリ
+            description:    プリセット説明
+
+        Returns:
+            生成された Preset オブジェクト
+        """
+        recs = self.recommend(top_n)
+        if not recs:
+            raise ValueError("推奨タグがありません。先に learn() を実行してください。")
+
+        p = self.get_profile()
+        excluded = p.excluded_tags()
+
+        # スタイルルールの always_include を先頭に追加
+        style_includes: list[str] = []
+        for rule in p.style_rules:
+            if rule.enabled:
+                style_includes.extend(rule.always_include)
+
+        include_tags = list(dict.fromkeys(style_includes + [e.tag for e in recs]))
+        exclude_tags = list(dict.fromkeys(excluded))
+
+        # PresetTag リストを生成
+        from preset.models import Preset, PresetSource, PresetTag  # type: ignore[import]
+
+        tags = [
+            PresetTag(tag=t, category="personal", weight=1.0)
+            for t in include_tags
+        ]
+        neg_tags = [
+            PresetTag(tag=t, category="personal", weight=1.0)
+            for t in exclude_tags
+        ]
+        preset = Preset(
+            id=preset_id, name=name,
+            description=description or f"プロファイルから自動生成（Top {top_n}タグ）",
+            tags=tags, negative_tags=neg_tags,
+            source=PresetSource.USER,
+        )
+        preset_manager.save(preset)
+        logger.info("Profile → Preset 生成: %s (%d tags)", preset_id, len(tags))
+        return preset
+
     def reset(self) -> None:
         """プロファイルを完全リセットする。"""
         with self._lock:
