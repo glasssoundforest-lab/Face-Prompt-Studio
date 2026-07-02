@@ -1,1 +1,12 @@
-python>=3.10
+# Face Prompt Studio — 依存ライブラリ
+# ComfyUI custom node として使用する場合は ComfyUI の Python 環境で実行:
+#   pip install -r requirements.txt
+
+# ── REST API サーバー用（ComfyUI ノードだけなら不要）──────────────
+fastapi>=0.100
+uvicorn[standard]>=0.20
+pydantic>=2.0
+
+# ── オプション ─────────────────────────────────────────────────────
+pyyaml>=6.0       # YAML 形式の辞書・ルールを使う場合
+httpx>=0.24       # テスト用
