@@ -125,6 +125,19 @@ from .models import (  # noqa: E402
     CommunityTagsResponse,
     ContributeRequest,
     ContributeResponse,
+    BatchCompileRequest,
+    BatchOptimizeRequest,
+    BatchItemResponse,
+    BatchResultResponse,
+    AutocompleteItem,
+    AutocompleteResponse,
+    SuggestResponse,
+    ProfileExportResponse,
+    ProfileImportRequest,
+    ProfileImportResponse,
+    PresetVersionItem,
+    PresetVersionsResponse,
+    RestoreVersionResponse,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -133,7 +146,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.3.0",
+        version="2.4.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -175,7 +188,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.3.0",
+            version="2.4.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1176,7 +1189,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.3.0",
+            version="2.4.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1362,6 +1375,375 @@ if _FASTAPI_AVAILABLE:
         return ProfileResetResponse(reset=True, message="プロファイルをリセットしました")
 
 
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.4 バッチ処理（/batch）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_bm():
+        """BatchManager を CliContext 経由で取得する"""
+        return get_context().batch_manager
+
+    def _get_pvm():
+        """PresetVersionManager を CliContext 経由で取得する"""
+        return get_context().preset_version_manager
+
+    @app.post(
+        "/batch/compile",
+        response_model=BatchResultResponse,
+        summary="Batch compile prompts",
+        tags=["batch"],
+    )
+    def batch_compile(body: BatchCompileRequest) -> BatchResultResponse:
+        """
+        ★ v2.4 — 複数プロンプトを一括コンパイルする（最大50件）。
+
+        apply_profile=true の場合、UserProfile を各プロンプトに適用する。
+        同期処理のため、件数が多いほどレスポンスに時間がかかる。
+        """
+        bm = _get_bm()
+        apply_fn = None
+        if body.apply_profile:
+            try:
+                upm = _get_upm()
+                if upm:
+                    apply_fn = upm.apply_profile
+            except Exception:
+                pass
+        try:
+            result = bm.compile_batch(body.prompts, apply_profile_fn=apply_fn)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        return BatchResultResponse(
+            job_id=result.job_id, mode=result.mode,
+            total=result.total, succeeded=result.succeeded, failed=result.failed,
+            avg_score=round(result.avg_score, 1),
+            avg_tag_count=round(result.avg_tag_count, 1),
+            total_elapsed_ms=round(result.total_elapsed_ms, 1),
+            started_at=result.started_at, finished_at=result.finished_at,
+            items=[BatchItemResponse(**i.to_dict()) for i in result.items],
+        )
+
+    @app.post(
+        "/batch/optimize",
+        response_model=BatchResultResponse,
+        summary="Batch optimize prompts",
+        tags=["batch"],
+    )
+    def batch_optimize(body: BatchOptimizeRequest) -> BatchResultResponse:
+        """
+        ★ v2.4 — 複数プロンプトを一括分析する（最大50件）。
+        各プロンプトの品質スコアと問題点を返す。
+        """
+        bm = _get_bm()
+        try:
+            result = bm.optimize_batch(body.prompts)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        return BatchResultResponse(
+            job_id=result.job_id, mode=result.mode,
+            total=result.total, succeeded=result.succeeded, failed=result.failed,
+            avg_score=round(result.avg_score, 1),
+            avg_tag_count=round(result.avg_tag_count, 1),
+            total_elapsed_ms=round(result.total_elapsed_ms, 1),
+            started_at=result.started_at, finished_at=result.finished_at,
+            items=[BatchItemResponse(**i.to_dict()) for i in result.items],
+        )
+
+    @app.get(
+        "/batch/status",
+        summary="Get last batch job result summary",
+        tags=["batch"],
+    )
+    def batch_status() -> dict:
+        """★ v2.4 — 最後のバッチジョブのサマリーを返す。"""
+        bm = _get_bm()
+        r = bm.last_result
+        if r is None:
+            return {"status": "no_job", "message": "バッチジョブ未実行"}
+        return {
+            "job_id": r.job_id, "mode": r.mode,
+            "total": r.total, "succeeded": r.succeeded, "failed": r.failed,
+            "avg_score": round(r.avg_score, 1),
+            "total_elapsed_ms": round(r.total_elapsed_ms, 1),
+            "finished_at": r.finished_at,
+        }
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.4 タグ補完（/dictionary/autocomplete, /dictionary/suggest）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/dictionary/autocomplete",
+        response_model=AutocompleteResponse,
+        summary="Tag autocomplete",
+        tags=["dictionary"],
+    )
+    def autocomplete_tags(
+        q: str = Query(..., min_length=1, description="検索プレフィックス"),
+        limit: int = Query(default=15, ge=1, le=50),
+    ) -> AutocompleteResponse:
+        """
+        ★ v2.4 — タグ名のプレフィックス補完候補を返す。
+        Web UI のエディタリアルタイム補完に使用する。
+        """
+        ctx = get_context()
+        ql = q.strip().lower()
+        try:
+            with ctx.dictionary_manager._lock:
+                index = dict(ctx.dictionary_manager._index)
+            candidates = [
+                e for key, e in index.items()
+                if key.startswith(ql) or e.resolved.lower().startswith(ql)
+            ]
+            # 完全一致 → プレフィックス一致 → 部分一致の順でソート
+            candidates.sort(key=lambda e: (
+                0 if e.key == ql else
+                1 if e.key.startswith(ql) else 2
+            ))
+            candidates = candidates[:limit]
+        except Exception:
+            candidates = []
+
+        return AutocompleteResponse(
+            query=q,
+            items=[AutocompleteItem(
+                key=e.key, resolved=e.resolved,
+                category=e.category, weight=e.weight,
+            ) for e in candidates],
+            total=len(candidates),
+        )
+
+    @app.get(
+        "/dictionary/suggest",
+        response_model=SuggestResponse,
+        summary="Suggest next tags based on current tags",
+        tags=["dictionary"],
+    )
+    def suggest_tags(
+        tags: str = Query(..., description="現在のタグ（カンマ区切り）"),
+        n: int = Query(default=10, ge=1, le=30),
+    ) -> SuggestResponse:
+        """
+        ★ v2.4 — 現在のタグリストから、次に追加すべきタグを提案する。
+
+        UserProfile の共起データ + 辞書カテゴリ補完を使って提案する。
+        """
+        current = [t.strip().lower() for t in tags.split(",") if t.strip()]
+        ctx = get_context()
+        suggestions: list[AutocompleteItem] = []
+
+        # ① プロファイル推奨タグから現在未使用のものを提案
+        try:
+            upm = _get_upm()
+            if upm:
+                recs = upm.recommend(30)
+                for e in recs:
+                    if e.tag not in current and len(suggestions) < n:
+                        result = ctx.dictionary_manager.lookup(e.tag)
+                        suggestions.append(AutocompleteItem(
+                            key=e.tag,
+                            resolved=result.resolved or e.tag,
+                            category=result.category or "",
+                            weight=e.avg_weight,
+                        ))
+        except Exception:
+            pass
+
+        # ② 不足分は辞書の関連カテゴリから補完
+        if len(suggestions) < n:
+            try:
+                for tag in current[:3]:
+                    result = ctx.dictionary_manager.lookup(tag)
+                    if result.found and result.category:
+                        entries = ctx.dictionary_manager.search_by_category(
+                            result.category, limit=n
+                        )
+                        for e in entries:
+                            if e.key not in current and not any(
+                                s.key == e.key for s in suggestions
+                            ) and len(suggestions) < n:
+                                suggestions.append(AutocompleteItem(
+                                    key=e.key, resolved=e.resolved,
+                                    category=e.category, weight=e.weight,
+                                ))
+            except Exception:
+                pass
+
+        return SuggestResponse(
+            current_tags=current,
+            suggestions=suggestions[:n],
+            total=len(suggestions[:n]),
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.4 プロファイル エクスポート/インポート
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/profile/export",
+        response_model=ProfileExportResponse,
+        summary="Export user profile as JSON",
+        tags=["profile"],
+    )
+    def export_profile() -> ProfileExportResponse:
+        """
+        ★ v2.4 — ユーザープロファイルを JSON 形式でエクスポートする。
+        別環境へのデータ移行や定期バックアップに使用する。
+        """
+        from datetime import datetime as _dt
+        upm = _get_upm()
+        if upm is None:
+            raise HTTPException(status_code=503, detail="UserProfileManager unavailable")
+        profile = upm.get_profile()
+        stats   = upm.statistics()
+        data = profile.to_dict()
+        return ProfileExportResponse(
+            version="2.4.0",
+            exported_at=_dt.now().isoformat(),
+            tag_frequency_count=stats.get("tag_frequency_count", 0),
+            tag_weight_count=stats.get("tag_weight_count", 0),
+            style_rule_count=stats.get("style_rule_count", 0),
+            data=data,
+        )
+
+    @app.post(
+        "/profile/import",
+        response_model=ProfileImportResponse,
+        summary="Import user profile from JSON",
+        tags=["profile"],
+    )
+    def import_profile(body: ProfileImportRequest) -> ProfileImportResponse:
+        """
+        ★ v2.4 — JSON からユーザープロファイルをインポートする。
+
+        merge=true の場合は既存データにマージ（頻度数は加算）。
+        merge=false（デフォルト）の場合は既存データを上書き。
+        """
+        from user.models import TagWeight, StyleRule, TagFrequencyEntry  # type: ignore[import]
+        from datetime import datetime as _dt
+        upm = _get_upm()
+        if upm is None:
+            raise HTTPException(status_code=503, detail="UserProfileManager unavailable")
+        data = body.data
+        freq_count = weight_count = rule_count = 0
+        try:
+            if not body.merge:
+                upm.reset()
+
+            # tag_frequencies インポート
+            for tag, e in data.get("tag_frequencies", {}).items():
+                try:
+                    freq = upm.get_profile().tag_frequencies.get(tag)
+                    if freq and body.merge:
+                        freq.count += e.get("count", 0)
+                        freq.total_weight += e.get("avg_weight", 1.0) * e.get("count", 0)
+                    else:
+                        from user.models import TagFrequencyEntry as TFE  # type: ignore[import]
+                        upm.get_profile().tag_frequencies[tag] = TFE(
+                            tag=tag,
+                            count=e.get("count", 0),
+                            total_weight=e.get("avg_weight", 1.0) * e.get("count", 0),
+                            last_used=_dt.fromisoformat(e.get("last_used", _dt.now().isoformat())),
+                        )
+                    freq_count += 1
+                except Exception:
+                    pass
+
+            # tag_weights インポート
+            for tag, w in data.get("tag_weights", {}).items():
+                try:
+                    upm.set_tag_weight(tag, w.get("weight", 1.0), w.get("reason", "imported"))
+                    weight_count += 1
+                except Exception:
+                    pass
+
+            # style_rules インポート
+            for r in data.get("style_rules", []):
+                try:
+                    from user.models import StyleRule as SR  # type: ignore[import]
+                    upm.add_style_rule(SR(
+                        id=r["id"], name=r["name"],
+                        always_include=r.get("always_include", []),
+                        always_exclude=r.get("always_exclude", []),
+                        enabled=r.get("enabled", True),
+                    ))
+                    rule_count += 1
+                except Exception:
+                    pass
+
+            upm.save()
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Import failed: {e}")
+
+        return ProfileImportResponse(
+            imported_frequencies=freq_count,
+            imported_weights=weight_count,
+            imported_rules=rule_count,
+            merged=body.merge,
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.4 プリセットバージョン管理
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/presets/{preset_id}/versions",
+        response_model=PresetVersionsResponse,
+        summary="List preset versions",
+        tags=["presets"],
+    )
+    def list_preset_versions(preset_id: str) -> PresetVersionsResponse:
+        """
+        ★ v2.4 — プリセットのバージョン履歴一覧を返す（新しい順）。
+        最大 20 件まで保持。
+        """
+        pvm = _get_pvm()
+        versions = pvm.list_versions(preset_id)
+        return PresetVersionsResponse(
+            preset_id=preset_id,
+            versions=[PresetVersionItem(**v.to_dict()) for v in versions],
+            total=len(versions),
+        )
+
+    @app.post(
+        "/presets/{preset_id}/versions/{version_id}/restore",
+        response_model=RestoreVersionResponse,
+        summary="Restore a preset to a specific version",
+        tags=["presets"],
+    )
+    def restore_preset_version(preset_id: str, version_id: str) -> RestoreVersionResponse:
+        """
+        ★ v2.4 — 指定バージョンにプリセットをリストアする。
+        リストア前に現在の状態を自動スナップショット保存する。
+        """
+        ctx = get_context()
+        pvm = _get_pvm()
+        try:
+            preset = pvm.restore(ctx.preset_manager, preset_id, version_id)
+        except KeyError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+        return RestoreVersionResponse(
+            preset_id=preset_id,
+            version_id=version_id,
+            restored=True,
+            tag_count=len(preset.tags),
+        )
+
+    @app.delete(
+        "/presets/{preset_id}/versions/{version_id}",
+        summary="Delete a specific version",
+        tags=["presets"],
+    )
+    def delete_preset_version(preset_id: str, version_id: str) -> dict:
+        """★ v2.4 — 指定バージョンを削除する。"""
+        pvm = _get_pvm()
+        deleted = pvm.delete_version(preset_id, version_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Version not found")
+        return {"preset_id": preset_id, "version_id": version_id, "deleted": True}
 
 
     # ══════════════════════════════════════════════════════════════
