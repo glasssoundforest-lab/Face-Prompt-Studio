@@ -51,6 +51,7 @@ class CliContext:
         self._share_manager = None        # ★v2.3
         self._batch_manager = None        # ★v2.4
         self._preset_version_manager = None  # ★v2.4
+        self._ai_manager = None            # ★v2.5
 
     @property
     def dictionary_manager(self):
@@ -245,6 +246,24 @@ class CliContext:
                 max_versions=20,
             )
         return self._preset_version_manager
+
+    @property
+    def ai_manager(self):
+        """★ v2.5 — AI マネージャー（LoRA/Tagger/Consistency/Negative）"""
+        if self._ai_manager is None:
+            from ai.lora_analyzer import LoraAnalyzer       # type: ignore
+            from ai.tagger_bridge import TaggerBridge        # type: ignore
+            from ai.consistency_checker import ConsistencyChecker  # type: ignore
+            from ai.negative_learner import NegativeLearner  # type: ignore
+            dm = self.dictionary_manager
+            self._ai_manager = {
+                "lora":        LoraAnalyzer(dictionary_manager=dm),
+                "tagger":      TaggerBridge(dictionary_manager=dm),
+                "consistency": ConsistencyChecker(dictionary_manager=dm),
+                "negative":    NegativeLearner(),
+            }
+        return self._ai_manager
+
 
 
 
