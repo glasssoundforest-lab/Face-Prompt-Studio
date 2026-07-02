@@ -1,35 +1,77 @@
 """
-v2.6: FacePromptWildcardNode 追加（19ノード体制）
 fps-adapters/comfyui/__init__.py
 ComfyUI カスタムノード エントリポイント
 
-v2.5: FacePromptLoRA / AITagger / Consistency 追加（18ノード体制）
+v2.7: 相対 import を修正（importlib ロード時の互換性確保）
+      19ノード体制
+
+ロード順序（root/__init__.py → ここ → 各ノードファイル）
 """
+from __future__ import annotations
 
-from .nodes.debug_output import FacePromptDebugNode
-from .nodes.face_prompt_backup import FacePromptBackupNode
-from .nodes.face_prompt_batch import FacePromptBatchNode
-from .nodes.face_prompt_category_filter import FacePromptCategoryFilterNode
-from .nodes.face_prompt_cleaner import FacePromptCleanerNode
-from .nodes.face_prompt_compiler import FacePromptCompilerNode
-from .nodes.face_prompt_consistency import FacePromptConsistencyNode   # ★v2.5
-from .nodes.face_prompt_group_control import FacePromptGroupControlNode
-from .nodes.face_prompt_history import FacePromptHistoryNode
-from .nodes.face_prompt_lora import FacePromptLoraNode                 # ★v2.5
-from .nodes.face_prompt_optimizer import FacePromptOptimizerNode
-from .nodes.face_prompt_preset import FacePromptPresetNode
-from .nodes.face_prompt_profile import (
-    FacePromptProfileNode,
-    FacePromptProfileApplyNode,
-    FacePromptProfileLearnNode,
-)
-from .nodes.face_prompt_rule_editor import FacePromptRuleEditorNode
-from .nodes.face_prompt_tagger import FacePromptAITaggerNode
-from .nodes.face_prompt_wildcard import FacePromptWildcardNode  # ★v2.6           # ★v2.5
-from .nodes.face_prompt_template import FacePromptTemplateNode
+import logging
+import sys
+from pathlib import Path
 
-NODE_CLASS_MAPPINGS = {
-    # ── コア 7ノード ─────────────────────────────────────────────
+logger = logging.getLogger("FacePromptStudio.comfyui")
+
+# このファイルの場所: fps-adapters/comfyui/__init__.py
+# nodes/ ディレクトリを sys.path に追加（node_base のインポート用）
+_NODES_DIR = str(Path(__file__).resolve().parent / "nodes")
+if _NODES_DIR not in sys.path:
+    sys.path.insert(0, _NODES_DIR)
+
+# ── ノードクラスのインポート（個別 try/except で部分ロードを許容）──
+
+def _safe_import(module_path: str, class_name: str):
+    """インポートに失敗してもプロセスを止めない"""
+    try:
+        import importlib
+        mod = importlib.import_module(module_path)
+        return getattr(mod, class_name)
+    except Exception as e:
+        logger.warning("FPS: ノード '%s' のロードをスキップ: %s", class_name, e)
+        return None
+
+
+# 各ノードをインポート
+FacePromptDebugNode          = _safe_import("debug_output",                "FacePromptDebugNode")
+FacePromptBackupNode         = _safe_import("face_prompt_backup",          "FacePromptBackupNode")
+FacePromptBatchNode          = _safe_import("face_prompt_batch",           "FacePromptBatchNode")
+FacePromptCategoryFilterNode = _safe_import("face_prompt_category_filter", "FacePromptCategoryFilterNode")
+FacePromptCleanerNode        = _safe_import("face_prompt_cleaner",         "FacePromptCleanerNode")
+FacePromptCompilerNode       = _safe_import("face_prompt_compiler",        "FacePromptCompilerNode")
+FacePromptConsistencyNode    = _safe_import("face_prompt_consistency",     "FacePromptConsistencyNode")
+FacePromptGroupControlNode   = _safe_import("face_prompt_group_control",   "FacePromptGroupControlNode")
+FacePromptHistoryNode        = _safe_import("face_prompt_history",         "FacePromptHistoryNode")
+FacePromptLoraNode           = _safe_import("face_prompt_lora",            "FacePromptLoraNode")
+FacePromptOptimizerNode      = _safe_import("face_prompt_optimizer",       "FacePromptOptimizerNode")
+FacePromptPresetNode         = _safe_import("face_prompt_preset",          "FacePromptPresetNode")
+FacePromptRuleEditorNode     = _safe_import("face_prompt_rule_editor",     "FacePromptRuleEditorNode")
+FacePromptTemplateNode       = _safe_import("face_prompt_template",        "FacePromptTemplateNode")
+FacePromptWildcardNode       = _safe_import("face_prompt_wildcard",        "FacePromptWildcardNode")
+
+# Profile ノード群（1ファイルに3クラス）
+try:
+    from face_prompt_profile import (   # type: ignore[import]
+        FacePromptProfileNode,
+        FacePromptProfileApplyNode,
+        FacePromptProfileLearnNode,
+    )
+except Exception as e:
+    logger.warning("FPS: Profile ノードのロードをスキップ: %s", e)
+    FacePromptProfileNode      = None
+    FacePromptProfileApplyNode = None
+    FacePromptProfileLearnNode = None
+
+# AI Tagger ノード
+FacePromptAITaggerNode = _safe_import("face_prompt_tagger", "FacePromptAITaggerNode")
+
+# Character ノード（v2.7）
+FacePromptCharacterNode = _safe_import("face_prompt_character", "FacePromptCharacterNode")
+
+# ── NODE_CLASS_MAPPINGS — None のエントリを除外して登録 ──────────────
+_all_nodes = {
     "FacePromptCleaner":        FacePromptCleanerNode,
     "FacePromptCompiler":       FacePromptCompilerNode,
     "FacePromptDebug":          FacePromptDebugNode,
@@ -37,24 +79,22 @@ NODE_CLASS_MAPPINGS = {
     "FacePromptRuleEditor":     FacePromptRuleEditorNode,
     "FacePromptCategoryFilter": FacePromptCategoryFilterNode,
     "FacePromptGroupControl":   FacePromptGroupControlNode,
-    # ── 分析・最適化 ─────────────────────────────────────────────
     "FacePromptOptimizer":      FacePromptOptimizerNode,
     "FacePromptHistory":        FacePromptHistoryNode,
     "FacePromptBackup":         FacePromptBackupNode,
     "FacePromptTemplate":       FacePromptTemplateNode,
     "FacePromptBatch":          FacePromptBatchNode,
-    # ── パーソナライゼーション（v2.1） ───────────────────────────
     "FacePromptProfile":        FacePromptProfileNode,
     "FacePromptProfileApply":   FacePromptProfileApplyNode,
     "FacePromptProfileLearn":   FacePromptProfileLearnNode,
-    # ── Wildcard（v2.6）──────────────────────────────────────────
-    "FacePromptWildcard":    FacePromptWildcardNode,
-    # ── AI 強化（v2.5） ──────────────────────────────────────────
-    "FacePromptWildcard":   "🎭 Face Prompt Wildcard",
     "FacePromptLora":           FacePromptLoraNode,
     "FacePromptAITagger":       FacePromptAITaggerNode,
     "FacePromptConsistency":    FacePromptConsistencyNode,
+    "FacePromptWildcard":       FacePromptWildcardNode,
+    "FacePromptCharacter":      FacePromptCharacterNode,
 }
+
+NODE_CLASS_MAPPINGS = {k: v for k, v in _all_nodes.items() if v is not None}
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptCleaner":        "🎭 Face Prompt Cleaner",
@@ -72,10 +112,17 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptProfile":        "🎭 Face Prompt Profile",
     "FacePromptProfileApply":   "🎭 Face Prompt Profile Apply",
     "FacePromptProfileLearn":   "🎭 Face Prompt Profile Learn",
-    "FacePromptWildcard":   "🎭 Face Prompt Wildcard",
     "FacePromptLora":           "🎭 Face Prompt LoRA Analyzer",
     "FacePromptAITagger":       "🎭 Face Prompt AI Tagger",
     "FacePromptConsistency":    "🎭 Face Prompt Consistency Checker",
+    "FacePromptWildcard":       "🎭 Face Prompt Wildcard",
+    "FacePromptCharacter":      "🎭 Face Prompt Character",
+}
+# ロードできなかったノードは表示名からも除外
+NODE_DISPLAY_NAME_MAPPINGS = {
+    k: v for k, v in NODE_DISPLAY_NAME_MAPPINGS.items()
+    if k in NODE_CLASS_MAPPINGS
 }
 
+logger.info("FacePromptStudio: %d ノード登録完了", len(NODE_CLASS_MAPPINGS))
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
