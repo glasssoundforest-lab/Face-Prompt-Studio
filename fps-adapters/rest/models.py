@@ -1134,3 +1134,61 @@ if _PYDANTIC_AVAILABLE:
         queue_remaining: int
         system_stats:    dict = {}
 
+    # ── v3.0 マーケットプレイス ──────────────────────────────────
+
+    class PluginManifestItem(BaseModel):
+        id:           str
+        name:         str
+        version:      str   = "1.0.0"
+        description:  str   = ""
+        author:       str   = ""
+        type:         str   = "dictionary"
+        tags:         list[str] = []
+        installed:    bool  = False
+        installed_at: str   = ""
+        download_count: int = 0
+        rating:       float = 0.0
+        size_kb:      float = 0.0
+        homepage:     str   = ""
+
+    class MarketplaceListResponse(BaseModel):
+        plugins: list[PluginManifestItem]
+        total:   int
+        stats:   dict = {}
+
+    class PluginInstallRequest(BaseModel):
+        plugin_id:   str | None = None
+        url:         str | None = None
+        plugin_type: str        = "dictionary"
+        force:       bool       = False
+
+    class PluginInstallResponse(BaseModel):
+        success:   bool
+        plugin_id: str
+        message:   str
+        files:     list[str] = []
+
+    # ── v3.0 レート制限 ──────────────────────────────────────────
+
+    class RateLimitStatus(BaseModel):
+        """GET /rate-limit/status レスポンス"""
+        anon_limit:   int
+        auth_limit:   int
+        window_sec:   float
+        tracked_keys: int
+        enabled:      bool
+
+    # ── v3.0 非同期コンパイル ────────────────────────────────────
+
+    class AsyncCompileRequest(BaseModel):
+        """POST /compile/async リクエスト"""
+        prompts: list[str] = Field(..., min_length=1, max_length=20)
+        apply_profile: bool = False
+        webhook_url: str | None = None
+
+    class AsyncCompileResponse(BaseModel):
+        job_id:    str
+        total:     int
+        status:    str = "queued"
+        message:   str = ""
+
