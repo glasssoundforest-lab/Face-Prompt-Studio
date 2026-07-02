@@ -1,7 +1,7 @@
 [project]
 name            = "face-prompt-studio"
-version         = "1.6.0"
-description     = "Prompt Compiler Framework for Stable Diffusion / ComfyUI"
+version         = "2.4.0"
+description     = "Prompt Compiler & Personalization Framework for Stable Diffusion / ComfyUI"
 requires-python = ">=3.11"
 dependencies    = []
 
