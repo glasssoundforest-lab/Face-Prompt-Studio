@@ -137,6 +137,21 @@ from .models import (  # noqa: E402
     ProfileImportResponse,
     PresetVersionItem,
     PresetVersionsResponse,
+    TranslateRequest,
+    TranslateResponse,
+    TranslateDetailItem,
+    DetectLanguageResponse,
+    ChainStepItem,
+    ChainCreateRequest,
+    ChainUpdateRequest,
+    ChainResponse,
+    ChainListResponse,
+    ChainRunRequest,
+    ChainStepResultItem,
+    ChainRunResponse,
+    ComfyUIQueueRequest,
+    ComfyUIQueueResponse,
+    ComfyUIStatusResponse,
     ExportRequest,
     ExportResponse,
     SessionCreateRequest,
@@ -182,7 +197,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.8.0",
+        version="2.9.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -231,7 +246,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.8.0",
+            version="2.9.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1232,7 +1247,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.8.0",
+            version="2.9.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1423,6 +1438,265 @@ if _FASTAPI_AVAILABLE:
 
 
 
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.9 日本語→タグ翻訳（/translate）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_te():
+        """TranslateEngine を CliContext 経由で取得する"""
+        return get_context().translate_engine
+
+    @app.post(
+        "/translate/jp-to-tags",
+        response_model=TranslateResponse,
+        summary="Translate Japanese text to English tags",
+        tags=["translate"],
+    )
+    def translate_jp_to_tags(body: TranslateRequest) -> TranslateResponse:
+        """
+        ★ v2.9 — 日本語テキストを英語タグリストに変換する。
+
+        「青い目の金髪の少女、笑顔、アニメ風」
+        → ["blue_eyes", "blonde_hair", "1girl", "smile", "anime_style"]
+
+        辞書ベースで外部API不要。use_api=true を指定すると
+        /profile/settings で設定した翻訳APIを使って補完する。
+        """
+        engine = _get_te()
+        result = engine.translate(body.text, max_tags=body.max_tags,
+                                  use_api=body.use_api)
+        return TranslateResponse(
+            original=result.original,
+            tags=result.tags,
+            prompt=result.to_prompt(),
+            unmapped=result.unmapped,
+            confidence=result.confidence,
+            method=result.method,
+            detail=[TranslateDetailItem(**d) for d in result.detail],
+        )
+
+    @app.post(
+        "/translate/detect",
+        response_model=DetectLanguageResponse,
+        summary="Detect language of prompt text",
+        tags=["translate"],
+    )
+    def detect_language(body: TranslateRequest) -> DetectLanguageResponse:
+        """★ v2.9 — テキストの言語を検出する（ja/en/mixed/unknown）。"""
+        engine = _get_te()
+        lang   = engine.detect_language(body.text)
+        return DetectLanguageResponse(text=body.text, language=lang)
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.9 プロンプトチェーン（/chains）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_chainm():
+        """ChainManager を CliContext 経由で取得する"""
+        return get_context().chain_manager
+
+    def _chain_to_response(c: Any) -> ChainResponse:
+        return ChainResponse(
+            id=c.id, name=c.name, description=c.description,
+            steps=[ChainStepItem(type=s.type, params=s.params,
+                                  label=s.label, enabled=s.enabled)
+                   for s in c.steps],
+            step_count=len(c.steps),
+            created_at=c.created_at, updated_at=c.updated_at,
+        )
+
+    @app.get(
+        "/chains",
+        response_model=ChainListResponse,
+        summary="List all prompt chains",
+        tags=["chains"],
+    )
+    def list_chains() -> ChainListResponse:
+        """★ v2.9 — プロンプトチェーン一覧を返す。"""
+        cm = _get_chainm()
+        chains = cm.list_all()
+        return ChainListResponse(
+            chains=[_chain_to_response(c) for c in chains],
+            total=len(chains),
+        )
+
+    @app.post(
+        "/chains",
+        response_model=ChainResponse,
+        status_code=201,
+        summary="Create a prompt chain",
+        tags=["chains"],
+    )
+    def create_chain(body: ChainCreateRequest) -> ChainResponse:
+        """★ v2.9 — プロンプトチェーンを新規作成する。"""
+        cm = _get_chainm()
+        c  = cm.create(body.name, [s.model_dump() for s in body.steps],
+                       body.description)
+        return _chain_to_response(c)
+
+    @app.get(
+        "/chains/{chain_id}",
+        response_model=ChainResponse,
+        summary="Get a prompt chain",
+        tags=["chains"],
+    )
+    def get_chain(chain_id: str) -> ChainResponse:
+        """★ v2.9 — プロンプトチェーンを取得する。"""
+        cm = _get_chainm()
+        c  = cm.get(chain_id)
+        if c is None:
+            raise HTTPException(status_code=404, detail=f"Chain '{chain_id}' not found")
+        return _chain_to_response(c)
+
+    @app.put(
+        "/chains/{chain_id}",
+        response_model=ChainResponse,
+        summary="Update a prompt chain",
+        tags=["chains"],
+    )
+    def update_chain(chain_id: str, body: ChainUpdateRequest) -> ChainResponse:
+        """★ v2.9 — プロンプトチェーンを更新する。"""
+        cm = _get_chainm()
+        c  = cm.update(chain_id, body.name,
+                       [s.model_dump() for s in body.steps] if body.steps else None,
+                       body.description)
+        if c is None:
+            raise HTTPException(status_code=404, detail=f"Chain '{chain_id}' not found")
+        return _chain_to_response(c)
+
+    @app.delete(
+        "/chains/{chain_id}",
+        summary="Delete a prompt chain",
+        tags=["chains"],
+    )
+    def delete_chain(chain_id: str) -> dict:
+        """★ v2.9 — プロンプトチェーンを削除する。"""
+        cm = _get_chainm()
+        if not cm.delete(chain_id):
+            raise HTTPException(status_code=404, detail=f"Chain '{chain_id}' not found")
+        return {"id": chain_id, "deleted": True}
+
+    @app.post(
+        "/chains/{chain_id}/run",
+        response_model=ChainRunResponse,
+        summary="Run a prompt chain",
+        tags=["chains"],
+    )
+    def run_chain(chain_id: str, body: ChainRunRequest) -> ChainRunResponse:
+        """
+        ★ v2.9 — プロンプトチェーンを実行する。
+
+        各ステップを順番に実行し、最終的な pos/neg プロンプトを返す。
+
+        ステップ種別:
+          wildcard  — Wildcard 構文を展開
+          translate — 日本語→タグ変換
+          compile   — FPS パイプラインでコンパイル
+          profile   — UserProfile を適用
+          filter    — カテゴリフィルタ
+          export    — 形式変換
+        """
+        cm = _get_chainm()
+        result = cm.run(chain_id, body.prompt, body.neg, context=get_context())
+        return ChainRunResponse(
+            chain_id=result.chain_id,
+            chain_name=result.chain_name,
+            input=result.input,
+            final_pos=result.final_pos,
+            final_neg=result.final_neg,
+            total_ms=round(result.total_ms, 1),
+            success=result.success,
+            error=result.error,
+            steps=[
+                ChainStepResultItem(
+                    step_index=s.step_index, step_type=s.step_type,
+                    output_pos=s.output_pos,
+                    elapsed_ms=round(s.elapsed_ms, 1),
+                    success=s.success, error=s.error,
+                ) for s in result.steps
+            ],
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.9 ComfyUI API クライアント（/comfyui-client）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_cc():
+        """ComfyUIClient を CliContext 経由で取得する"""
+        return get_context().comfyui_client
+
+    @app.get(
+        "/comfyui-client/status",
+        response_model=ComfyUIStatusResponse,
+        summary="Get ComfyUI connection status",
+        tags=["comfyui-client"],
+    )
+    def comfyui_status() -> ComfyUIStatusResponse:
+        """
+        ★ v2.9 — ComfyUI の接続状態とキュー状態を返す。
+
+        ComfyUI が起動していない場合も available=false で正常にレスポンスする。
+        """
+        cc = _get_cc()
+        available = cc.is_available()
+        if not available:
+            return ComfyUIStatusResponse(
+                available=False, base_url=cc._base,
+                queue_running=0, queue_pending=0, queue_remaining=0,
+            )
+        qs    = cc.get_queue_status()
+        stats = cc.get_system_stats()
+        return ComfyUIStatusResponse(
+            available=True, base_url=cc._base,
+            queue_running=len(qs.running),
+            queue_pending=len(qs.pending),
+            queue_remaining=qs.queue_remaining,
+            system_stats=stats,
+        )
+
+    @app.post(
+        "/comfyui-client/queue",
+        response_model=ComfyUIQueueResponse,
+        summary="Queue a prompt to ComfyUI",
+        tags=["comfyui-client"],
+    )
+    def comfyui_queue(body: ComfyUIQueueRequest) -> ComfyUIQueueResponse:
+        """
+        ★ v2.9 — プロンプトを ComfyUI キューに送信する。
+
+        ComfyUI が起動していない場合は 503 を返す。
+        返却された prompt_id で /comfyui-client/status/{id} から状態を確認できる。
+        """
+        cc = _get_cc()
+        if not cc.is_available():
+            raise HTTPException(status_code=503,
+                                detail="ComfyUI が起動していません (localhost:8188)")
+        entry = cc.queue_prompt(
+            body.pos, body.neg, body.workflow,
+            body.model, body.steps, body.cfg,
+            body.width, body.height, body.seed,
+        )
+        return ComfyUIQueueResponse(
+            prompt_id=entry.prompt_id,
+            status=entry.status,
+            error=entry.error,
+        )
+
+    @app.get(
+        "/comfyui-client/queue",
+        summary="Get ComfyUI queue status",
+        tags=["comfyui-client"],
+    )
+    def comfyui_queue_status() -> dict:
+        """★ v2.9 — ComfyUI キューの現在の状態を返す。"""
+        cc = _get_cc()
+        if not cc.is_available():
+            return {"available": False, "queue_remaining": 0}
+        qs = cc.get_queue_status()
+        return qs.to_dict()
 
 
     # ══════════════════════════════════════════════════════════════
@@ -2461,7 +2735,7 @@ if _FASTAPI_AVAILABLE:
         stats   = upm.statistics()
         data = profile.to_dict()
         return ProfileExportResponse(
-            version="2.8.0",
+            version="2.9.0",
             exported_at=_dt.now().isoformat(),
             tag_frequency_count=stats.get("tag_frequency_count", 0),
             tag_weight_count=stats.get("tag_weight_count", 0),
