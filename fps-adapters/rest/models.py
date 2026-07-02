@@ -943,3 +943,83 @@ if _PYDANTIC_AVAILABLE:
         """POST /characters/{id}/to-preset リクエスト"""
         preset_id: str | None = None
 
+    # ── v2.8 エクスポート ─────────────────────────────────────────
+
+    class ExportRequest(BaseModel):
+        """POST /export/{format} リクエスト"""
+        pos:    str
+        neg:    str = ""
+        label:  str = "export"
+        meta:   dict = {}
+        # A1111 専用オプション
+        steps:   int   = 20
+        sampler: str   = "Euler a"
+        cfg:     float = 7.0
+        width:   int   = 512
+        height:  int   = 512
+        seed:    int   = -1
+        model:   str   = ""
+
+    class ExportResponse(BaseModel):
+        """エクスポートレスポンス（テキスト系）"""
+        format:    str
+        content:   str
+        filename:  str
+        mime_type: str
+
+    # ── v2.8 セッション管理 ──────────────────────────────────────
+
+    class SessionCreateRequest(BaseModel):
+        """POST /sessions リクエスト"""
+        name:        str = Field(..., min_length=1)
+        description: str = ""
+        tags:        list[str] = []
+
+    class SessionUpdateRequest(BaseModel):
+        """PUT /sessions/{id} リクエスト"""
+        name:        str | None = None
+        description: str | None = None
+        tags:        list[str] | None = None
+        is_pinned:   bool | None = None
+
+    class SessionAddEntryRequest(BaseModel):
+        """POST /sessions/{id}/entries リクエスト"""
+        pos:      str
+        neg:      str = ""
+        label:    str = ""
+        score:    float = 0.0
+        metadata: dict = {}
+
+    class SessionEntryItem(BaseModel):
+        index:      int
+        label:      str
+        pos:        str
+        neg:        str
+        score:      float
+        metadata:   dict
+        created_at: str
+
+    class SessionResponse(BaseModel):
+        id:           str
+        name:         str
+        description:  str
+        tags:         list[str]
+        entry_count:  int
+        is_pinned:    bool
+        created_at:   str
+        updated_at:   str
+        entries:      list[SessionEntryItem] = []
+
+    class SessionListResponse(BaseModel):
+        sessions: list[SessionResponse]
+        total:    int
+        stats:    dict
+
+    class SessionCompareResponse(BaseModel):
+        entry_a:   dict
+        entry_b:   dict
+        only_in_a: list[str]
+        only_in_b: list[str]
+        common:    list[str]
+        score_diff: float
+
