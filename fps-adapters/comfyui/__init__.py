@@ -1,4 +1,5 @@
 """
+v2.4: FacePromptBatchNode 追加（15ノード体制）
 fps-adapters/comfyui/__init__.py
 ComfyUI カスタムノード エントリポイント
 
@@ -16,6 +17,7 @@ from .nodes.face_prompt_optimizer import FacePromptOptimizerNode
 from .nodes.face_prompt_preset import FacePromptPresetNode
 from .nodes.face_prompt_rule_editor import FacePromptRuleEditorNode
 from .nodes.face_prompt_template import FacePromptTemplateNode
+from .nodes.face_prompt_batch import FacePromptBatchNode  # ★v2.4
 from .nodes.face_prompt_profile import (  # ★v2.1
     FacePromptProfileNode,
     FacePromptProfileApplyNode,
@@ -35,6 +37,8 @@ NODE_CLASS_MAPPINGS = {
     "FacePromptBackup":         FacePromptBackupNode,
     "FacePromptGroupControl":   FacePromptGroupControlNode,
     "FacePromptTemplate":       FacePromptTemplateNode,
+    # ★v2.4 新設
+    "FacePromptBatch":        FacePromptBatchNode,
     # ★v2.1 新設 3ノード
     "FacePromptProfile":        FacePromptProfileNode,
     "FacePromptProfileApply":   FacePromptProfileApplyNode,
@@ -53,6 +57,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptBackup":         "🎭 Face Prompt Backup",
     "FacePromptGroupControl":   "🎭 Face Prompt Group Control",
     "FacePromptTemplate":       "🎭 Face Prompt Template",
+    # ★v2.4
+    "FacePromptBatch":        "🎭 Face Prompt Batch",
     # ★v2.1
     "FacePromptProfile":        "🎭 Face Prompt Profile",
     "FacePromptProfileApply":   "🎭 Face Prompt Profile Apply",
