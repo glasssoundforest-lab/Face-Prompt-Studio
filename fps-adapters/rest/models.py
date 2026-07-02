@@ -524,3 +524,102 @@ if _PYDANTIC_AVAILABLE:
         score_trend_count: int
         db_path: str = ""
 
+    # ── v2.3 ユーザー管理 ───────────────────────────────────────
+
+    class RegisterRequest(BaseModel):
+        """POST /users/register リクエスト"""
+        username: str = Field(..., min_length=3, max_length=30,
+                              pattern=r"^[a-zA-Z0-9_-]+$")
+        display_name: str = ""
+        expires_days: int | None = Field(default=None, ge=1, le=3650)
+
+    class UserInfoResponse(BaseModel):
+        """ユーザー情報レスポンス"""
+        user_id: str
+        username: str
+        display_name: str
+        created_at: str
+        last_active: str
+
+    class RegisterResponse(BaseModel):
+        """POST /users/register レスポンス"""
+        user: UserInfoResponse
+        api_key: str     # 登録時のみ返す（再取得不可）
+        message: str = "API キーを安全な場所に保存してください"
+
+    class ApiKeyResponse(BaseModel):
+        """API キー情報レスポンス"""
+        key_id: str
+        label: str
+        created_at: str
+        last_used: str | None
+        expires_at: str | None
+
+    class CreateApiKeyRequest(BaseModel):
+        """POST /users/me/api-keys リクエスト"""
+        label: str = "new key"
+        expires_days: int | None = Field(default=None, ge=1, le=3650)
+
+    class CreateApiKeyResponse(BaseModel):
+        """POST /users/me/api-keys レスポンス"""
+        api_key: str
+        key_info: ApiKeyResponse
+        message: str = "このキーは1度しか表示されません"
+
+    # ── v2.3 プリセット共有 ──────────────────────────────────────
+
+    class SharePresetRequest(BaseModel):
+        """POST /presets/{id}/share リクエスト"""
+        title: str = ""
+        description: str = ""
+        expires_days: int | None = Field(default=30, ge=1, le=365)
+
+    class ShareTokenResponse(BaseModel):
+        """共有トークンレスポンス"""
+        token: str
+        preset_id: str
+        title: str
+        description: str
+        share_url: str
+        created_at: str
+        expires_at: str | None
+        view_count: int
+
+    class SharedPresetResponse(BaseModel):
+        """GET /shared/presets/{token} レスポンス"""
+        token: str
+        preset_id: str
+        title: str
+        description: str
+        created_at: str
+        view_count: int
+        preset_data: dict
+
+    class DeleteShareResponse(BaseModel):
+        token: str
+        deleted: bool
+
+    # ── v2.3 コミュニティ統計 ────────────────────────────────────
+
+    class CommunityTagItem(BaseModel):
+        """コミュニティタグ 1件"""
+        tag: str
+        total_count: int
+        avg_score: float
+        category: str = ""
+
+    class CommunityTagsResponse(BaseModel):
+        """GET /community/tags レスポンス"""
+        tags: list[CommunityTagItem]
+        total: int
+        stats: dict
+
+    class ContributeRequest(BaseModel):
+        """POST /community/contribute リクエスト"""
+        tags: list[str] = Field(..., min_length=1)
+        avg_score: float = Field(default=0.0, ge=0.0, le=100.0)
+
+    class ContributeResponse(BaseModel):
+        contributed: int
+        message: str
+
