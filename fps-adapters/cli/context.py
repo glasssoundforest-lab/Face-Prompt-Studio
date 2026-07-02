@@ -52,6 +52,7 @@ class CliContext:
         self._batch_manager = None        # ★v2.4
         self._preset_version_manager = None  # ★v2.4
         self._ai_manager = None            # ★v2.5
+        self._wildcard_manager = None     # ★v2.6
 
     @property
     def dictionary_manager(self):
@@ -263,6 +264,17 @@ class CliContext:
                 "negative":    NegativeLearner(),
             }
         return self._ai_manager
+
+    @property
+    def wildcard_manager(self):
+        """★ v2.6 — WildcardManager シングルトンプロパティ。"""
+        if self._wildcard_manager is None:
+            from wildcard.manager import WildcardManager  # type: ignore
+            self._wildcard_manager = WildcardManager(
+                wildcard_dir=self.data_root / "wildcards"
+            )
+        return self._wildcard_manager
+
 
 
 
