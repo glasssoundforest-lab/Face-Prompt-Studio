@@ -111,6 +111,20 @@ from .models import (  # noqa: E402
     SaveAsPresetRequest,
     SaveAsPresetResponse,
     StorageStatsResponse,
+    RegisterRequest,
+    RegisterResponse,
+    UserInfoResponse,
+    ApiKeyResponse,
+    CreateApiKeyRequest,
+    CreateApiKeyResponse,
+    SharePresetRequest,
+    ShareTokenResponse,
+    SharedPresetResponse,
+    DeleteShareResponse,
+    CommunityTagItem,
+    CommunityTagsResponse,
+    ContributeRequest,
+    ContributeResponse,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -119,7 +133,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.2.0",
+        version="2.3.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -161,7 +175,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.2.0",
+            version="2.3.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1162,7 +1176,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.2.0",
+            version="2.3.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1347,6 +1361,296 @@ if _FASTAPI_AVAILABLE:
         upm.reset()
         return ProfileResetResponse(reset=True, message="プロファイルをリセットしました")
 
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.3 ユーザー管理（/users）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_um():
+        """UserManager を CliContext 経由で取得する"""
+        return get_context().user_manager
+
+    def _get_sm():
+        """ShareManager を CliContext 経由で取得する"""
+        return get_context().share_manager
+
+    def _get_current_user(x_api_key: str | None = None) -> "Any":
+        """
+        X-Api-Key ヘッダーからユーザーを取得する。
+        未認証の場合は anonymous ユーザーを返す。
+        """
+        if not x_api_key:
+            return None
+        return _get_um().verify_api_key(x_api_key)
+
+    @app.post(
+        "/users/register",
+        response_model=RegisterResponse,
+        status_code=201,
+        summary="Register a new user",
+        tags=["users"],
+    )
+    def register_user(body: RegisterRequest) -> RegisterResponse:
+        """
+        ★ v2.3 — 新規ユーザーを登録して API キーを発行する。
+
+        API キーは **このレスポンスにのみ含まれます**。
+        再表示はできないため、安全な場所に保存してください。
+
+        以降のリクエストでは `X-Api-Key: fps_xxxxx` ヘッダーを付けてください。
+        """
+        um = _get_um()
+        try:
+            user, raw_key = um.register(
+                username=body.username,
+                display_name=body.display_name,
+                expires_days=body.expires_days,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        return RegisterResponse(
+            user=UserInfoResponse(**user.to_dict()),
+            api_key=raw_key,
+        )
+
+    @app.get(
+        "/users/me",
+        response_model=UserInfoResponse,
+        summary="Get current user info",
+        tags=["users"],
+    )
+    def get_me(x_api_key: str | None = None) -> UserInfoResponse:
+        """
+        ★ v2.3 — 現在の認証ユーザー情報を返す。
+
+        ヘッダー: `X-Api-Key: fps_xxxxx`
+        未認証の場合は 401。
+        """
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        return UserInfoResponse(**user.to_dict())
+
+    @app.get(
+        "/users/{user_id}",
+        response_model=UserInfoResponse,
+        summary="Get user info by ID",
+        tags=["users"],
+    )
+    def get_user(user_id: str) -> UserInfoResponse:
+        """★ v2.3 — ユーザーID でユーザー情報を取得する。"""
+        um = _get_um()
+        user = um.get_user(user_id)
+        if user is None:
+            raise HTTPException(status_code=404, detail=f"User '{user_id}' not found")
+        return UserInfoResponse(**user.to_dict())
+
+    @app.post(
+        "/users/me/api-keys",
+        response_model=CreateApiKeyResponse,
+        status_code=201,
+        summary="Create additional API key",
+        tags=["users"],
+    )
+    def create_api_key(
+        body: CreateApiKeyRequest,
+        x_api_key: str | None = None,
+    ) -> CreateApiKeyResponse:
+        """★ v2.3 — 追加の API キーを発行する。認証必須。"""
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        um = _get_um()
+        raw_key, key_info = um.create_api_key(
+            user.user_id, label=body.label, expires_days=body.expires_days
+        )
+        return CreateApiKeyResponse(
+            api_key=raw_key,
+            key_info=ApiKeyResponse(
+                key_id=key_info.key_id, label=key_info.label,
+                created_at=key_info.created_at, last_used=key_info.last_used,
+                expires_at=key_info.expires_at,
+            ),
+        )
+
+    @app.delete(
+        "/users/me/api-keys/{key_id}",
+        summary="Revoke an API key",
+        tags=["users"],
+    )
+    def revoke_api_key(key_id: str, x_api_key: str | None = None) -> dict:
+        """★ v2.3 — API キーを無効化する。認証必須。"""
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        revoked = _get_um().revoke_api_key(key_id, user.user_id)
+        if not revoked:
+            raise HTTPException(status_code=404, detail="Key not found")
+        return {"key_id": key_id, "revoked": True}
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.3 プリセット共有（/presets/{id}/share, /shared）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.post(
+        "/presets/{preset_id}/share",
+        response_model=ShareTokenResponse,
+        status_code=201,
+        summary="Share a preset",
+        tags=["presets", "sharing"],
+    )
+    def share_preset(
+        preset_id: str,
+        body: SharePresetRequest,
+        x_api_key: str | None = None,
+    ) -> ShareTokenResponse:
+        """
+        ★ v2.3 — プリセットの共有リンクを発行する。
+
+        認証なしでも共有可能（anonymous ユーザーとして登録される）。
+        返却される share_url を他のユーザーに共有してください。
+        """
+        ctx = get_context()
+        if not ctx.preset_manager.exists(preset_id):
+            raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
+        preset = ctx.preset_manager.get(preset_id)
+        preset_data = {
+            "id":      preset.id,
+            "name":    preset.name,
+            "tags":    [{"tag": t.tag, "category": t.category, "weight": t.weight}
+                        for t in preset.tags],
+            "negative_tags": [{"tag": t.tag, "category": t.category, "weight": t.weight}
+                               for t in preset.negative_tags],
+            "description": preset.description,
+        }
+        user = _get_current_user(x_api_key)
+        user_id = user.user_id if user else _get_um().anonymous_user_id
+
+        sm = _get_sm()
+        share = sm.create_share(
+            user_id=user_id, preset_id=preset_id,
+            preset_data=preset_data,
+            title=body.title or preset.name,
+            description=body.description,
+            expires_days=body.expires_days,
+        )
+        share_url = f"/shared/presets/{share.token}"
+        return ShareTokenResponse(
+            token=share.token, preset_id=share.preset_id,
+            title=share.title, description=share.description,
+            share_url=share_url, created_at=share.created_at,
+            expires_at=share.expires_at, view_count=0,
+        )
+
+    @app.get(
+        "/shared/presets/{token}",
+        response_model=SharedPresetResponse,
+        summary="Get shared preset",
+        tags=["sharing"],
+    )
+    def get_shared_preset(token: str) -> SharedPresetResponse:
+        """
+        ★ v2.3 — 共有トークンからプリセット情報を取得する。
+
+        認証不要。閲覧のたびに view_count が増加する。
+        有効期限切れや無効化済みトークンは 404 を返す。
+        """
+        sm = _get_sm()
+        share = sm.get_share(token)
+        if share is None:
+            raise HTTPException(status_code=404, detail="共有リンクが無効か期限切れです")
+        return SharedPresetResponse(
+            token=share.token, preset_id=share.preset_id,
+            title=share.title, description=share.description,
+            created_at=share.created_at, view_count=share.view_count,
+            preset_data=share.preset_data,
+        )
+
+    @app.get(
+        "/shared/presets",
+        summary="List my shared presets",
+        tags=["sharing"],
+    )
+    def list_my_shares(x_api_key: str | None = None) -> dict:
+        """★ v2.3 — 自分が発行した共有リンク一覧を返す。認証必須。"""
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        sm = _get_sm()
+        shares = sm.list_user_shares(user.user_id)
+        return {"shares": [s.to_dict() for s in shares], "total": len(shares)}
+
+    @app.delete(
+        "/shared/presets/{token}",
+        response_model=DeleteShareResponse,
+        summary="Delete a shared preset link",
+        tags=["sharing"],
+    )
+    def delete_share(token: str, x_api_key: str | None = None) -> DeleteShareResponse:
+        """★ v2.3 — 共有リンクを無効化する。発行者のみ可能。"""
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        sm = _get_sm()
+        deleted = sm.delete_share(token, user.user_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="共有リンクが見つかりません")
+        return DeleteShareResponse(token=token, deleted=True)
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.3 コミュニティ統計（/community）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/community/tags",
+        response_model=CommunityTagsResponse,
+        summary="Get community tag statistics",
+        tags=["community"],
+    )
+    def get_community_tags(
+        limit: int = Query(default=50, ge=1, le=200),
+        category: str | None = Query(default=None),
+        min_count: int = Query(default=1, ge=1),
+    ) -> CommunityTagsResponse:
+        """
+        ★ v2.3 — コミュニティのタグ使用統計を返す（匿名集計）。
+
+        POST /community/contribute で投稿されたデータの集計値。
+        個人を特定できる情報は含まない。
+        """
+        sm = _get_sm()
+        tags = sm.get_community_tags(limit=limit, category=category, min_count=min_count)
+        stats = sm.community_stats()
+        return CommunityTagsResponse(
+            tags=[CommunityTagItem(
+                tag=t.tag, total_count=t.total_count,
+                avg_score=t.avg_score, category=t.category,
+            ) for t in tags],
+            total=len(tags),
+            stats=stats,
+        )
+
+    @app.post(
+        "/community/contribute",
+        response_model=ContributeResponse,
+        summary="Contribute tag data to community stats",
+        tags=["community"],
+    )
+    def contribute_to_community(body: ContributeRequest) -> ContributeResponse:
+        """
+        ★ v2.3 — タグ使用データをコミュニティ統計に投稿する（任意・匿名）。
+
+        個人を特定できる情報は送信しないでください。
+        タグ名とスコアのみが集計に使われます。
+        """
+        sm = _get_sm()
+        n = sm.contribute_tags(tags=body.tags, avg_score=body.avg_score)
+        return ContributeResponse(
+            contributed=n,
+            message=f"{n}件のタグデータをコミュニティ統計に追加しました",
+        )
 
 
     # ══════════════════════════════════════════════════════════════
