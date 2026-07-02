@@ -1023,3 +1023,114 @@ if _PYDANTIC_AVAILABLE:
         common:    list[str]
         score_diff: float
 
+    # ── v2.9 翻訳 ────────────────────────────────────────────────
+
+    class TranslateRequest(BaseModel):
+        """POST /translate/jp-to-tags リクエスト"""
+        text:     str
+        max_tags: int  = Field(default=30, ge=1, le=100)
+        use_api:  bool = False
+
+    class TranslateDetailItem(BaseModel):
+        word:   str
+        tag:    str
+        source: str
+
+    class TranslateResponse(BaseModel):
+        """翻訳レスポンス"""
+        original:   str
+        tags:       list[str]
+        prompt:     str
+        unmapped:   list[str]
+        confidence: float
+        method:     str
+        detail:     list[TranslateDetailItem] = []
+
+    class DetectLanguageResponse(BaseModel):
+        text:     str
+        language: str    # "ja" | "en" | "mixed" | "unknown"
+
+    # ── v2.9 チェーン ────────────────────────────────────────────
+
+    class ChainStepItem(BaseModel):
+        type:    str
+        params:  dict = {}
+        label:   str  = ""
+        enabled: bool = True
+
+    class ChainCreateRequest(BaseModel):
+        """POST /chains リクエスト"""
+        name:        str = Field(..., min_length=1)
+        description: str = ""
+        steps:       list[ChainStepItem] = []
+
+    class ChainUpdateRequest(BaseModel):
+        """PUT /chains/{id} リクエスト"""
+        name:        str | None = None
+        description: str | None = None
+        steps:       list[ChainStepItem] | None = None
+
+    class ChainResponse(BaseModel):
+        id:          str
+        name:        str
+        description: str
+        steps:       list[ChainStepItem]
+        step_count:  int
+        created_at:  str
+        updated_at:  str
+
+    class ChainListResponse(BaseModel):
+        chains: list[ChainResponse]
+        total:  int
+
+    class ChainRunRequest(BaseModel):
+        """POST /chains/{id}/run リクエスト"""
+        prompt: str
+        neg:    str = ""
+
+    class ChainStepResultItem(BaseModel):
+        step_index: int
+        step_type:  str
+        output_pos: str
+        elapsed_ms: float
+        success:    bool
+        error:      str = ""
+
+    class ChainRunResponse(BaseModel):
+        chain_id:   str
+        chain_name: str
+        input:      str
+        final_pos:  str
+        final_neg:  str
+        total_ms:   float
+        success:    bool
+        error:      str = ""
+        steps:      list[ChainStepResultItem] = []
+
+    # ── v2.9 ComfyUI API ─────────────────────────────────────────
+
+    class ComfyUIQueueRequest(BaseModel):
+        """POST /comfyui-client/queue リクエスト"""
+        pos:    str
+        neg:    str   = ""
+        model:  str   = "v1-5-pruned-emaonly.ckpt"
+        steps:  int   = 20
+        cfg:    float = 7.0
+        width:  int   = 512
+        height: int   = 512
+        seed:   int   = -1
+        workflow: dict | None = None
+
+    class ComfyUIQueueResponse(BaseModel):
+        prompt_id: str
+        status:    str
+        error:     str = ""
+
+    class ComfyUIStatusResponse(BaseModel):
+        available:       bool
+        base_url:        str
+        queue_running:   int
+        queue_pending:   int
+        queue_remaining: int
+        system_stats:    dict = {}
+
