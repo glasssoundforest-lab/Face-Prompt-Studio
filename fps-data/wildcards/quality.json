@@ -1,0 +1,58 @@
+{
+  "name": "quality",
+  "description": "品質タグ",
+  "category": "quality",
+  "entry_count": 8,
+  "entries": [
+    {
+      "value": "masterpiece",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "best_quality",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "high_quality",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "ultra_detailed",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "4k",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "8k",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "extremely_detailed",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "beautiful_detailed",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    }
+  ],
+  "created_at": "2026-07-02T07:34:16.904633",
+  "updated_at": "2026-07-02T07:34:16.904633"
+}
