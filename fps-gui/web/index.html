@@ -297,6 +297,60 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
       font-size:12px;font-weight:600;z-index:9997;opacity:0;transition:opacity .3s;pointer-events:none;}
     .auto-learn-banner.show{opacity:1;}
 
+    
+    /* ── v2.3 共有 ── */
+    .share-btn{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;
+      background:color-mix(in srgb,#9b59b6 15%,transparent);color:#9b59b6;
+      border:1px solid #9b59b6;cursor:pointer;transition:all .15s;}
+    .share-btn:hover{background:#9b59b6;color:#fff;}
+    .share-popup{position:fixed;inset:0;background:rgba(0,0,0,.5);
+      display:flex;align-items:center;justify-content:center;z-index:9990;}
+    .share-popup-inner{background:var(--bg);border:1px solid var(--border);
+      border-radius:12px;padding:20px;width:min(420px,90vw);display:flex;flex-direction:column;gap:10px;}
+    .share-popup h3{margin:0;font-size:1rem;}
+    .share-url-box{display:flex;gap:6px;}
+    .share-url-box input{flex:1;padding:7px 10px;border:1px solid var(--border);
+      border-radius:6px;background:var(--bg-secondary);color:var(--text);font-size:12px;}
+    .share-url-copy{padding:7px 12px;border-radius:6px;background:var(--accent);
+      color:#fff;border:none;cursor:pointer;font-size:12px;font-weight:600;}
+
+    /* ── v2.3 コミュニティタブ ── */
+    #community-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;padding:20px;}
+    #community-panel.active{display:block;}
+    .cm-header{margin-bottom:20px;}
+    .cm-header h2{margin:0 0 6px;font-size:1.05rem;}
+    .cm-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+    .cm-stat{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:8px;padding:12px 18px;text-align:center;}
+    .cm-stat-num{font-size:1.6rem;font-weight:700;color:var(--accent);}
+    .cm-stat-lbl{font-size:11px;color:var(--muted);}
+    .cm-tag-row{display:flex;align-items:center;gap:8px;padding:5px 0;
+      border-bottom:1px solid var(--border);font-size:13px;}
+    .cm-tag-name{width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .cm-tag-bar-wrap{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+    .cm-tag-bar-fill{height:100%;background:color-mix(in srgb,#9b59b6 70%,var(--accent));border-radius:4px;}
+    .cm-tag-count{width:40px;text-align:right;color:var(--muted);font-size:12px;}
+    .cm-tag-score{width:36px;text-align:right;font-size:11px;color:var(--accent);}
+    .cm-contribute-bar{display:flex;gap:8px;margin-bottom:16px;align-items:center;}
+    .cm-contribute-bar input{flex:1;padding:7px 10px;border:1px solid var(--border);
+      border-radius:6px;background:var(--bg-secondary);color:var(--text);font-size:13px;}
+
+    /* ── v2.3 ユーザー設定 ── */
+    #user-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;padding:20px;}
+    #user-panel.active{display:block;}
+    .user-card{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:10px;padding:16px;margin-bottom:16px;}
+    .user-card h3{margin:0 0 8px;font-size:0.95rem;}
+    .user-info-row{display:flex;gap:8px;margin-bottom:6px;font-size:13px;}
+    .user-info-lbl{color:var(--muted);width:100px;flex-shrink:0;}
+    .user-info-val{font-weight:500;}
+    .user-key-box{font-family:monospace;font-size:11px;background:var(--bg);
+      border:1px solid var(--border);border-radius:5px;padding:6px 10px;
+      word-break:break-all;margin:6px 0;}
+    .cm-section{margin-bottom:20px;}
+    .cm-section-title{font-size:0.88rem;font-weight:600;text-transform:uppercase;
+      letter-spacing:.06em;color:var(--muted);margin-bottom:10px;}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -412,6 +466,8 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="backup" onclick="showTab('backup')">Backup</button>
     <div id="ws-indicator"><div class="ws-dot" id="ws-dot"></div><span id="ws-label">WS 未接続</span></div>
     <button class="nav-btn" data-tab="profile" onclick="showTab('profile')">Profile</button>
+    <button class="nav-btn" data-tab="community" onclick="showTab('community')">Community</button>
+    <button class="nav-btn" data-tab="user" onclick="showTab('user')">User</button>
     <button class="nav-btn" data-tab="dashboard" onclick="showTab('dashboard')">Dashboard</button>
     <button class="nav-btn" data-tab="kb" onclick="showTab('kb')">🔍 Knowledge</button>
   </nav>
@@ -578,6 +634,71 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
             件ごとに実行
           </div>
         </div>
+      </div>
+    </div>
+
+
+    <!-- v2.3 Community Panel -->
+    <div id="community-panel">
+      <div class="cm-header">
+        <h2>🌐 コミュニティタグ統計</h2>
+        <p style="font-size:12px;color:var(--muted);margin:0">
+          匿名で共有されたタグ使用データの集計結果です
+        </p>
+      </div>
+      <div id="cm-stats" class="cm-stats">
+        <div class="cm-stat"><div class="cm-stat-num" id="cm-s-tags">—</div><div class="cm-stat-lbl">タグ種類</div></div>
+        <div class="cm-stat"><div class="cm-stat-num" id="cm-s-contrib">—</div><div class="cm-stat-lbl">投稿総数</div></div>
+        <div class="cm-stat"><div class="cm-stat-num" id="cm-s-shared">—</div><div class="cm-stat-lbl">共有プリセット</div></div>
+      </div>
+      <div class="cm-contribute-bar">
+        <input id="cm-tags-input" placeholder="統計に貢献するタグ（カンマ区切り）" />
+        <button class="share-btn" onclick="cmContribute()">📤 投稿</button>
+        <button class="share-btn" onclick="cmLoad()">🔄 更新</button>
+      </div>
+      <div class="cm-section">
+        <div class="cm-section-title">人気タグ Top50</div>
+        <div id="cm-tag-list"></div>
+      </div>
+    </div>
+
+    <!-- v2.3 User Panel -->
+    <div id="user-panel">
+      <div class="user-card">
+        <h3>👤 ユーザー情報</h3>
+        <div id="user-info-area">
+          <p style="color:var(--muted);font-size:13px">ログインしていません</p>
+        </div>
+      </div>
+      <div class="user-card">
+        <h3>🔑 新規登録 / APIキー取得</h3>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input id="reg-username" placeholder="ユーザー名（英数字/_/-）"
+            style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-secondary);color:var(--text);font-size:13px;" />
+          <input id="reg-display" placeholder="表示名（省略可）"
+            style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-secondary);color:var(--text);font-size:13px;" />
+          <button class="share-btn" onclick="userRegister()">登録</button>
+        </div>
+        <div id="user-key-result" style="display:none;" class="cm-section">
+          <div class="cm-section-title">発行された API キー（1度しか表示されません）</div>
+          <div id="user-key-box" class="user-key-box"></div>
+          <button class="share-btn" onclick="userCopyKey()">📋 コピー</button>
+        </div>
+      </div>
+      <div class="user-card">
+        <h3>🔐 既存 API キーでログイン</h3>
+        <div style="display:flex;gap:8px;">
+          <input id="login-key" type="password" placeholder="fps_xxxxx"
+            style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-secondary);color:var(--text);font-size:13px;" />
+          <button class="share-btn" onclick="userLogin()">ログイン</button>
+        </div>
+      </div>
+      <div class="user-card" id="user-shares-card" style="display:none;">
+        <h3>🔗 自分の共有リンク</h3>
+        <div id="user-shares-list"></div>
       </div>
     </div>
 
@@ -1992,6 +2113,234 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
       ensureProfileToggle();
       pfLoadSettings();
     }, 600);
+  });
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v2.3 — コミュニティ統計 + ユーザー管理 + 共有
+  // ══════════════════════════════════════════════════════════════
+
+  let _currentApiKey = localStorage.getItem('fps_api_key') || null;
+
+  // ── コミュニティ ──────────────────────────────────────────────
+  async function cmLoad() {
+    try {
+      const res = await api('/community/tags', { params: { limit: 50 } });
+      const s   = res.stats || {};
+      document.getElementById('cm-s-tags').textContent    = res.total || 0;
+      document.getElementById('cm-s-contrib').textContent = s.total_contributions || 0;
+      document.getElementById('cm-s-shared').textContent  = s.shared_preset_count || 0;
+      const el = document.getElementById('cm-tag-list');
+      if (!el) return;
+      if (!res.tags?.length) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:20px 0">まだデータがありません。「投稿」からデータを共有してください。</div>';
+        return;
+      }
+      const max = res.tags[0].total_count || 1;
+      el.innerHTML = res.tags.map(t => `
+        <div class="cm-tag-row">
+          <span class="cm-tag-name" title="${escHtml(t.tag)}">${escHtml(t.tag)}</span>
+          <div class="cm-tag-bar-wrap">
+            <div class="cm-tag-bar-fill" style="width:${(t.total_count/max*100).toFixed(1)}%"></div>
+          </div>
+          <span class="cm-tag-count">${t.total_count}</span>
+          <span class="cm-tag-score">${t.avg_score.toFixed(0)}pt</span>
+        </div>`).join('');
+    } catch(e) { toast('コミュニティデータ取得失敗: ' + e.message, true); }
+  }
+
+  async function cmContribute() {
+    const input = document.getElementById('cm-tags-input');
+    const tags = input?.value.split(',').map(t => t.trim()).filter(Boolean);
+    if (!tags?.length) { toast('タグを入力してください', true); return; }
+    try {
+      const res = await api('/community/contribute', { method: 'POST', body: { tags, avg_score: 70 } });
+      toast(`✅ ${res.contributed}件のタグを投稿しました`);
+      if (input) input.value = '';
+      await cmLoad();
+    } catch(e) { toast('投稿失敗: ' + e.message, true); }
+  }
+
+  // ── ユーザー管理 ──────────────────────────────────────────────
+  async function userRegister() {
+    const username = document.getElementById('reg-username')?.value.trim();
+    const display  = document.getElementById('reg-display')?.value.trim();
+    if (!username) { toast('ユーザー名を入力してください', true); return; }
+    try {
+      const res = await api('/users/register', { method: 'POST', body: { username, display_name: display } });
+      const resultDiv = document.getElementById('user-key-result');
+      const keyBox    = document.getElementById('user-key-box');
+      if (resultDiv) resultDiv.style.display = 'block';
+      if (keyBox) keyBox.textContent = res.api_key;
+      _currentApiKey = res.api_key;
+      localStorage.setItem('fps_api_key', res.api_key);
+      toast(`✅ 登録完了: ${res.user.username}`);
+      await userRefreshInfo();
+    } catch(e) { toast('登録失敗: ' + e.message, true); }
+  }
+
+  async function userLogin() {
+    const key = document.getElementById('login-key')?.value.trim();
+    if (!key) { toast('API キーを入力してください', true); return; }
+    try {
+      const res = await fetch('/users/me', { headers: { 'X-Api-Key': key } });
+      if (!res.ok) throw new Error('認証失敗');
+      const user = await res.json();
+      _currentApiKey = key;
+      localStorage.setItem('fps_api_key', key);
+      toast(`✅ ログイン成功: ${user.username}`);
+      await userRefreshInfo();
+    } catch(e) { toast('ログイン失敗: ' + e.message, true); }
+  }
+
+  async function userRefreshInfo() {
+    if (!_currentApiKey) return;
+    try {
+      const res = await fetch('/users/me', { headers: { 'X-Api-Key': _currentApiKey } });
+      if (!res.ok) { _currentApiKey = null; localStorage.removeItem('fps_api_key'); return; }
+      const user = await res.json();
+      const area = document.getElementById('user-info-area');
+      if (area) area.innerHTML = `
+        <div class="user-info-row"><span class="user-info-lbl">ユーザーID</span><span class="user-info-val">${escHtml(user.user_id)}</span></div>
+        <div class="user-info-row"><span class="user-info-lbl">ユーザー名</span><span class="user-info-val">${escHtml(user.username)}</span></div>
+        <div class="user-info-row"><span class="user-info-lbl">表示名</span><span class="user-info-val">${escHtml(user.display_name)}</span></div>
+        <div class="user-info-row"><span class="user-info-lbl">登録日</span><span class="user-info-val">${user.created_at?.slice(0,10)}</span></div>
+        <button class="share-btn" style="margin-top:8px" onclick="userLogout()">ログアウト</button>`;
+      await userLoadShares();
+    } catch(e) {}
+  }
+
+  async function userLoadShares() {
+    if (!_currentApiKey) return;
+    try {
+      const res = await fetch('/shared/presets', { headers: { 'X-Api-Key': _currentApiKey } });
+      if (!res.ok) return;
+      const data = await res.json();
+      const card = document.getElementById('user-shares-card');
+      const list = document.getElementById('user-shares-list');
+      if (card) card.style.display = 'block';
+      if (list) list.innerHTML = !data.shares?.length
+        ? '<p style="color:var(--muted);font-size:13px">共有リンクなし</p>'
+        : data.shares.map(s => `
+          <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;">
+            <div style="font-weight:600">${escHtml(s.title)} <span style="color:var(--muted)">(${s.view_count}回閲覧)</span></div>
+            <div style="font-family:monospace;color:var(--muted);font-size:11px;margin:2px 0">/shared/presets/${escHtml(s.token)}</div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <button class="share-btn" onclick="shareUrlCopy('/shared/presets/${escHtml(s.token)}')">📋 URL コピー</button>
+              <button class="share-btn" style="background:color-mix(in srgb,#e74c3c 15%,transparent);color:#e74c3c;border-color:#e74c3c"
+                onclick="shareDelete('${escHtml(s.token)}')">削除</button>
+            </div>
+          </div>`).join('');
+    } catch(e) {}
+  }
+
+  function userLogout() {
+    _currentApiKey = null;
+    localStorage.removeItem('fps_api_key');
+    const area = document.getElementById('user-info-area');
+    if (area) area.innerHTML = '<p style="color:var(--muted);font-size:13px">ログアウトしました</p>';
+    const card = document.getElementById('user-shares-card');
+    if (card) card.style.display = 'none';
+    toast('ログアウトしました');
+  }
+
+  function userCopyKey() {
+    const key = document.getElementById('user-key-box')?.textContent;
+    if (key) { navigator.clipboard?.writeText(key); toast('API キーをコピーしました'); }
+  }
+
+  // ── プリセット共有ポップアップ ────────────────────────────────
+  async function openSharePopup(presetId, presetName) {
+    const popup = document.createElement('div');
+    popup.className = 'share-popup';
+    popup.id = 'share-popup';
+    popup.innerHTML = `
+      <div class="share-popup-inner">
+        <h3>🔗 「${escHtml(presetName)}」を共有</h3>
+        <input id="share-title" placeholder="タイトル（省略可）" value="${escHtml(presetName)}"
+          style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+          background:var(--bg-secondary);color:var(--text);font-size:13px;" />
+        <textarea id="share-desc" placeholder="説明（省略可）" rows="2"
+          style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+          background:var(--bg-secondary);color:var(--text);font-size:13px;resize:vertical;"></textarea>
+        <div style="font-size:12px;color:var(--muted)">有効期限: 30日間（デフォルト）</div>
+        <div id="share-url-result" style="display:none;">
+          <div class="share-url-box">
+            <input id="share-url-input" readonly />
+            <button class="share-url-copy" onclick="shareUrlCopy()">コピー</button>
+          </div>
+        </div>
+        <div id="share-err" style="color:#e74c3c;font-size:12px;display:none;"></div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="share-btn" onclick="execShare('${escHtml(presetId)}')">共有リンクを発行</button>
+          <button class="share-btn" style="background:var(--border);border-color:var(--border);color:var(--text)"
+            onclick="closeSharePopup()">閉じる</button>
+        </div>
+      </div>`;
+    document.body.appendChild(popup);
+  }
+
+  function closeSharePopup() {
+    const p = document.getElementById('share-popup');
+    if (p) p.remove();
+  }
+
+  async function execShare(presetId) {
+    const title = document.getElementById('share-title')?.value.trim();
+    const desc  = document.getElementById('share-desc')?.value.trim();
+    const headers = { 'Content-Type': 'application/json' };
+    if (_currentApiKey) headers['X-Api-Key'] = _currentApiKey;
+    try {
+      const res = await fetch(`/presets/${encodeURIComponent(presetId)}/share`, {
+        method: 'POST', headers,
+        body: JSON.stringify({ title, description: desc, expires_days: 30 }),
+      });
+      if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+      const data = await res.json();
+      const shareUrl = location.origin + data.share_url;
+      const urlResult = document.getElementById('share-url-result');
+      const urlInput  = document.getElementById('share-url-input');
+      if (urlResult) urlResult.style.display = 'block';
+      if (urlInput)  urlInput.value = shareUrl;
+      toast('✅ 共有リンクを発行しました');
+    } catch(e) {
+      const errEl = document.getElementById('share-err');
+      if (errEl) { errEl.style.display = 'block'; errEl.textContent = e.message; }
+    }
+  }
+
+  function shareUrlCopy(url) {
+    const val = url || document.getElementById('share-url-input')?.value;
+    if (val) { navigator.clipboard?.writeText(location.origin + val); toast('URL をコピーしました'); }
+  }
+
+  async function shareDelete(token) {
+    if (!confirm('この共有リンクを削除しますか？')) return;
+    try {
+      await fetch(`/shared/presets/${token}`, {
+        method: 'DELETE',
+        headers: { 'X-Api-Key': _currentApiKey || '' },
+      });
+      toast('共有リンクを削除しました');
+      await userLoadShares();
+    } catch(e) { toast('削除失敗: ' + e.message, true); }
+  }
+
+  // Presets タブの各カードに「共有」ボタンを追加
+  const _origRenderPresetCard = typeof renderPresetCard === 'function' ? renderPresetCard : null;
+
+  // showTab に community / user 追加
+  const _origShowTabV23 = showTab;
+  function showTab(tab) {
+    _origShowTabV23(tab);
+    if (tab === 'community') cmLoad();
+    if (tab === 'user') userRefreshInfo();
+  }
+
+  // 初期化: 保存済み API キーでログイン試行
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedKey = localStorage.getItem('fps_api_key');
+    if (savedKey) { _currentApiKey = savedKey; }
   });
 
   </script>
