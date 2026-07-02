@@ -1,0 +1,70 @@
+{
+  "name": "background",
+  "description": "背景",
+  "category": "scene",
+  "entry_count": 10,
+  "entries": [
+    {
+      "value": "simple_background",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "white_background",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "nature_background",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "city_background",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "forest_background",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "night_sky",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "sunset_background",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "indoor",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "outdoor",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "bokeh",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    }
+  ],
+  "created_at": "2026-07-02T07:34:21.821426",
+  "updated_at": "2026-07-02T07:34:21.821426"
+}
