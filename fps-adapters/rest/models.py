@@ -30,11 +30,16 @@ if _PYDANTIC_AVAILABLE:
 
     class CompileResponse(BaseModel):
         success: bool
-        prompt: str
-        negative: str
+        prompt: str           # ポジティブプロンプト（最終出力）
+        negative: str         # ネガティブプロンプト（最終出力）
         tag_count: int
         errors: list[str] = Field(default_factory=list)
         adapter_output: dict | None = None
+        # ★ v2.1 — Profile 適用結果
+        profile_applied: bool = False          # apply_profile が実行されたか
+        excluded_tags: list[str] = Field(default_factory=list)   # 除外されたタグ
+        added_tags: list[str] = Field(default_factory=list)       # 追加されたタグ
+        auto_learned: bool = False             # 自動学習が実行されたか
 
     class OptimizeRequest(BaseModel):
         prompt: str = Field(..., description="分析対象プロンプト")
@@ -451,4 +456,372 @@ if _PYDANTIC_AVAILABLE:
         """DELETE /profile/reset レスポンス"""
         reset: bool
         message: str
+
+    # ── v2.1 Profile Settings ────────────────────────────────────
+
+    class ProfileSettingsResponse(BaseModel):
+        """GET /profile/settings レスポンス"""
+        auto_learn: bool = False
+        auto_learn_interval: int = 10
+        apply_profile_default: bool = False
+        recommendation_threshold: int = 2
+        compile_count: int = 0        # サーバー起動後のコンパイル回数
+
+    class ProfileSettingsUpdateRequest(BaseModel):
+        """PUT /profile/settings リクエスト"""
+        auto_learn: bool | None = None
+        auto_learn_interval: int | None = Field(default=None, ge=1, le=100)
+        apply_profile_default: bool | None = None
+        recommendation_threshold: int | None = Field(default=None, ge=1, le=10)
+
+    # ── v2.2 高度検索 ────────────────────────────────────────────
+
+    class RelatedTagItem(BaseModel):
+        """関連タグ 1件"""
+        tag: str
+        score: float        # 関連度スコア（0.0〜1.0）
+        co_count: int = 0   # 同時出現回数
+        category: str = ""
+
+    class RelatedTagsResponse(BaseModel):
+        """GET /dictionary/related/{tag} レスポンス"""
+        tag: str
+        related: list[RelatedTagItem]
+        total: int
+
+    class HistorySearchResponse(BaseModel):
+        """GET /history/search レスポンス"""
+        entries: list[HistoryEntryResponse]
+        total: int
+        query: str = ""
+
+    # ── v2.2 プリセット v2 ───────────────────────────────────────
+
+    class SaveAsPresetRequest(BaseModel):
+        """POST /profile/save-as-preset リクエスト"""
+        preset_id: str = Field(..., min_length=1)
+        name: str = Field(..., min_length=1)
+        top_n: int = Field(default=20, ge=1, le=50)
+        category: str = "personal"
+        description: str = ""
+
+    class SaveAsPresetResponse(BaseModel):
+        """POST /profile/save-as-preset レスポンス"""
+        preset_id: str
+        name: str
+        tag_count: int
+        negative_tag_count: int
+        category: str
+
+    # ── v2.2 DB 統計 ─────────────────────────────────────────────
+
+    class StorageStatsResponse(BaseModel):
+        """GET /profile/storage レスポンス"""
+        storage: str          # "json" | "sqlite"
+        tag_frequency_count: int
+        tag_weight_count: int
+        style_rule_count: int
+        score_trend_count: int
+        db_path: str = ""
+
+    # ── v2.3 ユーザー管理 ───────────────────────────────────────
+
+    class RegisterRequest(BaseModel):
+        """POST /users/register リクエスト"""
+        username: str = Field(..., min_length=3, max_length=30,
+                              pattern=r"^[a-zA-Z0-9_-]+$")
+        display_name: str = ""
+        expires_days: int | None = Field(default=None, ge=1, le=3650)
+
+    class UserInfoResponse(BaseModel):
+        """ユーザー情報レスポンス"""
+        user_id: str
+        username: str
+        display_name: str
+        created_at: str
+        last_active: str
+
+    class RegisterResponse(BaseModel):
+        """POST /users/register レスポンス"""
+        user: UserInfoResponse
+        api_key: str     # 登録時のみ返す（再取得不可）
+        message: str = "API キーを安全な場所に保存してください"
+
+    class ApiKeyResponse(BaseModel):
+        """API キー情報レスポンス"""
+        key_id: str
+        label: str
+        created_at: str
+        last_used: str | None
+        expires_at: str | None
+
+    class CreateApiKeyRequest(BaseModel):
+        """POST /users/me/api-keys リクエスト"""
+        label: str = "new key"
+        expires_days: int | None = Field(default=None, ge=1, le=3650)
+
+    class CreateApiKeyResponse(BaseModel):
+        """POST /users/me/api-keys レスポンス"""
+        api_key: str
+        key_info: ApiKeyResponse
+        message: str = "このキーは1度しか表示されません"
+
+    # ── v2.3 プリセット共有 ──────────────────────────────────────
+
+    class SharePresetRequest(BaseModel):
+        """POST /presets/{id}/share リクエスト"""
+        title: str = ""
+        description: str = ""
+        expires_days: int | None = Field(default=30, ge=1, le=365)
+
+    class ShareTokenResponse(BaseModel):
+        """共有トークンレスポンス"""
+        token: str
+        preset_id: str
+        title: str
+        description: str
+        share_url: str
+        created_at: str
+        expires_at: str | None
+        view_count: int
+
+    class SharedPresetResponse(BaseModel):
+        """GET /shared/presets/{token} レスポンス"""
+        token: str
+        preset_id: str
+        title: str
+        description: str
+        created_at: str
+        view_count: int
+        preset_data: dict
+
+    class DeleteShareResponse(BaseModel):
+        token: str
+        deleted: bool
+
+    # ── v2.3 コミュニティ統計 ────────────────────────────────────
+
+    class CommunityTagItem(BaseModel):
+        """コミュニティタグ 1件"""
+        tag: str
+        total_count: int
+        avg_score: float
+        category: str = ""
+
+    class CommunityTagsResponse(BaseModel):
+        """GET /community/tags レスポンス"""
+        tags: list[CommunityTagItem]
+        total: int
+        stats: dict
+
+    class ContributeRequest(BaseModel):
+        """POST /community/contribute リクエスト"""
+        tags: list[str] = Field(..., min_length=1)
+        avg_score: float = Field(default=0.0, ge=0.0, le=100.0)
+
+    class ContributeResponse(BaseModel):
+        contributed: int
+        message: str
+
+    # ── v2.4 バッチ処理 ─────────────────────────────────────────
+
+    class BatchCompileRequest(BaseModel):
+        """POST /batch/compile リクエスト"""
+        prompts: list[str] = Field(..., min_length=1, max_length=50)
+        apply_profile: bool = False
+        adapter: str | None = None
+
+    class BatchOptimizeRequest(BaseModel):
+        """POST /batch/optimize リクエスト"""
+        prompts: list[str] = Field(..., min_length=1, max_length=50)
+
+    class BatchItemResponse(BaseModel):
+        """バッチアイテム 1件レスポンス"""
+        index: int
+        input: str
+        prompt_out: str = ""
+        negative_out: str = ""
+        tag_count: int = 0
+        score: float = 0.0
+        issues: list[str] = []
+        error: str = ""
+        elapsed_ms: float = 0.0
+        success: bool = True
+
+    class BatchResultResponse(BaseModel):
+        """バッチ処理結果レスポンス"""
+        job_id: str
+        mode: str
+        total: int
+        succeeded: int
+        failed: int
+        avg_score: float = 0.0
+        avg_tag_count: float = 0.0
+        total_elapsed_ms: float
+        started_at: str
+        finished_at: str
+        items: list[BatchItemResponse]
+
+    # ── v2.4 タグ補完 ───────────────────────────────────────────
+
+    class AutocompleteItem(BaseModel):
+        key: str
+        resolved: str
+        category: str = ""
+        weight: float = 1.0
+
+    class AutocompleteResponse(BaseModel):
+        """GET /dictionary/autocomplete レスポンス"""
+        query: str
+        items: list[AutocompleteItem]
+        total: int
+
+    class SuggestResponse(BaseModel):
+        """GET /dictionary/suggest レスポンス"""
+        current_tags: list[str]
+        suggestions: list[AutocompleteItem]
+        total: int
+
+    # ── v2.4 プロファイル エクスポート/インポート ────────────────
+
+    class ProfileExportResponse(BaseModel):
+        """GET /profile/export レスポンス"""
+        version: str
+        exported_at: str
+        tag_frequency_count: int
+        tag_weight_count: int
+        style_rule_count: int
+        data: dict
+
+    class ProfileImportRequest(BaseModel):
+        """POST /profile/import リクエスト"""
+        data: dict
+        merge: bool = False  # True = 既存データにマージ / False = 上書き
+
+    class ProfileImportResponse(BaseModel):
+        imported_frequencies: int
+        imported_weights: int
+        imported_rules: int
+        merged: bool
+
+    # ── v2.4 プリセットバージョン管理 ────────────────────────────
+
+    class PresetVersionItem(BaseModel):
+        version_id: str
+        preset_id: str
+        created_at: str
+        label: str = ""
+        tag_count: int = 0
+        neg_count: int = 0
+
+    class PresetVersionsResponse(BaseModel):
+        """GET /presets/{id}/versions レスポンス"""
+        preset_id: str
+        versions: list[PresetVersionItem]
+        total: int
+
+    class RestoreVersionResponse(BaseModel):
+        """POST /presets/{id}/versions/{v}/restore レスポンス"""
+        preset_id: str
+        version_id: str
+        restored: bool
+        tag_count: int
+
+    # ── v2.5 LoRA 分析 ───────────────────────────────────────────
+
+    class LoraAnalyzeRequest(BaseModel):
+        """POST /lora/analyze リクエスト"""
+        file_path:    str | None = None        # SafeTensors ファイルパス
+        metadata:     dict | None = None       # メタデータ直接入力（CivitAI等）
+        file_name:    str = "unknown.safetensors"
+        register_to_dict: bool = False         # 辞書に自動登録するか
+        category:     str = "lora"
+
+    class LoraTagCandidateItem(BaseModel):
+        tag: str
+        source: str
+        confidence: float
+        category: str = ""
+        weight: float = 1.0
+
+    class LoraAnalyzeResponse(BaseModel):
+        """POST /lora/analyze レスポンス"""
+        file_name:     str
+        model_name:    str = ""
+        base_model:    str = ""
+        description:   str = ""
+        trigger_words: list[str]
+        training_tags: list[str]
+        total_tags:    int
+        tag_candidates: list[LoraTagCandidateItem]
+        registered:    int = 0
+        error:         str = ""
+        success:       bool
+
+    # ── v2.5 AI タグ提案 ─────────────────────────────────────────
+
+    class AiTagRequest(BaseModel):
+        """POST /ai/tag リクエスト"""
+        image_url:     str | None = None
+        current_tags:  list[str] = []
+        model:         str = "dictionary"      # wd14 / joycaption / florence2 / dictionary
+        threshold:     float = Field(default=0.35, ge=0.0, le=1.0)
+        n:             int = Field(default=20, ge=1, le=50)
+
+    class AiTagItem(BaseModel):
+        tag: str
+        score: float
+
+    class AiTagResponse(BaseModel):
+        """POST /ai/tag レスポンス"""
+        model:   str
+        source:  str
+        tags:    list[AiTagItem]
+        top_tags: list[str]
+        error:   str = ""
+        success: bool
+
+    class AiStatusResponse(BaseModel):
+        """GET /ai/status レスポンス"""
+        available_models: list[str]
+        wd14_available:        bool
+        joycaption_available:  bool
+        florence2_available:   bool
+        dictionary_available:  bool
+
+    # ── v2.5 Negative 学習 ───────────────────────────────────────
+
+    class NegativeLearnResponse(BaseModel):
+        """POST /ai/negative-learn レスポンス"""
+        neg_learned:   int
+        avoid_learned: int
+        total:         int
+
+    class NegativeTagItem(BaseModel):
+        tag: str
+        neg_count: int
+        avoid_count: int
+        priority: float
+
+    class NegativeSuggestResponse(BaseModel):
+        """GET /ai/negative-suggest レスポンス"""
+        suggestions: list[NegativeTagItem]
+        total: int
+
+    # ── v2.5 一貫性チェック ──────────────────────────────────────
+
+    class ConsistencyCheckRequest(BaseModel):
+        """POST /consistency/check リクエスト"""
+        prompts: list[str] = Field(..., min_length=2, max_length=20)
+        labels:  list[str] = []
+
+    class ConsistencyCheckResponse(BaseModel):
+        """POST /consistency/check レスポンス"""
+        overall_score:     float
+        category_scores:   dict[str, float]
+        common_tags:       list[str]
+        inconsistent_tags: list[str]
+        missing_tags:      list[str]
+        recommendations:   list[str]
+        detail:            list[dict]
 
