@@ -1,0 +1,70 @@
+{
+  "name": "pose",
+  "description": "ポーズ・構図",
+  "category": "pose",
+  "entry_count": 10,
+  "entries": [
+    {
+      "value": "standing",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "sitting",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "lying_down",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "walking",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "running",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "looking_at_viewer",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "from_above",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "from_side",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "full_body",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "upper_body",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    }
+  ],
+  "created_at": "2026-07-02T07:34:23.247206",
+  "updated_at": "2026-07-02T07:34:23.247206"
+}
