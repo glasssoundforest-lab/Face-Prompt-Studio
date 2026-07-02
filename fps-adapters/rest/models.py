@@ -727,3 +727,101 @@ if _PYDANTIC_AVAILABLE:
         restored: bool
         tag_count: int
 
+    # ── v2.5 LoRA 分析 ───────────────────────────────────────────
+
+    class LoraAnalyzeRequest(BaseModel):
+        """POST /lora/analyze リクエスト"""
+        file_path:    str | None = None        # SafeTensors ファイルパス
+        metadata:     dict | None = None       # メタデータ直接入力（CivitAI等）
+        file_name:    str = "unknown.safetensors"
+        register_to_dict: bool = False         # 辞書に自動登録するか
+        category:     str = "lora"
+
+    class LoraTagCandidateItem(BaseModel):
+        tag: str
+        source: str
+        confidence: float
+        category: str = ""
+        weight: float = 1.0
+
+    class LoraAnalyzeResponse(BaseModel):
+        """POST /lora/analyze レスポンス"""
+        file_name:     str
+        model_name:    str = ""
+        base_model:    str = ""
+        description:   str = ""
+        trigger_words: list[str]
+        training_tags: list[str]
+        total_tags:    int
+        tag_candidates: list[LoraTagCandidateItem]
+        registered:    int = 0
+        error:         str = ""
+        success:       bool
+
+    # ── v2.5 AI タグ提案 ─────────────────────────────────────────
+
+    class AiTagRequest(BaseModel):
+        """POST /ai/tag リクエスト"""
+        image_url:     str | None = None
+        current_tags:  list[str] = []
+        model:         str = "dictionary"      # wd14 / joycaption / florence2 / dictionary
+        threshold:     float = Field(default=0.35, ge=0.0, le=1.0)
+        n:             int = Field(default=20, ge=1, le=50)
+
+    class AiTagItem(BaseModel):
+        tag: str
+        score: float
+
+    class AiTagResponse(BaseModel):
+        """POST /ai/tag レスポンス"""
+        model:   str
+        source:  str
+        tags:    list[AiTagItem]
+        top_tags: list[str]
+        error:   str = ""
+        success: bool
+
+    class AiStatusResponse(BaseModel):
+        """GET /ai/status レスポンス"""
+        available_models: list[str]
+        wd14_available:        bool
+        joycaption_available:  bool
+        florence2_available:   bool
+        dictionary_available:  bool
+
+    # ── v2.5 Negative 学習 ───────────────────────────────────────
+
+    class NegativeLearnResponse(BaseModel):
+        """POST /ai/negative-learn レスポンス"""
+        neg_learned:   int
+        avoid_learned: int
+        total:         int
+
+    class NegativeTagItem(BaseModel):
+        tag: str
+        neg_count: int
+        avoid_count: int
+        priority: float
+
+    class NegativeSuggestResponse(BaseModel):
+        """GET /ai/negative-suggest レスポンス"""
+        suggestions: list[NegativeTagItem]
+        total: int
+
+    # ── v2.5 一貫性チェック ──────────────────────────────────────
+
+    class ConsistencyCheckRequest(BaseModel):
+        """POST /consistency/check リクエスト"""
+        prompts: list[str] = Field(..., min_length=2, max_length=20)
+        labels:  list[str] = []
+
+    class ConsistencyCheckResponse(BaseModel):
+        """POST /consistency/check レスポンス"""
+        overall_score:     float
+        category_scores:   dict[str, float]
+        common_tags:       list[str]
+        inconsistent_tags: list[str]
+        missing_tags:      list[str]
+        recommendations:   list[str]
+        detail:            list[dict]
+
