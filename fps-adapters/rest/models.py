@@ -30,11 +30,16 @@ if _PYDANTIC_AVAILABLE:
 
     class CompileResponse(BaseModel):
         success: bool
-        prompt: str
-        negative: str
+        prompt: str           # ポジティブプロンプト（最終出力）
+        negative: str         # ネガティブプロンプト（最終出力）
         tag_count: int
         errors: list[str] = Field(default_factory=list)
         adapter_output: dict | None = None
+        # ★ v2.1 — Profile 適用結果
+        profile_applied: bool = False          # apply_profile が実行されたか
+        excluded_tags: list[str] = Field(default_factory=list)   # 除外されたタグ
+        added_tags: list[str] = Field(default_factory=list)       # 追加されたタグ
+        auto_learned: bool = False             # 自動学習が実行されたか
 
     class OptimizeRequest(BaseModel):
         prompt: str = Field(..., description="分析対象プロンプト")
@@ -451,4 +456,21 @@ if _PYDANTIC_AVAILABLE:
         """DELETE /profile/reset レスポンス"""
         reset: bool
         message: str
+
+    # ── v2.1 Profile Settings ────────────────────────────────────
+
+    class ProfileSettingsResponse(BaseModel):
+        """GET /profile/settings レスポンス"""
+        auto_learn: bool = False
+        auto_learn_interval: int = 10
+        apply_profile_default: bool = False
+        recommendation_threshold: int = 2
+        compile_count: int = 0        # サーバー起動後のコンパイル回数
+
+    class ProfileSettingsUpdateRequest(BaseModel):
+        """PUT /profile/settings リクエスト"""
+        auto_learn: bool | None = None
+        auto_learn_interval: int | None = Field(default=None, ge=1, le=100)
+        apply_profile_default: bool | None = None
+        recommendation_threshold: int | None = Field(default=None, ge=1, le=10)
 
