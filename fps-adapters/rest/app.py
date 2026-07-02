@@ -138,6 +138,18 @@ from .models import (  # noqa: E402
     PresetVersionItem,
     PresetVersionsResponse,
     RestoreVersionResponse,
+    LoraAnalyzeRequest,
+    LoraAnalyzeResponse,
+    LoraTagCandidateItem,
+    AiTagRequest,
+    AiTagItem,
+    AiTagResponse,
+    AiStatusResponse,
+    NegativeLearnResponse,
+    NegativeTagItem,
+    NegativeSuggestResponse,
+    ConsistencyCheckRequest,
+    ConsistencyCheckResponse,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -146,7 +158,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.4.0",
+        version="2.5.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -188,7 +200,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.4.0",
+            version="2.5.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1189,7 +1201,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.4.0",
+            version="2.5.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1376,6 +1388,253 @@ if _FASTAPI_AVAILABLE:
 
 
 
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.5 LoRA 分析（/lora）
+    # ══════════════════════════════════════════════════════════════
+
+    def _ai(key: str):
+        """ai_manager から指定モジュールを取得する"""
+        return get_context().ai_manager[key]
+
+    @app.post(
+        "/lora/analyze",
+        response_model=LoraAnalyzeResponse,
+        summary="Analyze a LoRA file and extract tag candidates",
+        tags=["lora"],
+    )
+    def lora_analyze(body: LoraAnalyzeRequest) -> LoraAnalyzeResponse:
+        """
+        ★ v2.5 — LoRA ファイルのメタデータを解析してタグ候補を返す。
+
+        file_path: SafeTensors ファイルのフルパス（サーバー上）
+        metadata:  CivitAI 等から取得したメタデータ辞書（file_path 不要）
+
+        register_to_dict=true の場合、信頼度 0.5 以上のタグを
+        ユーザー辞書に自動登録する。
+        """
+        analyzer = _ai("lora")
+        if body.metadata:
+            info = analyzer.analyze_from_metadata(body.metadata, body.file_name)
+        elif body.file_path:
+            info = analyzer.analyze(body.file_path)
+        else:
+            raise HTTPException(status_code=400,
+                                detail="file_path または metadata を指定してください")
+
+        registered = 0
+        if body.register_to_dict and info.success:
+            ctx = get_context()
+            registered = analyzer.register_to_dictionary(
+                info, ctx.dictionary_manager,
+                category=body.category,
+            )
+
+        return LoraAnalyzeResponse(
+            file_name=info.file_name,
+            model_name=info.model_name,
+            base_model=info.base_model,
+            description=info.description,
+            trigger_words=info.trigger_words,
+            training_tags=info.training_tags,
+            total_tags=info.total_tags,
+            tag_candidates=[
+                LoraTagCandidateItem(
+                    tag=c.tag, source=c.source,
+                    confidence=c.confidence,
+                    category=c.category,
+                    weight=c.weight,
+                ) for c in info.tag_candidates
+            ],
+            registered=registered,
+            error=info.error,
+            success=info.success,
+        )
+
+    @app.get(
+        "/lora/list",
+        summary="List analyzed LoRA files",
+        tags=["lora"],
+    )
+    def lora_list(
+        lora_dir: str = Query(
+            default="",
+            description="スキャンするディレクトリ（省略時はデフォルト LoRA パス）",
+        )
+    ) -> dict:
+        """
+        ★ v2.5 — 指定ディレクトリの .safetensors ファイル一覧を返す。
+        実際の分析は POST /lora/analyze で行う。
+        """
+        from pathlib import Path
+        scan_dir = Path(lora_dir) if lora_dir else Path("models/loras")
+        if not scan_dir.exists():
+            return {"files": [], "total": 0, "dir": str(scan_dir),
+                    "error": "ディレクトリが見つかりません"}
+        files = [
+            {"name": f.name, "size_mb": round(f.stat().st_size / 1024 / 1024, 1),
+             "path": str(f)}
+            for f in sorted(scan_dir.glob("*.safetensors"))
+        ]
+        return {"files": files, "total": len(files), "dir": str(scan_dir)}
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.5 AI タグ提案（/ai）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/ai/status",
+        response_model=AiStatusResponse,
+        summary="Get AI feature availability",
+        tags=["ai"],
+    )
+    def ai_status() -> AiStatusResponse:
+        """
+        ★ v2.5 — 各 AI タガーの利用可能状態を返す。
+        外部タガーが起動していない場合は dictionary フォールバックが利用される。
+        """
+        from ai.tagger_bridge import TaggerModel  # type: ignore
+        tagger = _ai("tagger")
+        available = tagger.available_models()
+        return AiStatusResponse(
+            available_models=available,
+            wd14_available="wd14" in available,
+            joycaption_available="joycaption" in available,
+            florence2_available="florence2" in available,
+            dictionary_available=True,
+        )
+
+    @app.post(
+        "/ai/tag",
+        response_model=AiTagResponse,
+        summary="Get AI tag suggestions",
+        tags=["ai"],
+    )
+    def ai_tag(body: AiTagRequest) -> AiTagResponse:
+        """
+        ★ v2.5 — AI タグ提案を返す。
+
+        image_url を指定すると外部タガー（WD14等）でタグ付けを行う。
+        image_url を省略すると current_tags から辞書ベースで提案する。
+        外部タガーが利用不可の場合は自動的に辞書フォールバックに切り替わる。
+        """
+        from ai.tagger_bridge import TaggerModel  # type: ignore
+        tagger = _ai("tagger")
+
+        try:
+            model = TaggerModel(body.model)
+        except ValueError:
+            model = TaggerModel.DICTIONARY
+
+        if body.image_url:
+            result = tagger.tag_image(body.image_url, model=model,
+                                      threshold=body.threshold)
+        else:
+            result = tagger.suggest_from_context(body.current_tags, n=body.n)
+
+        return AiTagResponse(
+            model=result.model,
+            source=result.source,
+            tags=[AiTagItem(tag=t["tag"], score=t.get("score", 0.0))
+                  for t in result.tags[:body.n]],
+            top_tags=result.top_tags(n=body.n, threshold=body.threshold),
+            error=result.error,
+            success=result.success,
+        )
+
+    @app.post(
+        "/ai/negative-learn",
+        response_model=NegativeLearnResponse,
+        summary="Learn negative tags from history",
+        tags=["ai"],
+    )
+    def ai_negative_learn(
+        limit: int = Query(default=200, ge=10, le=1000),
+    ) -> NegativeLearnResponse:
+        """
+        ★ v2.5 — 変換履歴からネガティブタグパターンを学習する。
+
+        学習内容:
+          1. ネガティブとして頻繁に使われているタグ
+          2. スコアが低い履歴の pos タグ（避けるべきタグ候補）
+        """
+        ctx = get_context()
+        learner = _ai("negative")
+        entries = ctx.history_manager.list_entries(limit=limit)
+        result = learner.learn(entries)
+        return NegativeLearnResponse(**result)
+
+    @app.get(
+        "/ai/negative-suggest",
+        response_model=NegativeSuggestResponse,
+        summary="Get negative tag suggestions",
+        tags=["ai"],
+    )
+    def ai_negative_suggest(
+        n: int = Query(default=20, ge=1, le=50),
+        pos_tags: str | None = Query(
+            default=None,
+            description="現在の pos タグ（カンマ区切り、含まれるものは除外）",
+        ),
+    ) -> NegativeSuggestResponse:
+        """
+        ★ v2.5 — 学習済みデータからネガティブタグ推奨リストを返す。
+        POST /ai/negative-learn を先に実行してください。
+        """
+        learner = _ai("negative")
+        if pos_tags:
+            current = [t.strip() for t in pos_tags.split(",") if t.strip()]
+            suggestions = learner.suggest_negative_for_prompt(current, n=n)
+        else:
+            suggestions = learner.recommend_negative(n=n)
+        return NegativeSuggestResponse(
+            suggestions=[
+                NegativeTagItem(
+                    tag=e.tag, neg_count=e.neg_count,
+                    avoid_count=e.avoid_count, priority=round(e.priority, 1),
+                ) for e in suggestions
+            ],
+            total=len(suggestions),
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.5 一貫性チェック（/consistency）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.post(
+        "/consistency/check",
+        response_model=ConsistencyCheckResponse,
+        summary="Check style consistency across multiple prompts",
+        tags=["consistency"],
+    )
+    def consistency_check(body: ConsistencyCheckRequest) -> ConsistencyCheckResponse:
+        """
+        ★ v2.5 — 複数プロンプトのスタイル一貫性を分析する。
+
+        同一キャラクター・スタイルで複数枚生成する場合に使用。
+        目の色・髪の色・体型などが矛盾していないか検出する。
+
+        prompts: 2〜20件のプロンプトリスト
+        labels:  各プロンプトのラベル（省略可）
+
+        戻り値:
+          overall_score:     0〜100（高いほど一貫性が高い）
+          inconsistent_tags: 矛盾するタグ（例: blue_eyes と green_eyes が混在）
+          recommendations:   改善提案
+        """
+        checker = _ai("consistency")
+        result = checker.check(body.prompts, labels=body.labels or None)
+        return ConsistencyCheckResponse(
+            overall_score=result.overall_score,
+            category_scores=result.category_scores,
+            common_tags=result.common_tags,
+            inconsistent_tags=result.inconsistent_tags,
+            missing_tags=result.missing_tags[:20],
+            recommendations=result.recommendations,
+            detail=result.detail,
+        )
 
 
     # ══════════════════════════════════════════════════════════════
@@ -1601,7 +1860,7 @@ if _FASTAPI_AVAILABLE:
         stats   = upm.statistics()
         data = profile.to_dict()
         return ProfileExportResponse(
-            version="2.4.0",
+            version="2.5.0",
             exported_at=_dt.now().isoformat(),
             tag_frequency_count=stats.get("tag_frequency_count", 0),
             tag_weight_count=stats.get("tag_weight_count", 0),
