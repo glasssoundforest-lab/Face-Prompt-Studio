@@ -1,4 +1,5 @@
 """
+v2.6: FacePromptWildcardNode 追加（19ノード体制）
 fps-adapters/comfyui/__init__.py
 ComfyUI カスタムノード エントリポイント
 
@@ -23,7 +24,8 @@ from .nodes.face_prompt_profile import (
     FacePromptProfileLearnNode,
 )
 from .nodes.face_prompt_rule_editor import FacePromptRuleEditorNode
-from .nodes.face_prompt_tagger import FacePromptAITaggerNode           # ★v2.5
+from .nodes.face_prompt_tagger import FacePromptAITaggerNode
+from .nodes.face_prompt_wildcard import FacePromptWildcardNode  # ★v2.6           # ★v2.5
 from .nodes.face_prompt_template import FacePromptTemplateNode
 
 NODE_CLASS_MAPPINGS = {
@@ -45,7 +47,10 @@ NODE_CLASS_MAPPINGS = {
     "FacePromptProfile":        FacePromptProfileNode,
     "FacePromptProfileApply":   FacePromptProfileApplyNode,
     "FacePromptProfileLearn":   FacePromptProfileLearnNode,
+    # ── Wildcard（v2.6）──────────────────────────────────────────
+    "FacePromptWildcard":    FacePromptWildcardNode,
     # ── AI 強化（v2.5） ──────────────────────────────────────────
+    "FacePromptWildcard":   "🎭 Face Prompt Wildcard",
     "FacePromptLora":           FacePromptLoraNode,
     "FacePromptAITagger":       FacePromptAITaggerNode,
     "FacePromptConsistency":    FacePromptConsistencyNode,
@@ -67,6 +72,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FacePromptProfile":        "🎭 Face Prompt Profile",
     "FacePromptProfileApply":   "🎭 Face Prompt Profile Apply",
     "FacePromptProfileLearn":   "🎭 Face Prompt Profile Learn",
+    "FacePromptWildcard":   "🎭 Face Prompt Wildcard",
     "FacePromptLora":           "🎭 Face Prompt LoRA Analyzer",
     "FacePromptAITagger":       "🎭 Face Prompt AI Tagger",
     "FacePromptConsistency":    "🎭 Face Prompt Consistency Checker",
