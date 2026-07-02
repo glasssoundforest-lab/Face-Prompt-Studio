@@ -150,6 +150,15 @@ from .models import (  # noqa: E402
     NegativeSuggestResponse,
     ConsistencyCheckRequest,
     ConsistencyCheckResponse,
+    WildcardCreateRequest,
+    WildcardUpdateRequest,
+    WildcardResponse,
+    WildcardEntryItem,
+    WildcardListResponse,
+    WildcardExpandRequest,
+    WildcardExpandResponse,
+    WildcardImportRequest,
+    MetricsResponse,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -158,7 +167,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.5.0",
+        version="2.6.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -179,11 +188,18 @@ if _FASTAPI_AVAILABLE:
     @app.on_event("startup")
     async def on_startup() -> None:
         """アプリ起動時に EventBus ↔ WebSocket ブリッジを初期化する。"""
+        global _start_time
+        import time as _time
+        _start_time = _time.time()
         ctx = get_context()
         setup_event_bridge(ctx.event_bus)
 
     _ctx: CliContext | None = None
     _compile_count: int = 0   # ★v2.1 compile 実行回数カウンター
+    _compile_ms_total: float = 0.0
+    _error_count: int = 0
+    _endpoint_calls: dict[str, int] = {}
+    _start_time: float = 0.0
 
     def get_context() -> CliContext:
         global _ctx
@@ -200,7 +216,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.5.0",
+            version="2.6.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1201,7 +1217,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.5.0",
+            version="2.6.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1389,6 +1405,219 @@ if _FASTAPI_AVAILABLE:
 
 
 
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.6 Wildcard CRUD（/wildcards）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_wm():
+        """WildcardManager を CliContext 経由で取得する"""
+        return get_context().wildcard_manager
+
+    def _wf_to_response(wf: Any, include_entries: bool = False) -> WildcardResponse:
+        return WildcardResponse(
+            name=wf.name, description=wf.description,
+            category=wf.category, entry_count=len(wf.entries),
+            entries=[WildcardEntryItem(value=e.value, weight=e.weight,
+                                       comment=e.comment)
+                     for e in wf.entries] if include_entries else [],
+            created_at=wf.created_at, updated_at=wf.updated_at,
+        )
+
+    @app.get(
+        "/wildcards",
+        response_model=WildcardListResponse,
+        summary="List all wildcards",
+        tags=["wildcards"],
+    )
+    def list_wildcards(
+        category: str | None = Query(default=None),
+    ) -> WildcardListResponse:
+        """★ v2.6 — Wildcard 一覧を返す。"""
+        wm = _get_wm()
+        wildcards = wm.list_all(category=category)
+        stats = wm.statistics()
+        return WildcardListResponse(
+            wildcards=[_wf_to_response(wf) for wf in wildcards],
+            total=len(wildcards), stats=stats,
+        )
+
+    @app.post(
+        "/wildcards",
+        response_model=WildcardResponse,
+        status_code=201,
+        summary="Create a wildcard",
+        tags=["wildcards"],
+    )
+    def create_wildcard(body: WildcardCreateRequest) -> WildcardResponse:
+        """★ v2.6 — 新しい Wildcard を作成する。"""
+        wm = _get_wm()
+        wf = wm.create(
+            name=body.name, values=body.values,
+            description=body.description, category=body.category,
+            weights=body.weights,
+        )
+        return _wf_to_response(wf, include_entries=True)
+
+    @app.get(
+        "/wildcards/{name:path}",
+        response_model=WildcardResponse,
+        summary="Get a wildcard",
+        tags=["wildcards"],
+    )
+    def get_wildcard(name: str) -> WildcardResponse:
+        """★ v2.6 — 指定 Wildcard を取得する（エントリ含む）。"""
+        wm = _get_wm()
+        wf = wm.get(name)
+        if wf is None:
+            raise HTTPException(status_code=404, detail=f"Wildcard '{name}' not found")
+        return _wf_to_response(wf, include_entries=True)
+
+    @app.put(
+        "/wildcards/{name:path}",
+        response_model=WildcardResponse,
+        summary="Update a wildcard",
+        tags=["wildcards"],
+    )
+    def update_wildcard(name: str, body: WildcardUpdateRequest) -> WildcardResponse:
+        """★ v2.6 — Wildcard を部分更新する。"""
+        wm = _get_wm()
+        wf = wm.update(name, values=body.values, description=body.description,
+                       category=body.category, weights=body.weights)
+        if wf is None:
+            raise HTTPException(status_code=404, detail=f"Wildcard '{name}' not found")
+        return _wf_to_response(wf, include_entries=True)
+
+    @app.delete(
+        "/wildcards/{name:path}",
+        summary="Delete a wildcard",
+        tags=["wildcards"],
+    )
+    def delete_wildcard(name: str) -> dict:
+        """★ v2.6 — Wildcard を削除する。"""
+        wm = _get_wm()
+        if not wm.delete(name):
+            raise HTTPException(status_code=404, detail=f"Wildcard '{name}' not found")
+        return {"name": name, "deleted": True}
+
+    @app.post(
+        "/wildcards/expand",
+        response_model=WildcardExpandResponse,
+        summary="Expand wildcard syntax in a prompt",
+        tags=["wildcards"],
+    )
+    def expand_wildcards(body: WildcardExpandRequest) -> WildcardExpandResponse:
+        """
+        ★ v2.6 — プロンプト内の Wildcard 構文を展開してプレビューを返す。
+
+        サポートする構文:
+          __wildcard__       Wildcard ファイルからランダム選択
+          [[A|B|C]]          インラインランダム選択
+          [[A|B|C]]:2        複数選択
+          {{var:default}}    変数展開
+          {A|B|C}            A1111 互換ランダム選択
+
+        n=5 を指定するとランダム展開を 5 パターン生成する。
+        """
+        from wildcard.engine import WildcardEngine  # type: ignore
+        wm = _get_wm()
+        engine = WildcardEngine(wildcard_manager=wm, seed=body.seed)
+        expanded = engine.preview_expand(body.prompt, n=body.n,
+                                         seed=body.seed)
+        wildcards_used = engine.extract_wildcards(body.prompt)
+        return WildcardExpandResponse(
+            original=body.prompt,
+            expanded=expanded,
+            wildcards_used=wildcards_used,
+        )
+
+    @app.post(
+        "/wildcards/{name:path}/import",
+        response_model=WildcardResponse,
+        status_code=201,
+        summary="Import wildcard from plain text",
+        tags=["wildcards"],
+    )
+    def import_wildcard_txt(name: str,
+                            body: WildcardImportRequest) -> WildcardResponse:
+        """★ v2.6 — テキスト形式（1行1値）から Wildcard をインポートする。"""
+        wm = _get_wm()
+        wf = wm.import_txt(name, body.text, description=body.description)
+        return _wf_to_response(wf, include_entries=True)
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.6 メトリクス（/metrics）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/metrics",
+        response_model=MetricsResponse,
+        summary="Get server metrics",
+        tags=["metrics"],
+    )
+    def get_metrics() -> MetricsResponse:
+        """
+        ★ v2.6 — サーバーのパフォーマンスメトリクスを返す。
+
+        compile_count: 起動後のコンパイル実行回数
+        avg_compile_ms: 平均コンパイル時間（ms）
+        cache_hit_rate: キャッシュヒット率
+        error_count: エラー発生回数
+        """
+        import time as _time
+        uptime = _time.time() - _start_time if _start_time else 0.0
+        avg_ms = (_compile_ms_total / _compile_count
+                  if _compile_count > 0 else 0.0)
+        ctx = get_context()
+        wm_stats = ctx.wildcard_manager.statistics()
+        dict_stats = ctx.dictionary_manager.statistics()
+        try:
+            cache_stats = ctx.cache_manager.statistics()
+            hits   = cache_stats.get("hits", 0)
+            misses = cache_stats.get("misses", 0)
+            total  = hits + misses
+            hit_rate = (hits / total) if total > 0 else 0.0
+        except Exception:
+            hit_rate = 0.0
+
+        return MetricsResponse(
+            uptime_seconds=round(uptime, 1),
+            compile_count=_compile_count,
+            avg_compile_ms=round(avg_ms, 1),
+            cache_hit_rate=round(hit_rate, 3),
+            endpoint_calls=dict(_endpoint_calls),
+            error_count=_error_count,
+            wildcard_count=wm_stats.get("wildcard_count", 0),
+            dictionary_keys=dict_stats.get("total_keys", 0),
+        )
+
+    @app.get(
+        "/metrics/prometheus",
+        summary="Get metrics in Prometheus text format",
+        tags=["metrics"],
+        response_class=None,
+    )
+    def get_metrics_prometheus():
+        """★ v2.6 — Prometheus テキスト形式でメトリクスを返す。"""
+        from fastapi.responses import PlainTextResponse
+        import time as _time
+        uptime = _time.time() - _start_time if _start_time else 0.0
+        lines = [
+            "# HELP fps_uptime_seconds Server uptime in seconds",
+            "# TYPE fps_uptime_seconds gauge",
+            f"fps_uptime_seconds {uptime:.1f}",
+            "# HELP fps_compile_total Total compile requests",
+            "# TYPE fps_compile_total counter",
+            f"fps_compile_total {_compile_count}",
+            "# HELP fps_error_total Total errors",
+            "# TYPE fps_error_total counter",
+            f"fps_error_total {_error_count}",
+        ]
+        return PlainTextResponse("
+".join(lines) + "
+")
 
 
     # ══════════════════════════════════════════════════════════════
@@ -1860,7 +2089,7 @@ if _FASTAPI_AVAILABLE:
         stats   = upm.statistics()
         data = profile.to_dict()
         return ProfileExportResponse(
-            version="2.5.0",
+            version="2.6.0",
             exported_at=_dt.now().isoformat(),
             tag_frequency_count=stats.get("tag_frequency_count", 0),
             tag_weight_count=stats.get("tag_weight_count", 0),
