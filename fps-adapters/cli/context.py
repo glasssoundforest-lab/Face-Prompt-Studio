@@ -49,6 +49,8 @@ class CliContext:
         self._user_profile_manager = None  # ★v2.0
         self._user_manager = None         # ★v2.3
         self._share_manager = None        # ★v2.3
+        self._batch_manager = None        # ★v2.4
+        self._preset_version_manager = None  # ★v2.4
 
     @property
     def dictionary_manager(self):
@@ -221,6 +223,29 @@ class CliContext:
             sm = ShareManager(db_path=self.data_root / "user" / "share.db")
             self._share_manager = sm
         return self._share_manager
+
+    @property
+    def batch_manager(self):
+        """★ v2.4 — BatchManager シングルトンプロパティ。"""
+        if self._batch_manager is None:
+            from batch.manager import BatchManager  # type: ignore[import]
+            self._batch_manager = BatchManager(
+                pipeline_manager=self.pipeline_manager,
+                optimizer_manager=self.optimizer_manager,
+            )
+        return self._batch_manager
+
+    @property
+    def preset_version_manager(self):
+        """★ v2.4 — PresetVersionManager シングルトンプロパティ。"""
+        if self._preset_version_manager is None:
+            from preset.version_manager import PresetVersionManager  # type: ignore[import]
+            self._preset_version_manager = PresetVersionManager(
+                versions_dir=self.data_root / "presets" / "versions",
+                max_versions=20,
+            )
+        return self._preset_version_manager
+
 
 
 
