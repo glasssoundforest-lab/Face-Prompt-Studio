@@ -1,0 +1,37 @@
+{
+  "name": "Face Prompt Studio",
+  "short_name": "FPS",
+  "description": "Prompt Compiler & Personalization for Stable Diffusion",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#7b2fff",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "shortcuts": [
+    {
+      "name": "Editor",
+      "url": "/?tab=editor",
+      "description": "Open prompt editor"
+    },
+    {
+      "name": "Wildcard",
+      "url": "/?tab=wildcard",
+      "description": "Wildcard manager"
+    }
+  ]
+}
