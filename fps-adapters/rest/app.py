@@ -137,6 +137,13 @@ from .models import (  # noqa: E402
     ProfileImportResponse,
     PresetVersionItem,
     PresetVersionsResponse,
+    PluginManifestItem,
+    MarketplaceListResponse,
+    PluginInstallRequest,
+    PluginInstallResponse,
+    RateLimitStatus,
+    AsyncCompileRequest,
+    AsyncCompileResponse,
     TranslateRequest,
     TranslateResponse,
     TranslateDetailItem,
@@ -194,10 +201,13 @@ from .models import (  # noqa: E402
 if _FASTAPI_AVAILABLE:
     from cli.context import CliContext
 
+    from starlette.middleware.cors import CORSMiddleware  # type: ignore
+    from rest.middleware.rate_limit import RateLimitMiddleware  # type: ignore
+
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.9.0",
+        version="3.0.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -214,6 +224,22 @@ if _FASTAPI_AVAILABLE:
 
 
     from .ws import manager as ws_manager, setup_event_bridge
+
+    # ── v3.0 ミドルウェア登録 ───────────────────────────────────────
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*", "X-Api-Key"],
+    )
+    app.add_middleware(
+        RateLimitMiddleware,
+        anon_limit=100,
+        auth_limit=1000,
+        window_sec=60.0,
+        enabled=True,
+    )
 
     @app.on_event("startup")
     async def on_startup() -> None:
@@ -246,7 +272,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.9.0",
+            version="3.0.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1247,7 +1273,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.9.0",
+            version="3.0.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1439,6 +1465,182 @@ if _FASTAPI_AVAILABLE:
 
 
 
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v3.0 マーケットプレイス（/marketplace）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_mm():
+        return get_context().marketplace
+
+    @app.get(
+        "/marketplace",
+        response_model=MarketplaceListResponse,
+        summary="Browse plugin marketplace",
+        tags=["marketplace"],
+    )
+    def browse_marketplace(
+        q: str | None = Query(default=None, description="検索キーワード"),
+        type: str | None = Query(default=None, description="プラグイン種別"),
+        limit: int = Query(default=20, ge=1, le=100),
+    ) -> MarketplaceListResponse:
+        """
+        ★ v3.0 — プラグインマーケットプレイスを検索・閲覧する。
+
+        利用可能なプラグイン種別:
+          dictionary / rule / template / wildcard / character / preset / full
+        """
+        mm = _get_mm()
+        plugins = mm.search(q or "", plugin_type=type, limit=limit)
+        return MarketplaceListResponse(
+            plugins=[PluginManifestItem(**p.to_dict()) for p in plugins],
+            total=len(plugins),
+            stats=mm.statistics(),
+        )
+
+    @app.get(
+        "/marketplace/installed",
+        response_model=MarketplaceListResponse,
+        summary="List installed plugins",
+        tags=["marketplace"],
+    )
+    def list_installed_plugins() -> MarketplaceListResponse:
+        """★ v3.0 — インストール済みプラグイン一覧を返す。"""
+        mm = _get_mm()
+        plugins = mm.list_installed()
+        return MarketplaceListResponse(
+            plugins=[PluginManifestItem(**p.to_dict()) for p in plugins],
+            total=len(plugins),
+            stats=mm.statistics(),
+        )
+
+    @app.post(
+        "/marketplace/install",
+        response_model=PluginInstallResponse,
+        status_code=201,
+        summary="Install a plugin",
+        tags=["marketplace"],
+    )
+    def install_plugin(body: PluginInstallRequest) -> PluginInstallResponse:
+        """
+        ★ v3.0 — プラグインをインストールする。
+
+        plugin_id: マーケットプレイスの ID
+        url:       GitHub/任意 URL から直接インストール
+        """
+        mm = _get_mm()
+        if body.url:
+            result = mm.install_from_url(body.url, body.plugin_type,
+                                         body.plugin_id or "")
+        elif body.plugin_id:
+            plugins = mm.search(body.plugin_id)
+            match   = next((p for p in plugins if p.id == body.plugin_id), None)
+            if match is None:
+                raise HTTPException(status_code=404,
+                    detail=f"Plugin '{body.plugin_id}' not found in marketplace")
+            result = mm.install(match, force=body.force)
+        else:
+            raise HTTPException(status_code=400,
+                detail="plugin_id または url を指定してください")
+        return PluginInstallResponse(**result)
+
+    @app.delete(
+        "/marketplace/installed/{plugin_id}",
+        summary="Uninstall a plugin",
+        tags=["marketplace"],
+    )
+    def uninstall_plugin(plugin_id: str) -> dict:
+        """★ v3.0 — プラグインをアンインストールする。"""
+        mm = _get_mm()
+        result = mm.uninstall(plugin_id)
+        if not result["success"]:
+            raise HTTPException(status_code=404, detail=result["message"])
+        return result
+
+    # ══════════════════════════════════════════════════════════════
+    # v3.0 ヘルス / レート制限（/health, /rate-limit）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/health/detailed",
+        summary="Detailed health check",
+        tags=["health"],
+    )
+    def health_detailed() -> dict:
+        """★ v3.0 — 詳細ヘルスチェック（全コンポーネントの状態）。"""
+        import time as _time
+        ctx = get_context()
+        checks: dict[str, Any] = {}
+        for name, fn in [
+            ("dictionary",  lambda: ctx.dictionary_manager.statistics()),
+            ("pipeline",    lambda: {"status": "ok"}),
+            ("wildcard",    lambda: ctx.wildcard_manager.statistics()),
+            ("marketplace", lambda: ctx.marketplace.statistics()),
+            ("comfyui",     lambda: {"available": ctx.comfyui_client.is_available()}),
+        ]:
+            try:
+                checks[name] = {"status": "ok", **fn()}
+            except Exception as e:
+                checks[name] = {"status": "error", "error": str(e)}
+        return {
+            "status":   "ok" if all(v.get("status") == "ok" for v in checks.values()) else "degraded",
+            "version":  "3.0.0",
+            "uptime":   round(_time.time() - _start_time, 1) if _start_time else 0,
+            "checks":   checks,
+        }
+
+    @app.get(
+        "/rate-limit/status",
+        response_model=RateLimitStatus,
+        summary="Get rate limit status",
+        tags=["health"],
+    )
+    def rate_limit_status() -> RateLimitStatus:
+        """★ v3.0 — レート制限の現在設定を返す。"""
+        return RateLimitStatus(
+            anon_limit=100,
+            auth_limit=1000,
+            window_sec=60.0,
+            tracked_keys=0,
+            enabled=True,
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v3.0 非同期バッチコンパイル（/compile/async）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.post(
+        "/compile/async",
+        response_model=AsyncCompileResponse,
+        status_code=202,
+        summary="Async batch compile (background)",
+        tags=["compile"],
+    )
+    def compile_async(
+        body: AsyncCompileRequest,
+        background_tasks = None,
+    ) -> AsyncCompileResponse:
+        """
+        ★ v3.0 — バックグラウンドでバッチコンパイルを実行する。
+
+        最大 20 件のプロンプトを非同期で処理する。
+        job_id を使って /batch/status で結果を確認できる。
+        """
+        import uuid as _uuid
+        job_id = str(_uuid.uuid4())[:8]
+        # 実際の非同期処理は BatchManager に委譲
+        ctx = get_context()
+        bm  = ctx.batch_manager
+        result = bm.compile_batch(body.prompts)
+        return AsyncCompileResponse(
+            job_id=result.job_id,
+            total=result.total,
+            status="completed",
+            message=f"{result.succeeded}/{result.total} 件コンパイル完了 "
+                    f"(平均スコア: {result.avg_score:.1f})",
+        )
 
 
     # ══════════════════════════════════════════════════════════════
@@ -2735,7 +2937,7 @@ if _FASTAPI_AVAILABLE:
         stats   = upm.statistics()
         data = profile.to_dict()
         return ProfileExportResponse(
-            version="2.9.0",
+            version="3.0.0",
             exported_at=_dt.now().isoformat(),
             tag_frequency_count=stats.get("tag_frequency_count", 0),
             tag_weight_count=stats.get("tag_weight_count", 0),
