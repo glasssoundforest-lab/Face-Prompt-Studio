@@ -54,6 +54,8 @@ class CliContext:
         self._ai_manager = None            # ★v2.5
         self._wildcard_manager = None     # ★v2.6
         self._character_manager = None    # ★v2.7
+        self._export_manager   = None    # ★v2.8
+        self._session_manager  = None    # ★v2.8
 
     @property
     def dictionary_manager(self):
@@ -285,6 +287,25 @@ class CliContext:
                 characters_dir=self.data_root / "characters"
             )
         return self._character_manager
+
+    @property
+    def export_manager(self):
+        """★ v2.8 — BundleExporter（マルチフォーマットエクスポーター）。"""
+        if self._export_manager is None:
+            from export.exporters import BundleExporter  # type: ignore
+            self._export_manager = BundleExporter()
+        return self._export_manager
+
+    @property
+    def session_manager(self):
+        """★ v2.8 — SessionManager シングルトンプロパティ。"""
+        if self._session_manager is None:
+            from session.manager import SessionManager  # type: ignore
+            self._session_manager = SessionManager(
+                sessions_dir=self.data_root / "sessions"
+            )
+        return self._session_manager
+
 
 
 
