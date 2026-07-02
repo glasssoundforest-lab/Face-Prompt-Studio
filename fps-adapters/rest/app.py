@@ -105,6 +105,12 @@ from .models import (  # noqa: E402
     ProfileResetResponse,
     ProfileSettingsResponse,
     ProfileSettingsUpdateRequest,
+    RelatedTagItem,
+    RelatedTagsResponse,
+    HistorySearchResponse,
+    SaveAsPresetRequest,
+    SaveAsPresetResponse,
+    StorageStatsResponse,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -113,7 +119,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.1.0",
+        version="2.2.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -155,7 +161,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.1.0",
+            version="2.2.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1156,7 +1162,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.1.0",
+            version="2.2.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1340,6 +1346,215 @@ if _FASTAPI_AVAILABLE:
         upm = _get_upm()
         upm.reset()
         return ProfileResetResponse(reset=True, message="プロファイルをリセットしました")
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.2 高度タグ検索
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/dictionary/related/{tag}",
+        response_model=RelatedTagsResponse,
+        summary="Get related tags",
+        tags=["dictionary"],
+    )
+    def get_related_tags(
+        tag: str,
+        n: int = Query(default=20, ge=1, le=50),
+    ) -> RelatedTagsResponse:
+        """
+        ★ v2.2 — 指定タグと関連性の高いタグ一覧を返す。
+
+        UserProfile の tag_frequencies から共起回数を算出する。
+        学習データがない場合は辞書のカテゴリ一致で代替する。
+        """
+        ctx = get_context()
+        upm = _get_upm()
+        related: list[RelatedTagItem] = []
+
+        # ① プロファイル学習データから共起スコアを計算
+        if upm:
+            try:
+                freqs = upm.get_profile().tag_frequencies
+                target = freqs.get(tag.lower())
+                if target:
+                    all_tags = list(freqs.values())
+                    total = max(target.count, 1)
+                    candidates = [
+                        RelatedTagItem(
+                            tag=e.tag,
+                            score=round(min(e.count / total, 1.0), 3),
+                            co_count=e.count,
+                        )
+                        for e in all_tags
+                        if e.tag != tag.lower() and e.count >= 2
+                    ]
+                    candidates.sort(key=lambda x: -x.score)
+                    related = candidates[:n]
+            except Exception:
+                pass
+
+        # ② フォールバック: 辞書カテゴリ一致で代替
+        if not related:
+            try:
+                dm = ctx.dictionary_manager
+                result = dm.lookup(tag)
+                if result.found and result.category:
+                    entries = dm.search_by_category(result.category, limit=n + 1)
+                    related = [
+                        RelatedTagItem(
+                            tag=e.key, score=0.5,
+                            category=e.category,
+                        )
+                        for e in entries if e.key != tag
+                    ][:n]
+            except Exception:
+                pass
+
+        return RelatedTagsResponse(tag=tag, related=related, total=len(related))
+
+    # ── v2.2 History 全文検索強化 ──────────────────────────────────
+
+    @app.get(
+        "/history/search",
+        response_model=HistorySearchResponse,
+        summary="Full-text search history",
+        tags=["history"],
+    )
+    def search_history(
+        q: str | None = Query(default=None, description="プロンプト全文検索"),
+        tag: str | None = Query(default=None, description="特定タグを含む履歴"),
+        date_from: str | None = Query(default=None, description="開始日 YYYY-MM-DD"),
+        date_to:   str | None = Query(default=None, description="終了日 YYYY-MM-DD"),
+        score_min: float = Query(default=0.0, ge=0.0, le=100.0),
+        score_max: float = Query(default=100.0, ge=0.0, le=100.0),
+        favorite_only: bool = Query(default=False),
+        limit: int = Query(default=50, ge=1, le=500),
+    ) -> HistorySearchResponse:
+        """
+        ★ v2.2 — 複合フィルタで履歴を検索する。
+
+        - q:           プロンプト全文（部分一致）
+        - tag:         特定タグ（カンマ区切りで複数指定可）
+        - date_from/to: 日付範囲
+        - score_min/max: スコア範囲
+        - favorite_only: お気に入りのみ
+        """
+        ctx = get_context()
+        all_entries = ctx.history_manager.list_entries(limit=1000)
+        results = all_entries
+
+        if q:
+            ql = q.lower()
+            results = [e for e in results
+                       if ql in e.input_prompt.lower() or ql in e.output_prompt.lower()]
+
+        if tag:
+            tags_filter = {t.strip().lower() for t in tag.split(",") if t.strip()}
+            results = [e for e in results
+                       if any(tf in e.output_prompt.lower() for tf in tags_filter)]
+
+        if date_from:
+            results = [e for e in results
+                       if hasattr(e, "created_at_str") and e.created_at_str >= date_from]
+
+        if date_to:
+            results = [e for e in results
+                       if hasattr(e, "created_at_str") and e.created_at_str[:10] <= date_to]
+
+        results = [e for e in results if score_min <= e.overall_score <= score_max]
+
+        if favorite_only:
+            results = [e for e in results if e.favorite]
+
+        results = results[:limit]
+
+        return HistorySearchResponse(
+            entries=[
+                HistoryEntryResponse(
+                    id=e.id,
+                    input_prompt=e.input_prompt,
+                    output_prompt=e.output_prompt,
+                    tag_count=e.tag_count,
+                    overall_score=e.overall_score,
+                    created_at=e.created_at_str,
+                    favorite=e.favorite,
+                    label=e.label,
+                )
+                for e in results
+            ],
+            total=len(results),
+            query=q or "",
+        )
+
+    # ── v2.2 プリセット v2（プロファイルから自動生成）─────────────
+
+    @app.post(
+        "/profile/save-as-preset",
+        response_model=SaveAsPresetResponse,
+        status_code=201,
+        summary="Save profile recommendations as a preset",
+        tags=["profile"],
+    )
+    def save_profile_as_preset(body: SaveAsPresetRequest) -> SaveAsPresetResponse:
+        """
+        ★ v2.2 — プロファイルの推奨タグをプリセットとして保存する。
+
+        learn() を実行した後に呼ぶ。
+        推奨タグ Top N + スタイルルール always_include を
+        ユーザープリセットとして保存する。
+        """
+        ctx = get_context()
+        upm = _get_upm()
+        if upm is None:
+            raise HTTPException(status_code=503, detail="UserProfileManager unavailable")
+        try:
+            preset = upm.save_as_preset(
+                preset_manager=ctx.preset_manager,
+                preset_id=body.preset_id,
+                name=body.name,
+                top_n=body.top_n,
+                category=body.category,
+                description=body.description,
+            )
+            return SaveAsPresetResponse(
+                preset_id=preset.id,
+                name=preset.name,
+                tag_count=len(preset.tags),
+                negative_tag_count=len(preset.negative_tags),
+                category=body.category,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    # ── v2.2 ストレージ統計 ───────────────────────────────────────
+
+    @app.get(
+        "/profile/storage",
+        response_model=StorageStatsResponse,
+        summary="Get profile storage stats",
+        tags=["profile"],
+    )
+    def get_profile_storage() -> StorageStatsResponse:
+        """
+        ★ v2.2 — プロファイルストレージの統計を返す。
+        storage="sqlite" の場合は SQLite、"json" の場合は profile.json を使用中。
+        """
+        upm = _get_upm()
+        if upm is None:
+            raise HTTPException(status_code=503, detail="UserProfileManager unavailable")
+        s = upm.statistics()
+        return StorageStatsResponse(
+            storage=s.get("storage", "json"),
+            tag_frequency_count=s.get("tag_frequency_count", 0),
+            tag_weight_count=s.get("tag_weight_count", 0),
+            style_rule_count=s.get("style_rule_count", 0),
+            score_trend_count=s.get("score_trend_count", 0),
+            db_path=s.get("db_path", ""),
+        )
 
 
     # ══════════════════════════════════════════════════════════════
