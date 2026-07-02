@@ -59,6 +59,7 @@ class CliContext:
         self._translate_engine = None    # ★v2.9
         self._chain_manager    = None    # ★v2.9
         self._comfyui_client   = None    # ★v2.9
+        self._marketplace      = None    # ★v3.0
 
     @property
     def dictionary_manager(self):
@@ -341,6 +342,17 @@ class CliContext:
             from comfyui_api.client import ComfyUIClient  # type: ignore
             self._comfyui_client = ComfyUIClient()
         return self._comfyui_client
+
+    @property
+    def marketplace(self):
+        """★ v3.0 — MarketplaceManager シングルトンプロパティ。"""
+        if self._marketplace is None:
+            from marketplace.manager import MarketplaceManager  # type: ignore
+            self._marketplace = MarketplaceManager(
+                plugins_dir=self.data_root / "plugins"
+            )
+        return self._marketplace
+
 
 
 
