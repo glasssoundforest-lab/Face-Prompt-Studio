@@ -1,0 +1,58 @@
+{
+  "name": "eye_color",
+  "description": "目の色",
+  "category": "eyes",
+  "entry_count": 8,
+  "entries": [
+    {
+      "value": "blue_eyes",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "green_eyes",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "brown_eyes",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "red_eyes",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "gold_eyes",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "silver_eyes",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "purple_eyes",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "heterochromia",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    }
+  ],
+  "created_at": "2026-07-02T07:34:19.306431",
+  "updated_at": "2026-07-02T07:34:19.306431"
+}
