@@ -1,0 +1,70 @@
+{
+  "name": "hair_color",
+  "description": "髪の色",
+  "category": "hair",
+  "entry_count": 10,
+  "entries": [
+    {
+      "value": "blonde_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "black_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "brown_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "red_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "silver_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "blue_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "pink_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "white_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "gradient_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    },
+    {
+      "value": "purple_hair",
+      "weight": 1.0,
+      "tags": [],
+      "comment": ""
+    }
+  ],
+  "created_at": "2026-07-02T07:34:18.616933",
+  "updated_at": "2026-07-02T07:34:18.616933"
+}
