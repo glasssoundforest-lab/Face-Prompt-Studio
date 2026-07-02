@@ -481,6 +481,29 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     .sess-diff-only-b{color:#2ecc71;font-size:12px;}
     .sess-diff-common{color:var(--muted);font-size:12px;}
 
+    
+    /* ── v2.9 翻訳 ── */
+    .translate-box{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:8px;padding:12px;margin-bottom:12px;}
+    .translate-box-title{font-size:12px;font-weight:700;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+    .translate-tag-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+    .translate-tag{padding:3px 9px;border-radius:12px;font-size:11px;cursor:pointer;
+      background:color-mix(in srgb,#3498db 15%,var(--bg-secondary));
+      border:1px solid #3498db55;color:#3498db;}
+    .translate-tag:hover{background:#3498db;color:#fff;}
+    .translate-unmapped{font-size:11px;color:#e74c3c;margin-top:4px;}
+    .translate-conf{font-size:11px;color:var(--muted);margin-top:4px;}
+
+    /* ── v2.9 ComfyUI パネル ── */
+    .comfyui-status-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;
+      background:var(--bg-secondary);border:1px solid var(--border);border-radius:7px;
+      font-size:12px;margin-bottom:10px;}
+    .comfyui-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .comfyui-ok{background:#2ecc71;} .comfyui-ng{background:#e74c3c;}
+    .comfyui-queue-form{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:8px;padding:12px;margin-bottom:10px;}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -3522,6 +3545,157 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
 
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(ensureExportBtn, 1000);
+  });
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v2.9 — 翻訳入力
+  // ══════════════════════════════════════════════════════════════
+
+  function ensureTranslateBox() {
+    if (document.getElementById('translate-box')) return;
+    const ta = document.querySelector('#tag-input, textarea');
+    if (!ta) return;
+    const box = document.createElement('div');
+    box.className = 'translate-box';
+    box.id = 'translate-box';
+    box.innerHTML = `
+      <div class="translate-box-title">🇯🇵 日本語→タグ変換</div>
+      <div style="display:flex;gap:6px;">
+        <input id="jp-input" placeholder="青い目の金髪の少女、笑顔..."
+          style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;
+          background:var(--bg);color:var(--text);font-size:13px;"
+          onkeydown="if(event.key==='Enter')doTranslate()" />
+        <button class="pf-btn pf-btn-primary" style="width:auto;padding:6px 12px"
+          onclick="doTranslate()">変換</button>
+      </div>
+      <div id="translate-result"></div>`;
+    ta.parentNode.insertBefore(box, ta);
+  }
+
+  async function doTranslate() {
+    const input = document.getElementById('jp-input')?.value.trim();
+    const el    = document.getElementById('translate-result');
+    if (!input) return;
+    try {
+      const res = await api('/translate/jp-to-tags', {
+        method: 'POST', body: { text: input, max_tags: 25 }
+      });
+      if (!el) return;
+      const conf = (res.confidence * 100).toFixed(0);
+      el.innerHTML = `
+        <div class="translate-tag-grid">
+          ${res.tags.map(t => `<span class="translate-tag"
+            onclick="translateInsertTag('${escHtml(t)}')">${escHtml(t)}</span>`).join('')}
+        </div>
+        ${res.unmapped?.length
+          ? `<div class="translate-unmapped">変換できず: ${res.unmapped.map(w=>escHtml(w)).join(', ')}</div>` : ''}
+        <div class="translate-conf">変換率: ${conf}% · ${res.method}</div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button class="pf-btn pf-btn-secondary" style="width:auto;padding:4px 10px;font-size:11px"
+            onclick="translateInsertAll('${escHtml(res.tags.join(','))}')">全部追加</button>
+          <button class="pf-btn pf-btn-secondary" style="width:auto;padding:4px 10px;font-size:11px"
+            onclick="navigator.clipboard?.writeText('${escHtml(res.prompt)}');toast('コピーしました')">📋 コピー</button>
+        </div>`;
+    } catch(e) {
+      if (el) el.innerHTML = `<div style="color:#e74c3c;font-size:12px">${escHtml(e.message)}</div>`;
+    }
+  }
+
+  function translateInsertTag(tag) {
+    const ta = document.getElementById('tag-input') || document.querySelector('textarea:not(#jp-input)');
+    if (!ta) return;
+    const cur = ta.value.trim();
+    ta.value = cur ? cur + ', ' + tag : tag;
+    toast(`✅ "${tag}" を追加しました`);
+  }
+
+  function translateInsertAll(tagsStr) {
+    const tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean);
+    const ta   = document.getElementById('tag-input') || document.querySelector('textarea:not(#jp-input)');
+    if (!ta) return;
+    const cur  = ta.value.trim();
+    const existing = new Set(cur.split(',').map(t=>t.trim().toLowerCase()));
+    const newTags  = tags.filter(t => !existing.has(t.toLowerCase()));
+    ta.value = cur ? cur + (newTags.length ? ', ' + newTags.join(', ') : '') : tags.join(', ');
+    toast(`✅ ${newTags.length}件追加しました`);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // v2.9 — ComfyUI 接続パネル（Dashboard タブ）
+  // ══════════════════════════════════════════════════════════════
+
+  async function comfyuiCheckStatus() {
+    const el = document.getElementById('comfyui-status-area');
+    if (!el) return;
+    try {
+      const s = await api('/comfyui-client/status');
+      const dot = s.available ? 'comfyui-ok' : 'comfyui-ng';
+      const label = s.available ? `接続中 — キュー: ${s.queue_remaining}件` : '未接続 (localhost:8188)';
+      el.innerHTML = `
+        <div class="comfyui-status-bar">
+          <div class="comfyui-dot ${dot}"></div>
+          <span>ComfyUI: ${label}</span>
+          <button style="font-size:11px;padding:2px 8px;border:1px solid var(--border);
+            border-radius:4px;background:var(--bg);cursor:pointer;margin-left:auto"
+            onclick="comfyuiCheckStatus()">🔄</button>
+        </div>
+        ${s.available ? `
+        <div class="comfyui-queue-form">
+          <div style="font-size:12px;font-weight:600;margin-bottom:8px">▶ 直接送信（テスト）</div>
+          <textarea id="comfyui-pos-input" rows="2" placeholder="ポジティブプロンプト"
+            style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg);color:var(--text);font-size:12px;resize:vertical;box-sizing:border-box;margin-bottom:5px;"></textarea>
+          <div style="display:flex;gap:6px;">
+            <input id="comfyui-model" placeholder="モデル名" value="v1-5-pruned-emaonly.ckpt"
+              style="flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:5px;
+              background:var(--bg);color:var(--text);font-size:11px;" />
+            <button class="pf-btn pf-btn-primary" style="width:auto;padding:5px 12px"
+              onclick="comfyuiSend()">送信</button>
+          </div>
+          <div id="comfyui-send-result" style="margin-top:6px;font-size:12px;"></div>
+        </div>` : ''}`;
+    } catch(e) {
+      if (el) el.innerHTML = `<div class="comfyui-status-bar"><div class="comfyui-dot comfyui-ng"></div><span>ComfyUI: 状態確認失敗</span></div>`;
+    }
+  }
+
+  async function comfyuiSend() {
+    const pos   = document.getElementById('comfyui-pos-input')?.value.trim();
+    const model = document.getElementById('comfyui-model')?.value.trim();
+    const el    = document.getElementById('comfyui-send-result');
+    if (!pos) { toast('プロンプトを入力してください', true); return; }
+    try {
+      const res = await api('/comfyui-client/queue', {
+        method: 'POST', body: { pos, neg: '', model, steps: 20, cfg: 7, width: 512, height: 512 }
+      });
+      if (el) el.innerHTML = `✅ 送信完了 — prompt_id: <code>${escHtml(res.prompt_id)}</code>`;
+      toast('✅ ComfyUI に送信しました');
+    } catch(e) {
+      if (el) el.innerHTML = `<span style="color:#e74c3c">❌ ${escHtml(e.message)}</span>`;
+    }
+  }
+
+  // Dashboard タブに ComfyUI 状態エリアを注入
+  function ensureComfyUIPanel() {
+    const dash = document.getElementById('dashboard-panel');
+    if (!dash || document.getElementById('comfyui-status-area')) return;
+    const div = document.createElement('div');
+    div.style.cssText = 'margin-top:16px;';
+    div.innerHTML = '<div style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px">ComfyUI 接続</div><div id="comfyui-status-area"></div>';
+    dash.appendChild(div);
+    comfyuiCheckStatus();
+  }
+
+  const _origShowTabV29 = showTab;
+  function showTab(tab) {
+    _origShowTabV29(tab);
+    if (tab === 'editor')    setTimeout(ensureTranslateBox, 100);
+    if (tab === 'dashboard') setTimeout(ensureComfyUIPanel, 100);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(ensureTranslateBox, 1200);
   });
 
   </script>
