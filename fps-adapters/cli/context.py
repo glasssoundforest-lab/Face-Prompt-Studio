@@ -32,7 +32,7 @@ class CliContext:
         result = ctx.pipeline_manager.compile("masterpiece")
     """
 
-    def __init__(self, data_root: Path | None = None) -> None:
+    def __init__(self, data_root: "Path | None" = None) -> None:
         self.root = _ROOT
         self.data_root = data_root or (_ROOT / "fps-data")
         self._dictionary_manager = None
