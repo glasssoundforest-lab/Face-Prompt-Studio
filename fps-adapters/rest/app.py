@@ -103,6 +103,53 @@ from .models import (  # noqa: E402
     SetTagWeightRequest,
     AddStyleRuleRequest,
     ProfileResetResponse,
+    ProfileSettingsResponse,
+    ProfileSettingsUpdateRequest,
+    RelatedTagItem,
+    RelatedTagsResponse,
+    HistorySearchResponse,
+    SaveAsPresetRequest,
+    SaveAsPresetResponse,
+    StorageStatsResponse,
+    RegisterRequest,
+    RegisterResponse,
+    UserInfoResponse,
+    ApiKeyResponse,
+    CreateApiKeyRequest,
+    CreateApiKeyResponse,
+    SharePresetRequest,
+    ShareTokenResponse,
+    SharedPresetResponse,
+    DeleteShareResponse,
+    CommunityTagItem,
+    CommunityTagsResponse,
+    ContributeRequest,
+    ContributeResponse,
+    BatchCompileRequest,
+    BatchOptimizeRequest,
+    BatchItemResponse,
+    BatchResultResponse,
+    AutocompleteItem,
+    AutocompleteResponse,
+    SuggestResponse,
+    ProfileExportResponse,
+    ProfileImportRequest,
+    ProfileImportResponse,
+    PresetVersionItem,
+    PresetVersionsResponse,
+    RestoreVersionResponse,
+    LoraAnalyzeRequest,
+    LoraAnalyzeResponse,
+    LoraTagCandidateItem,
+    AiTagRequest,
+    AiTagItem,
+    AiTagResponse,
+    AiStatusResponse,
+    NegativeLearnResponse,
+    NegativeTagItem,
+    NegativeSuggestResponse,
+    ConsistencyCheckRequest,
+    ConsistencyCheckResponse,
 )
 
 if _FASTAPI_AVAILABLE:
@@ -111,7 +158,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.0.0",
+        version="2.5.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -136,6 +183,7 @@ if _FASTAPI_AVAILABLE:
         setup_event_bridge(ctx.event_bus)
 
     _ctx: CliContext | None = None
+    _compile_count: int = 0   # ★v2.1 compile 実行回数カウンター
 
     def get_context() -> CliContext:
         global _ctx
@@ -152,7 +200,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.0.0",
+            version="2.5.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -178,37 +226,120 @@ if _FASTAPI_AVAILABLE:
         return None
 
     @app.post("/compile", response_model=CompileResponse)
-    def compile_prompt(prompt: str, adapter: str | None = None) -> CompileResponse:
+    def compile_prompt(
+        prompt: str,
+        adapter: str | None = None,
+        apply_profile: bool = Query(
+            default=False,
+            description="★v2.1 プロファイル適用（除外タグ除去・追加タグ挿入）"),
+        negative_profile: bool = Query(
+            default=False,
+            description="★v2.1 スタイルルールの always_exclude をネガティブに追加"),
+    ) -> CompileResponse:
+        """
+        プロンプトをコンパイルして pos/neg テキストを返す。
+
+        apply_profile=true の場合:
+          1. スタイルルールの always_include を先頭に追加
+          2. 除外設定（weight=0.0 / always_exclude）のタグを pos から除去
+          3. always_exclude タグを neg に追加（negative_profile=true 時）
+        """
+        global _compile_count
         ctx = get_context()
+
+        # ── ★v2.1 Profile 適用（compile 前処理）────────────────
+        profile_applied = False
+        excluded_tags: list[str] = []
+        added_tags: list[str] = []
+
+        if apply_profile:
+            try:
+                upm = _get_upm()
+                original_tags = [t.strip() for t in prompt.split(",") if t.strip()]
+                applied_tags  = upm.apply_profile(original_tags)
+                excluded_tags = [t for t in original_tags if t not in applied_tags]
+                added_tags    = [t for t in applied_tags  if t not in original_tags]
+                # プロファイル適用済みのタグ文字列で再コンパイル
+                prompt = ", ".join(applied_tags)
+                profile_applied = True
+            except Exception:
+                pass  # プロファイル未設定時はスキップ
+
         result = ctx.pipeline_manager.compile(prompt)
+
+        # ── negative_profile: always_exclude を neg に追加 ───────
+        final_negative = result.negative
+        if negative_profile and apply_profile:
+            try:
+                upm = _get_upm()
+                p = upm.get_profile()
+                neg_adds: list[str] = []
+                for rule in p.style_rules:
+                    if rule.enabled:
+                        neg_adds.extend(rule.always_exclude)
+                if neg_adds:
+                    existing_neg = {t.strip() for t in final_negative.split(",") if t.strip()}
+                    new_neg_tags = [t for t in neg_adds if t not in existing_neg]
+                    if new_neg_tags:
+                        final_negative = (
+                            (final_negative.rstrip(", ") + ", " if final_negative.strip() else "")
+                            + ", ".join(new_neg_tags)
+                        )
+            except Exception:
+                pass
 
         adapter_output = None
         if adapter:
             adapter_output = _convert_with_adapter(result, adapter)
 
-        # v1.9: history に記録して WebSocket に emit
+        # ── v1.9: history 記録 + WS emit ────────────────────────
+        _compile_count += 1
+        auto_learned = False
         try:
             ctx.history_manager.record(
                 input_prompt=prompt,
                 output_prompt=result.prompt,
-                output_negative=result.negative,
+                output_negative=final_negative,
                 tag_count=result.tag_count,
                 overall_score=0.0,
             )
             ctx.event_bus.emit(
                 "history.recorded",
-                {"input": prompt, "output": result.prompt, "tag_count": result.tag_count},
+                {
+                    "input": prompt,
+                    "output": result.prompt,
+                    "negative": final_negative,
+                    "tag_count": result.tag_count,
+                    "profile_applied": profile_applied,
+                },
                 source="compile",
             )
+            # ── ★v2.1 自動学習チェック ──────────────────────────
+            upm = _get_upm()
+            if upm.should_auto_learn(_compile_count):
+                entries = ctx.history_manager.list_entries(limit=100)
+                upm.learn(entries)
+                upm.build_score_trends(entries, days=30)
+                ctx.event_bus.emit(
+                    "profile.auto_learned",
+                    {"compile_count": _compile_count, "entry_count": len(entries)},
+                    source="compile",
+                )
+                auto_learned = True
         except Exception:
             pass
+
         return CompileResponse(
             success=result.success,
             prompt=result.prompt,
-            negative=result.negative,
+            negative=final_negative,
             tag_count=result.tag_count,
             errors=result.errors,
             adapter_output=adapter_output,
+            profile_applied=profile_applied,
+            excluded_tags=excluded_tags,
+            added_tags=added_tags,
+            auto_learned=auto_learned,
         )
 
     # ── Optimize ─────────────────────────────────────────────
@@ -1070,7 +1201,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.0.0",
+            version="2.5.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -1256,6 +1387,1121 @@ if _FASTAPI_AVAILABLE:
         return ProfileResetResponse(reset=True, message="プロファイルをリセットしました")
 
 
+
+
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.5 LoRA 分析（/lora）
+    # ══════════════════════════════════════════════════════════════
+
+    def _ai(key: str):
+        """ai_manager から指定モジュールを取得する"""
+        return get_context().ai_manager[key]
+
+    @app.post(
+        "/lora/analyze",
+        response_model=LoraAnalyzeResponse,
+        summary="Analyze a LoRA file and extract tag candidates",
+        tags=["lora"],
+    )
+    def lora_analyze(body: LoraAnalyzeRequest) -> LoraAnalyzeResponse:
+        """
+        ★ v2.5 — LoRA ファイルのメタデータを解析してタグ候補を返す。
+
+        file_path: SafeTensors ファイルのフルパス（サーバー上）
+        metadata:  CivitAI 等から取得したメタデータ辞書（file_path 不要）
+
+        register_to_dict=true の場合、信頼度 0.5 以上のタグを
+        ユーザー辞書に自動登録する。
+        """
+        analyzer = _ai("lora")
+        if body.metadata:
+            info = analyzer.analyze_from_metadata(body.metadata, body.file_name)
+        elif body.file_path:
+            info = analyzer.analyze(body.file_path)
+        else:
+            raise HTTPException(status_code=400,
+                                detail="file_path または metadata を指定してください")
+
+        registered = 0
+        if body.register_to_dict and info.success:
+            ctx = get_context()
+            registered = analyzer.register_to_dictionary(
+                info, ctx.dictionary_manager,
+                category=body.category,
+            )
+
+        return LoraAnalyzeResponse(
+            file_name=info.file_name,
+            model_name=info.model_name,
+            base_model=info.base_model,
+            description=info.description,
+            trigger_words=info.trigger_words,
+            training_tags=info.training_tags,
+            total_tags=info.total_tags,
+            tag_candidates=[
+                LoraTagCandidateItem(
+                    tag=c.tag, source=c.source,
+                    confidence=c.confidence,
+                    category=c.category,
+                    weight=c.weight,
+                ) for c in info.tag_candidates
+            ],
+            registered=registered,
+            error=info.error,
+            success=info.success,
+        )
+
+    @app.get(
+        "/lora/list",
+        summary="List analyzed LoRA files",
+        tags=["lora"],
+    )
+    def lora_list(
+        lora_dir: str = Query(
+            default="",
+            description="スキャンするディレクトリ（省略時はデフォルト LoRA パス）",
+        )
+    ) -> dict:
+        """
+        ★ v2.5 — 指定ディレクトリの .safetensors ファイル一覧を返す。
+        実際の分析は POST /lora/analyze で行う。
+        """
+        from pathlib import Path
+        scan_dir = Path(lora_dir) if lora_dir else Path("models/loras")
+        if not scan_dir.exists():
+            return {"files": [], "total": 0, "dir": str(scan_dir),
+                    "error": "ディレクトリが見つかりません"}
+        files = [
+            {"name": f.name, "size_mb": round(f.stat().st_size / 1024 / 1024, 1),
+             "path": str(f)}
+            for f in sorted(scan_dir.glob("*.safetensors"))
+        ]
+        return {"files": files, "total": len(files), "dir": str(scan_dir)}
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.5 AI タグ提案（/ai）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/ai/status",
+        response_model=AiStatusResponse,
+        summary="Get AI feature availability",
+        tags=["ai"],
+    )
+    def ai_status() -> AiStatusResponse:
+        """
+        ★ v2.5 — 各 AI タガーの利用可能状態を返す。
+        外部タガーが起動していない場合は dictionary フォールバックが利用される。
+        """
+        from ai.tagger_bridge import TaggerModel  # type: ignore
+        tagger = _ai("tagger")
+        available = tagger.available_models()
+        return AiStatusResponse(
+            available_models=available,
+            wd14_available="wd14" in available,
+            joycaption_available="joycaption" in available,
+            florence2_available="florence2" in available,
+            dictionary_available=True,
+        )
+
+    @app.post(
+        "/ai/tag",
+        response_model=AiTagResponse,
+        summary="Get AI tag suggestions",
+        tags=["ai"],
+    )
+    def ai_tag(body: AiTagRequest) -> AiTagResponse:
+        """
+        ★ v2.5 — AI タグ提案を返す。
+
+        image_url を指定すると外部タガー（WD14等）でタグ付けを行う。
+        image_url を省略すると current_tags から辞書ベースで提案する。
+        外部タガーが利用不可の場合は自動的に辞書フォールバックに切り替わる。
+        """
+        from ai.tagger_bridge import TaggerModel  # type: ignore
+        tagger = _ai("tagger")
+
+        try:
+            model = TaggerModel(body.model)
+        except ValueError:
+            model = TaggerModel.DICTIONARY
+
+        if body.image_url:
+            result = tagger.tag_image(body.image_url, model=model,
+                                      threshold=body.threshold)
+        else:
+            result = tagger.suggest_from_context(body.current_tags, n=body.n)
+
+        return AiTagResponse(
+            model=result.model,
+            source=result.source,
+            tags=[AiTagItem(tag=t["tag"], score=t.get("score", 0.0))
+                  for t in result.tags[:body.n]],
+            top_tags=result.top_tags(n=body.n, threshold=body.threshold),
+            error=result.error,
+            success=result.success,
+        )
+
+    @app.post(
+        "/ai/negative-learn",
+        response_model=NegativeLearnResponse,
+        summary="Learn negative tags from history",
+        tags=["ai"],
+    )
+    def ai_negative_learn(
+        limit: int = Query(default=200, ge=10, le=1000),
+    ) -> NegativeLearnResponse:
+        """
+        ★ v2.5 — 変換履歴からネガティブタグパターンを学習する。
+
+        学習内容:
+          1. ネガティブとして頻繁に使われているタグ
+          2. スコアが低い履歴の pos タグ（避けるべきタグ候補）
+        """
+        ctx = get_context()
+        learner = _ai("negative")
+        entries = ctx.history_manager.list_entries(limit=limit)
+        result = learner.learn(entries)
+        return NegativeLearnResponse(**result)
+
+    @app.get(
+        "/ai/negative-suggest",
+        response_model=NegativeSuggestResponse,
+        summary="Get negative tag suggestions",
+        tags=["ai"],
+    )
+    def ai_negative_suggest(
+        n: int = Query(default=20, ge=1, le=50),
+        pos_tags: str | None = Query(
+            default=None,
+            description="現在の pos タグ（カンマ区切り、含まれるものは除外）",
+        ),
+    ) -> NegativeSuggestResponse:
+        """
+        ★ v2.5 — 学習済みデータからネガティブタグ推奨リストを返す。
+        POST /ai/negative-learn を先に実行してください。
+        """
+        learner = _ai("negative")
+        if pos_tags:
+            current = [t.strip() for t in pos_tags.split(",") if t.strip()]
+            suggestions = learner.suggest_negative_for_prompt(current, n=n)
+        else:
+            suggestions = learner.recommend_negative(n=n)
+        return NegativeSuggestResponse(
+            suggestions=[
+                NegativeTagItem(
+                    tag=e.tag, neg_count=e.neg_count,
+                    avoid_count=e.avoid_count, priority=round(e.priority, 1),
+                ) for e in suggestions
+            ],
+            total=len(suggestions),
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.5 一貫性チェック（/consistency）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.post(
+        "/consistency/check",
+        response_model=ConsistencyCheckResponse,
+        summary="Check style consistency across multiple prompts",
+        tags=["consistency"],
+    )
+    def consistency_check(body: ConsistencyCheckRequest) -> ConsistencyCheckResponse:
+        """
+        ★ v2.5 — 複数プロンプトのスタイル一貫性を分析する。
+
+        同一キャラクター・スタイルで複数枚生成する場合に使用。
+        目の色・髪の色・体型などが矛盾していないか検出する。
+
+        prompts: 2〜20件のプロンプトリスト
+        labels:  各プロンプトのラベル（省略可）
+
+        戻り値:
+          overall_score:     0〜100（高いほど一貫性が高い）
+          inconsistent_tags: 矛盾するタグ（例: blue_eyes と green_eyes が混在）
+          recommendations:   改善提案
+        """
+        checker = _ai("consistency")
+        result = checker.check(body.prompts, labels=body.labels or None)
+        return ConsistencyCheckResponse(
+            overall_score=result.overall_score,
+            category_scores=result.category_scores,
+            common_tags=result.common_tags,
+            inconsistent_tags=result.inconsistent_tags,
+            missing_tags=result.missing_tags[:20],
+            recommendations=result.recommendations,
+            detail=result.detail,
+        )
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.4 バッチ処理（/batch）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_bm():
+        """BatchManager を CliContext 経由で取得する"""
+        return get_context().batch_manager
+
+    def _get_pvm():
+        """PresetVersionManager を CliContext 経由で取得する"""
+        return get_context().preset_version_manager
+
+    @app.post(
+        "/batch/compile",
+        response_model=BatchResultResponse,
+        summary="Batch compile prompts",
+        tags=["batch"],
+    )
+    def batch_compile(body: BatchCompileRequest) -> BatchResultResponse:
+        """
+        ★ v2.4 — 複数プロンプトを一括コンパイルする（最大50件）。
+
+        apply_profile=true の場合、UserProfile を各プロンプトに適用する。
+        同期処理のため、件数が多いほどレスポンスに時間がかかる。
+        """
+        bm = _get_bm()
+        apply_fn = None
+        if body.apply_profile:
+            try:
+                upm = _get_upm()
+                if upm:
+                    apply_fn = upm.apply_profile
+            except Exception:
+                pass
+        try:
+            result = bm.compile_batch(body.prompts, apply_profile_fn=apply_fn)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        return BatchResultResponse(
+            job_id=result.job_id, mode=result.mode,
+            total=result.total, succeeded=result.succeeded, failed=result.failed,
+            avg_score=round(result.avg_score, 1),
+            avg_tag_count=round(result.avg_tag_count, 1),
+            total_elapsed_ms=round(result.total_elapsed_ms, 1),
+            started_at=result.started_at, finished_at=result.finished_at,
+            items=[BatchItemResponse(**i.to_dict()) for i in result.items],
+        )
+
+    @app.post(
+        "/batch/optimize",
+        response_model=BatchResultResponse,
+        summary="Batch optimize prompts",
+        tags=["batch"],
+    )
+    def batch_optimize(body: BatchOptimizeRequest) -> BatchResultResponse:
+        """
+        ★ v2.4 — 複数プロンプトを一括分析する（最大50件）。
+        各プロンプトの品質スコアと問題点を返す。
+        """
+        bm = _get_bm()
+        try:
+            result = bm.optimize_batch(body.prompts)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        return BatchResultResponse(
+            job_id=result.job_id, mode=result.mode,
+            total=result.total, succeeded=result.succeeded, failed=result.failed,
+            avg_score=round(result.avg_score, 1),
+            avg_tag_count=round(result.avg_tag_count, 1),
+            total_elapsed_ms=round(result.total_elapsed_ms, 1),
+            started_at=result.started_at, finished_at=result.finished_at,
+            items=[BatchItemResponse(**i.to_dict()) for i in result.items],
+        )
+
+    @app.get(
+        "/batch/status",
+        summary="Get last batch job result summary",
+        tags=["batch"],
+    )
+    def batch_status() -> dict:
+        """★ v2.4 — 最後のバッチジョブのサマリーを返す。"""
+        bm = _get_bm()
+        r = bm.last_result
+        if r is None:
+            return {"status": "no_job", "message": "バッチジョブ未実行"}
+        return {
+            "job_id": r.job_id, "mode": r.mode,
+            "total": r.total, "succeeded": r.succeeded, "failed": r.failed,
+            "avg_score": round(r.avg_score, 1),
+            "total_elapsed_ms": round(r.total_elapsed_ms, 1),
+            "finished_at": r.finished_at,
+        }
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.4 タグ補完（/dictionary/autocomplete, /dictionary/suggest）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/dictionary/autocomplete",
+        response_model=AutocompleteResponse,
+        summary="Tag autocomplete",
+        tags=["dictionary"],
+    )
+    def autocomplete_tags(
+        q: str = Query(..., min_length=1, description="検索プレフィックス"),
+        limit: int = Query(default=15, ge=1, le=50),
+    ) -> AutocompleteResponse:
+        """
+        ★ v2.4 — タグ名のプレフィックス補完候補を返す。
+        Web UI のエディタリアルタイム補完に使用する。
+        """
+        ctx = get_context()
+        ql = q.strip().lower()
+        try:
+            with ctx.dictionary_manager._lock:
+                index = dict(ctx.dictionary_manager._index)
+            candidates = [
+                e for key, e in index.items()
+                if key.startswith(ql) or e.resolved.lower().startswith(ql)
+            ]
+            # 完全一致 → プレフィックス一致 → 部分一致の順でソート
+            candidates.sort(key=lambda e: (
+                0 if e.key == ql else
+                1 if e.key.startswith(ql) else 2
+            ))
+            candidates = candidates[:limit]
+        except Exception:
+            candidates = []
+
+        return AutocompleteResponse(
+            query=q,
+            items=[AutocompleteItem(
+                key=e.key, resolved=e.resolved,
+                category=e.category, weight=e.weight,
+            ) for e in candidates],
+            total=len(candidates),
+        )
+
+    @app.get(
+        "/dictionary/suggest",
+        response_model=SuggestResponse,
+        summary="Suggest next tags based on current tags",
+        tags=["dictionary"],
+    )
+    def suggest_tags(
+        tags: str = Query(..., description="現在のタグ（カンマ区切り）"),
+        n: int = Query(default=10, ge=1, le=30),
+    ) -> SuggestResponse:
+        """
+        ★ v2.4 — 現在のタグリストから、次に追加すべきタグを提案する。
+
+        UserProfile の共起データ + 辞書カテゴリ補完を使って提案する。
+        """
+        current = [t.strip().lower() for t in tags.split(",") if t.strip()]
+        ctx = get_context()
+        suggestions: list[AutocompleteItem] = []
+
+        # ① プロファイル推奨タグから現在未使用のものを提案
+        try:
+            upm = _get_upm()
+            if upm:
+                recs = upm.recommend(30)
+                for e in recs:
+                    if e.tag not in current and len(suggestions) < n:
+                        result = ctx.dictionary_manager.lookup(e.tag)
+                        suggestions.append(AutocompleteItem(
+                            key=e.tag,
+                            resolved=result.resolved or e.tag,
+                            category=result.category or "",
+                            weight=e.avg_weight,
+                        ))
+        except Exception:
+            pass
+
+        # ② 不足分は辞書の関連カテゴリから補完
+        if len(suggestions) < n:
+            try:
+                for tag in current[:3]:
+                    result = ctx.dictionary_manager.lookup(tag)
+                    if result.found and result.category:
+                        entries = ctx.dictionary_manager.search_by_category(
+                            result.category, limit=n
+                        )
+                        for e in entries:
+                            if e.key not in current and not any(
+                                s.key == e.key for s in suggestions
+                            ) and len(suggestions) < n:
+                                suggestions.append(AutocompleteItem(
+                                    key=e.key, resolved=e.resolved,
+                                    category=e.category, weight=e.weight,
+                                ))
+            except Exception:
+                pass
+
+        return SuggestResponse(
+            current_tags=current,
+            suggestions=suggestions[:n],
+            total=len(suggestions[:n]),
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.4 プロファイル エクスポート/インポート
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/profile/export",
+        response_model=ProfileExportResponse,
+        summary="Export user profile as JSON",
+        tags=["profile"],
+    )
+    def export_profile() -> ProfileExportResponse:
+        """
+        ★ v2.4 — ユーザープロファイルを JSON 形式でエクスポートする。
+        別環境へのデータ移行や定期バックアップに使用する。
+        """
+        from datetime import datetime as _dt
+        upm = _get_upm()
+        if upm is None:
+            raise HTTPException(status_code=503, detail="UserProfileManager unavailable")
+        profile = upm.get_profile()
+        stats   = upm.statistics()
+        data = profile.to_dict()
+        return ProfileExportResponse(
+            version="2.5.0",
+            exported_at=_dt.now().isoformat(),
+            tag_frequency_count=stats.get("tag_frequency_count", 0),
+            tag_weight_count=stats.get("tag_weight_count", 0),
+            style_rule_count=stats.get("style_rule_count", 0),
+            data=data,
+        )
+
+    @app.post(
+        "/profile/import",
+        response_model=ProfileImportResponse,
+        summary="Import user profile from JSON",
+        tags=["profile"],
+    )
+    def import_profile(body: ProfileImportRequest) -> ProfileImportResponse:
+        """
+        ★ v2.4 — JSON からユーザープロファイルをインポートする。
+
+        merge=true の場合は既存データにマージ（頻度数は加算）。
+        merge=false（デフォルト）の場合は既存データを上書き。
+        """
+        from user.models import TagWeight, StyleRule, TagFrequencyEntry  # type: ignore[import]
+        from datetime import datetime as _dt
+        upm = _get_upm()
+        if upm is None:
+            raise HTTPException(status_code=503, detail="UserProfileManager unavailable")
+        data = body.data
+        freq_count = weight_count = rule_count = 0
+        try:
+            if not body.merge:
+                upm.reset()
+
+            # tag_frequencies インポート
+            for tag, e in data.get("tag_frequencies", {}).items():
+                try:
+                    freq = upm.get_profile().tag_frequencies.get(tag)
+                    if freq and body.merge:
+                        freq.count += e.get("count", 0)
+                        freq.total_weight += e.get("avg_weight", 1.0) * e.get("count", 0)
+                    else:
+                        from user.models import TagFrequencyEntry as TFE  # type: ignore[import]
+                        upm.get_profile().tag_frequencies[tag] = TFE(
+                            tag=tag,
+                            count=e.get("count", 0),
+                            total_weight=e.get("avg_weight", 1.0) * e.get("count", 0),
+                            last_used=_dt.fromisoformat(e.get("last_used", _dt.now().isoformat())),
+                        )
+                    freq_count += 1
+                except Exception:
+                    pass
+
+            # tag_weights インポート
+            for tag, w in data.get("tag_weights", {}).items():
+                try:
+                    upm.set_tag_weight(tag, w.get("weight", 1.0), w.get("reason", "imported"))
+                    weight_count += 1
+                except Exception:
+                    pass
+
+            # style_rules インポート
+            for r in data.get("style_rules", []):
+                try:
+                    from user.models import StyleRule as SR  # type: ignore[import]
+                    upm.add_style_rule(SR(
+                        id=r["id"], name=r["name"],
+                        always_include=r.get("always_include", []),
+                        always_exclude=r.get("always_exclude", []),
+                        enabled=r.get("enabled", True),
+                    ))
+                    rule_count += 1
+                except Exception:
+                    pass
+
+            upm.save()
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Import failed: {e}")
+
+        return ProfileImportResponse(
+            imported_frequencies=freq_count,
+            imported_weights=weight_count,
+            imported_rules=rule_count,
+            merged=body.merge,
+        )
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.4 プリセットバージョン管理
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/presets/{preset_id}/versions",
+        response_model=PresetVersionsResponse,
+        summary="List preset versions",
+        tags=["presets"],
+    )
+    def list_preset_versions(preset_id: str) -> PresetVersionsResponse:
+        """
+        ★ v2.4 — プリセットのバージョン履歴一覧を返す（新しい順）。
+        最大 20 件まで保持。
+        """
+        pvm = _get_pvm()
+        versions = pvm.list_versions(preset_id)
+        return PresetVersionsResponse(
+            preset_id=preset_id,
+            versions=[PresetVersionItem(**v.to_dict()) for v in versions],
+            total=len(versions),
+        )
+
+    @app.post(
+        "/presets/{preset_id}/versions/{version_id}/restore",
+        response_model=RestoreVersionResponse,
+        summary="Restore a preset to a specific version",
+        tags=["presets"],
+    )
+    def restore_preset_version(preset_id: str, version_id: str) -> RestoreVersionResponse:
+        """
+        ★ v2.4 — 指定バージョンにプリセットをリストアする。
+        リストア前に現在の状態を自動スナップショット保存する。
+        """
+        ctx = get_context()
+        pvm = _get_pvm()
+        try:
+            preset = pvm.restore(ctx.preset_manager, preset_id, version_id)
+        except KeyError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+        return RestoreVersionResponse(
+            preset_id=preset_id,
+            version_id=version_id,
+            restored=True,
+            tag_count=len(preset.tags),
+        )
+
+    @app.delete(
+        "/presets/{preset_id}/versions/{version_id}",
+        summary="Delete a specific version",
+        tags=["presets"],
+    )
+    def delete_preset_version(preset_id: str, version_id: str) -> dict:
+        """★ v2.4 — 指定バージョンを削除する。"""
+        pvm = _get_pvm()
+        deleted = pvm.delete_version(preset_id, version_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Version not found")
+        return {"preset_id": preset_id, "version_id": version_id, "deleted": True}
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.3 ユーザー管理（/users）
+    # ══════════════════════════════════════════════════════════════
+
+    def _get_um():
+        """UserManager を CliContext 経由で取得する"""
+        return get_context().user_manager
+
+    def _get_sm():
+        """ShareManager を CliContext 経由で取得する"""
+        return get_context().share_manager
+
+    def _get_current_user(x_api_key: str | None = None) -> "Any":
+        """
+        X-Api-Key ヘッダーからユーザーを取得する。
+        未認証の場合は anonymous ユーザーを返す。
+        """
+        if not x_api_key:
+            return None
+        return _get_um().verify_api_key(x_api_key)
+
+    @app.post(
+        "/users/register",
+        response_model=RegisterResponse,
+        status_code=201,
+        summary="Register a new user",
+        tags=["users"],
+    )
+    def register_user(body: RegisterRequest) -> RegisterResponse:
+        """
+        ★ v2.3 — 新規ユーザーを登録して API キーを発行する。
+
+        API キーは **このレスポンスにのみ含まれます**。
+        再表示はできないため、安全な場所に保存してください。
+
+        以降のリクエストでは `X-Api-Key: fps_xxxxx` ヘッダーを付けてください。
+        """
+        um = _get_um()
+        try:
+            user, raw_key = um.register(
+                username=body.username,
+                display_name=body.display_name,
+                expires_days=body.expires_days,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        return RegisterResponse(
+            user=UserInfoResponse(**user.to_dict()),
+            api_key=raw_key,
+        )
+
+    @app.get(
+        "/users/me",
+        response_model=UserInfoResponse,
+        summary="Get current user info",
+        tags=["users"],
+    )
+    def get_me(x_api_key: str | None = None) -> UserInfoResponse:
+        """
+        ★ v2.3 — 現在の認証ユーザー情報を返す。
+
+        ヘッダー: `X-Api-Key: fps_xxxxx`
+        未認証の場合は 401。
+        """
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        return UserInfoResponse(**user.to_dict())
+
+    @app.get(
+        "/users/{user_id}",
+        response_model=UserInfoResponse,
+        summary="Get user info by ID",
+        tags=["users"],
+    )
+    def get_user(user_id: str) -> UserInfoResponse:
+        """★ v2.3 — ユーザーID でユーザー情報を取得する。"""
+        um = _get_um()
+        user = um.get_user(user_id)
+        if user is None:
+            raise HTTPException(status_code=404, detail=f"User '{user_id}' not found")
+        return UserInfoResponse(**user.to_dict())
+
+    @app.post(
+        "/users/me/api-keys",
+        response_model=CreateApiKeyResponse,
+        status_code=201,
+        summary="Create additional API key",
+        tags=["users"],
+    )
+    def create_api_key(
+        body: CreateApiKeyRequest,
+        x_api_key: str | None = None,
+    ) -> CreateApiKeyResponse:
+        """★ v2.3 — 追加の API キーを発行する。認証必須。"""
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        um = _get_um()
+        raw_key, key_info = um.create_api_key(
+            user.user_id, label=body.label, expires_days=body.expires_days
+        )
+        return CreateApiKeyResponse(
+            api_key=raw_key,
+            key_info=ApiKeyResponse(
+                key_id=key_info.key_id, label=key_info.label,
+                created_at=key_info.created_at, last_used=key_info.last_used,
+                expires_at=key_info.expires_at,
+            ),
+        )
+
+    @app.delete(
+        "/users/me/api-keys/{key_id}",
+        summary="Revoke an API key",
+        tags=["users"],
+    )
+    def revoke_api_key(key_id: str, x_api_key: str | None = None) -> dict:
+        """★ v2.3 — API キーを無効化する。認証必須。"""
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        revoked = _get_um().revoke_api_key(key_id, user.user_id)
+        if not revoked:
+            raise HTTPException(status_code=404, detail="Key not found")
+        return {"key_id": key_id, "revoked": True}
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.3 プリセット共有（/presets/{id}/share, /shared）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.post(
+        "/presets/{preset_id}/share",
+        response_model=ShareTokenResponse,
+        status_code=201,
+        summary="Share a preset",
+        tags=["presets", "sharing"],
+    )
+    def share_preset(
+        preset_id: str,
+        body: SharePresetRequest,
+        x_api_key: str | None = None,
+    ) -> ShareTokenResponse:
+        """
+        ★ v2.3 — プリセットの共有リンクを発行する。
+
+        認証なしでも共有可能（anonymous ユーザーとして登録される）。
+        返却される share_url を他のユーザーに共有してください。
+        """
+        ctx = get_context()
+        if not ctx.preset_manager.exists(preset_id):
+            raise HTTPException(status_code=404, detail=f"Preset '{preset_id}' not found")
+        preset = ctx.preset_manager.get(preset_id)
+        preset_data = {
+            "id":      preset.id,
+            "name":    preset.name,
+            "tags":    [{"tag": t.tag, "category": t.category, "weight": t.weight}
+                        for t in preset.tags],
+            "negative_tags": [{"tag": t.tag, "category": t.category, "weight": t.weight}
+                               for t in preset.negative_tags],
+            "description": preset.description,
+        }
+        user = _get_current_user(x_api_key)
+        user_id = user.user_id if user else _get_um().anonymous_user_id
+
+        sm = _get_sm()
+        share = sm.create_share(
+            user_id=user_id, preset_id=preset_id,
+            preset_data=preset_data,
+            title=body.title or preset.name,
+            description=body.description,
+            expires_days=body.expires_days,
+        )
+        share_url = f"/shared/presets/{share.token}"
+        return ShareTokenResponse(
+            token=share.token, preset_id=share.preset_id,
+            title=share.title, description=share.description,
+            share_url=share_url, created_at=share.created_at,
+            expires_at=share.expires_at, view_count=0,
+        )
+
+    @app.get(
+        "/shared/presets/{token}",
+        response_model=SharedPresetResponse,
+        summary="Get shared preset",
+        tags=["sharing"],
+    )
+    def get_shared_preset(token: str) -> SharedPresetResponse:
+        """
+        ★ v2.3 — 共有トークンからプリセット情報を取得する。
+
+        認証不要。閲覧のたびに view_count が増加する。
+        有効期限切れや無効化済みトークンは 404 を返す。
+        """
+        sm = _get_sm()
+        share = sm.get_share(token)
+        if share is None:
+            raise HTTPException(status_code=404, detail="共有リンクが無効か期限切れです")
+        return SharedPresetResponse(
+            token=share.token, preset_id=share.preset_id,
+            title=share.title, description=share.description,
+            created_at=share.created_at, view_count=share.view_count,
+            preset_data=share.preset_data,
+        )
+
+    @app.get(
+        "/shared/presets",
+        summary="List my shared presets",
+        tags=["sharing"],
+    )
+    def list_my_shares(x_api_key: str | None = None) -> dict:
+        """★ v2.3 — 自分が発行した共有リンク一覧を返す。認証必須。"""
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        sm = _get_sm()
+        shares = sm.list_user_shares(user.user_id)
+        return {"shares": [s.to_dict() for s in shares], "total": len(shares)}
+
+    @app.delete(
+        "/shared/presets/{token}",
+        response_model=DeleteShareResponse,
+        summary="Delete a shared preset link",
+        tags=["sharing"],
+    )
+    def delete_share(token: str, x_api_key: str | None = None) -> DeleteShareResponse:
+        """★ v2.3 — 共有リンクを無効化する。発行者のみ可能。"""
+        user = _get_current_user(x_api_key)
+        if user is None:
+            raise HTTPException(status_code=401, detail="API キーが必要です")
+        sm = _get_sm()
+        deleted = sm.delete_share(token, user.user_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="共有リンクが見つかりません")
+        return DeleteShareResponse(token=token, deleted=True)
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.3 コミュニティ統計（/community）
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/community/tags",
+        response_model=CommunityTagsResponse,
+        summary="Get community tag statistics",
+        tags=["community"],
+    )
+    def get_community_tags(
+        limit: int = Query(default=50, ge=1, le=200),
+        category: str | None = Query(default=None),
+        min_count: int = Query(default=1, ge=1),
+    ) -> CommunityTagsResponse:
+        """
+        ★ v2.3 — コミュニティのタグ使用統計を返す（匿名集計）。
+
+        POST /community/contribute で投稿されたデータの集計値。
+        個人を特定できる情報は含まない。
+        """
+        sm = _get_sm()
+        tags = sm.get_community_tags(limit=limit, category=category, min_count=min_count)
+        stats = sm.community_stats()
+        return CommunityTagsResponse(
+            tags=[CommunityTagItem(
+                tag=t.tag, total_count=t.total_count,
+                avg_score=t.avg_score, category=t.category,
+            ) for t in tags],
+            total=len(tags),
+            stats=stats,
+        )
+
+    @app.post(
+        "/community/contribute",
+        response_model=ContributeResponse,
+        summary="Contribute tag data to community stats",
+        tags=["community"],
+    )
+    def contribute_to_community(body: ContributeRequest) -> ContributeResponse:
+        """
+        ★ v2.3 — タグ使用データをコミュニティ統計に投稿する（任意・匿名）。
+
+        個人を特定できる情報は送信しないでください。
+        タグ名とスコアのみが集計に使われます。
+        """
+        sm = _get_sm()
+        n = sm.contribute_tags(tags=body.tags, avg_score=body.avg_score)
+        return ContributeResponse(
+            contributed=n,
+            message=f"{n}件のタグデータをコミュニティ統計に追加しました",
+        )
+
+
+    # ══════════════════════════════════════════════════════════════
+    # v2.2 高度タグ検索
+    # ══════════════════════════════════════════════════════════════
+
+    @app.get(
+        "/dictionary/related/{tag}",
+        response_model=RelatedTagsResponse,
+        summary="Get related tags",
+        tags=["dictionary"],
+    )
+    def get_related_tags(
+        tag: str,
+        n: int = Query(default=20, ge=1, le=50),
+    ) -> RelatedTagsResponse:
+        """
+        ★ v2.2 — 指定タグと関連性の高いタグ一覧を返す。
+
+        UserProfile の tag_frequencies から共起回数を算出する。
+        学習データがない場合は辞書のカテゴリ一致で代替する。
+        """
+        ctx = get_context()
+        upm = _get_upm()
+        related: list[RelatedTagItem] = []
+
+        # ① プロファイル学習データから共起スコアを計算
+        if upm:
+            try:
+                freqs = upm.get_profile().tag_frequencies
+                target = freqs.get(tag.lower())
+                if target:
+                    all_tags = list(freqs.values())
+                    total = max(target.count, 1)
+                    candidates = [
+                        RelatedTagItem(
+                            tag=e.tag,
+                            score=round(min(e.count / total, 1.0), 3),
+                            co_count=e.count,
+                        )
+                        for e in all_tags
+                        if e.tag != tag.lower() and e.count >= 2
+                    ]
+                    candidates.sort(key=lambda x: -x.score)
+                    related = candidates[:n]
+            except Exception:
+                pass
+
+        # ② フォールバック: 辞書カテゴリ一致で代替
+        if not related:
+            try:
+                dm = ctx.dictionary_manager
+                result = dm.lookup(tag)
+                if result.found and result.category:
+                    entries = dm.search_by_category(result.category, limit=n + 1)
+                    related = [
+                        RelatedTagItem(
+                            tag=e.key, score=0.5,
+                            category=e.category,
+                        )
+                        for e in entries if e.key != tag
+                    ][:n]
+            except Exception:
+                pass
+
+        return RelatedTagsResponse(tag=tag, related=related, total=len(related))
+
+    # ── v2.2 History 全文検索強化 ──────────────────────────────────
+
+    @app.get(
+        "/history/search",
+        response_model=HistorySearchResponse,
+        summary="Full-text search history",
+        tags=["history"],
+    )
+    def search_history(
+        q: str | None = Query(default=None, description="プロンプト全文検索"),
+        tag: str | None = Query(default=None, description="特定タグを含む履歴"),
+        date_from: str | None = Query(default=None, description="開始日 YYYY-MM-DD"),
+        date_to:   str | None = Query(default=None, description="終了日 YYYY-MM-DD"),
+        score_min: float = Query(default=0.0, ge=0.0, le=100.0),
+        score_max: float = Query(default=100.0, ge=0.0, le=100.0),
+        favorite_only: bool = Query(default=False),
+        limit: int = Query(default=50, ge=1, le=500),
+    ) -> HistorySearchResponse:
+        """
+        ★ v2.2 — 複合フィルタで履歴を検索する。
+
+        - q:           プロンプト全文（部分一致）
+        - tag:         特定タグ（カンマ区切りで複数指定可）
+        - date_from/to: 日付範囲
+        - score_min/max: スコア範囲
+        - favorite_only: お気に入りのみ
+        """
+        ctx = get_context()
+        all_entries = ctx.history_manager.list_entries(limit=1000)
+        results = all_entries
+
+        if q:
+            ql = q.lower()
+            results = [e for e in results
+                       if ql in e.input_prompt.lower() or ql in e.output_prompt.lower()]
+
+        if tag:
+            tags_filter = {t.strip().lower() for t in tag.split(",") if t.strip()}
+            results = [e for e in results
+                       if any(tf in e.output_prompt.lower() for tf in tags_filter)]
+
+        if date_from:
+            results = [e for e in results
+                       if hasattr(e, "created_at_str") and e.created_at_str >= date_from]
+
+        if date_to:
+            results = [e for e in results
+                       if hasattr(e, "created_at_str") and e.created_at_str[:10] <= date_to]
+
+        results = [e for e in results if score_min <= e.overall_score <= score_max]
+
+        if favorite_only:
+            results = [e for e in results if e.favorite]
+
+        results = results[:limit]
+
+        return HistorySearchResponse(
+            entries=[
+                HistoryEntryResponse(
+                    id=e.id,
+                    input_prompt=e.input_prompt,
+                    output_prompt=e.output_prompt,
+                    tag_count=e.tag_count,
+                    overall_score=e.overall_score,
+                    created_at=e.created_at_str,
+                    favorite=e.favorite,
+                    label=e.label,
+                )
+                for e in results
+            ],
+            total=len(results),
+            query=q or "",
+        )
+
+    # ── v2.2 プリセット v2（プロファイルから自動生成）─────────────
+
+    @app.post(
+        "/profile/save-as-preset",
+        response_model=SaveAsPresetResponse,
+        status_code=201,
+        summary="Save profile recommendations as a preset",
+        tags=["profile"],
+    )
+    def save_profile_as_preset(body: SaveAsPresetRequest) -> SaveAsPresetResponse:
+        """
+        ★ v2.2 — プロファイルの推奨タグをプリセットとして保存する。
+
+        learn() を実行した後に呼ぶ。
+        推奨タグ Top N + スタイルルール always_include を
+        ユーザープリセットとして保存する。
+        """
+        ctx = get_context()
+        upm = _get_upm()
+        if upm is None:
+            raise HTTPException(status_code=503, detail="UserProfileManager unavailable")
+        try:
+            preset = upm.save_as_preset(
+                preset_manager=ctx.preset_manager,
+                preset_id=body.preset_id,
+                name=body.name,
+                top_n=body.top_n,
+                category=body.category,
+                description=body.description,
+            )
+            return SaveAsPresetResponse(
+                preset_id=preset.id,
+                name=preset.name,
+                tag_count=len(preset.tags),
+                negative_tag_count=len(preset.negative_tags),
+                category=body.category,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    # ── v2.2 ストレージ統計 ───────────────────────────────────────
+
+    @app.get(
+        "/profile/storage",
+        response_model=StorageStatsResponse,
+        summary="Get profile storage stats",
+        tags=["profile"],
+    )
+    def get_profile_storage() -> StorageStatsResponse:
+        """
+        ★ v2.2 — プロファイルストレージの統計を返す。
+        storage="sqlite" の場合は SQLite、"json" の場合は profile.json を使用中。
+        """
+        upm = _get_upm()
+        if upm is None:
+            raise HTTPException(status_code=503, detail="UserProfileManager unavailable")
+        s = upm.statistics()
+        return StorageStatsResponse(
+            storage=s.get("storage", "json"),
+            tag_frequency_count=s.get("tag_frequency_count", 0),
+            tag_weight_count=s.get("tag_weight_count", 0),
+            style_rule_count=s.get("style_rule_count", 0),
+            score_trend_count=s.get("score_trend_count", 0),
+            db_path=s.get("db_path", ""),
+        )
+
+
     # ══════════════════════════════════════════════════════════════
     # v1.9 WebSocket エンドポイント
     # ══════════════════════════════════════════════════════════════
@@ -1388,6 +2634,55 @@ if _FASTAPI_AVAILABLE:
             ws_manager.disconnect(websocket, "events")
         except Exception:
             ws_manager.disconnect(websocket, "events")
+
+    @app.get(
+        "/profile/settings",
+        response_model=ProfileSettingsResponse,
+        summary="Get profile settings",
+        tags=["profile"],
+    )
+    def get_profile_settings() -> ProfileSettingsResponse:
+        """
+        ★ v2.1 — プロファイル設定を返す。
+
+        auto_learn=true のとき、compile が auto_learn_interval 件ごとに
+        自動で学習を実行する。
+        apply_profile_default=true のとき、Web UI の apply_profile トグルが
+        デフォルトで ON になる。
+        """
+        upm = _get_upm()
+        s = upm.get_settings()
+        return ProfileSettingsResponse(
+            auto_learn=s.get("auto_learn", False),
+            auto_learn_interval=s.get("auto_learn_interval", 10),
+            apply_profile_default=s.get("apply_profile_default", False),
+            recommendation_threshold=s.get("recommendation_threshold", 2),
+            compile_count=_compile_count,
+        )
+
+    @app.put(
+        "/profile/settings",
+        response_model=ProfileSettingsResponse,
+        summary="Update profile settings",
+        tags=["profile"],
+    )
+    def update_profile_settings(body: ProfileSettingsUpdateRequest) -> ProfileSettingsResponse:
+        """
+        ★ v2.1 — プロファイル設定を更新する。None のフィールドは変更しない。
+        """
+        upm = _get_upm()
+        current = upm.get_settings()
+        patch = {k: v for k, v in body.model_dump().items() if v is not None}
+        merged = {**current, **patch}
+        saved = upm.save_settings(merged)
+        return ProfileSettingsResponse(
+            auto_learn=saved.get("auto_learn", False),
+            auto_learn_interval=saved.get("auto_learn_interval", 10),
+            apply_profile_default=saved.get("apply_profile_default", False),
+            recommendation_threshold=saved.get("recommendation_threshold", 2),
+            compile_count=_compile_count,
+        )
+
 
     @app.get(
         "/ws/stats",
