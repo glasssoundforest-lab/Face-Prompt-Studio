@@ -825,3 +825,73 @@ if _PYDANTIC_AVAILABLE:
         recommendations:   list[str]
         detail:            list[dict]
 
+    # ── v2.6 Wildcard ────────────────────────────────────────────
+
+    class WildcardEntryItem(BaseModel):
+        value:   str
+        weight:  float = 1.0
+        comment: str   = ""
+
+    class WildcardCreateRequest(BaseModel):
+        """POST /wildcards リクエスト"""
+        name:        str = Field(..., min_length=1, max_length=60,
+                                 pattern=r"^[a-zA-Z0-9_/]+$")
+        values:      list[str] = Field(..., min_length=1)
+        description: str = ""
+        category:    str = ""
+        weights:     list[float] | None = None
+
+    class WildcardUpdateRequest(BaseModel):
+        """PUT /wildcards/{name} リクエスト"""
+        values:      list[str] | None = None
+        description: str | None = None
+        category:    str | None = None
+        weights:     list[float] | None = None
+
+    class WildcardResponse(BaseModel):
+        """Wildcard レスポンス"""
+        name:        str
+        description: str
+        category:    str
+        entry_count: int
+        entries:     list[WildcardEntryItem] = []
+        created_at:  str
+        updated_at:  str
+
+    class WildcardListResponse(BaseModel):
+        """GET /wildcards レスポンス"""
+        wildcards: list[WildcardResponse]
+        total:     int
+        stats:     dict
+
+    class WildcardExpandRequest(BaseModel):
+        """POST /wildcards/expand リクエスト"""
+        prompt:    str
+        n:         int = Field(default=5, ge=1, le=20)
+        seed:      int | None = None
+        variables: dict[str, str] = {}
+
+    class WildcardExpandResponse(BaseModel):
+        """POST /wildcards/expand レスポンス"""
+        original:  str
+        expanded:  list[str]
+        wildcards_used: list[str]
+
+    class WildcardImportRequest(BaseModel):
+        """POST /wildcards/{name}/import リクエスト"""
+        text:        str
+        description: str = ""
+
+    # ── v2.6 メトリクス ──────────────────────────────────────────
+
+    class MetricsResponse(BaseModel):
+        """GET /metrics レスポンス（Prometheus 形式テキストも /metrics/prometheus から取得可能）"""
+        uptime_seconds:    float
+        compile_count:     int
+        avg_compile_ms:    float
+        cache_hit_rate:    float
+        endpoint_calls:    dict[str, int]
+        error_count:       int
+        wildcard_count:    int
+        dictionary_keys:   int
+
