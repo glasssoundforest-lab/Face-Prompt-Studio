@@ -504,6 +504,50 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     .comfyui-queue-form{background:var(--bg-secondary);border:1px solid var(--border);
       border-radius:8px;padding:12px;margin-bottom:10px;}
 
+    
+    /* ── v3.0 レスポンシブ対応 ── */
+    @media (max-width: 768px) {
+      .nav-bar{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
+      .nav-btn{white-space:nowrap;flex-shrink:0;font-size:11px;padding:6px 10px;}
+      #batch-panel.active,#ai-panel.active,#wildcard-panel.active,
+      #session-panel.active,#character-panel.active{
+        grid-template-columns:1fr!important;}
+      .ai-sidebar,.wc-sidebar,.sess-sidebar{border-right:none;border-bottom:1px solid var(--border);}
+    }
+
+    /* ── v3.0 Marketplace タブ ── */
+    #marketplace-panel{display:none;grid-row:2;grid-column:1/-1;overflow-y:auto;padding:20px;}
+    #marketplace-panel.active{display:block;}
+    .mp-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+    .mp-search{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);
+      border-radius:8px;background:var(--bg-secondary);color:var(--text);font-size:13px;}
+    .mp-filter{padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+      background:var(--bg-secondary);color:var(--text);font-size:12px;}
+    .mp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+    .mp-card{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px;}
+    .mp-card-name{font-weight:700;font-size:13px;}
+    .mp-card-desc{font-size:12px;color:var(--muted);flex:1;line-height:1.5;}
+    .mp-card-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);}
+    .mp-card-type{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;
+      background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent);}
+    .mp-card-rating{color:#f39c12;}
+    .mp-card-installed{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;
+      background:color-mix(in srgb,#2ecc71 15%,transparent);color:#2ecc71;}
+    .mp-install-btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;
+      cursor:pointer;border:1px solid var(--accent);color:var(--accent);
+      background:color-mix(in srgb,var(--accent) 10%,transparent);
+      transition:all .15s;width:100%;margin-top:4px;}
+    .mp-install-btn:hover{background:var(--accent);color:#fff;}
+    .mp-install-btn:disabled{opacity:.5;cursor:not-allowed;}
+    .mp-install-btn.installed{border-color:#2ecc71;color:#2ecc71;
+      background:color-mix(in srgb,#2ecc71 10%,transparent);}
+    .mp-stats-bar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+    .mp-stat{background:var(--bg-secondary);border:1px solid var(--border);
+      border-radius:7px;padding:8px 14px;text-align:center;}
+    .mp-stat-num{font-size:1.4rem;font-weight:700;color:var(--accent);}
+    .mp-stat-lbl{font-size:11px;color:var(--muted);}
+
     </style>
 #history-panel{display:none;grid-row:2;grid-column:1/-1;overflow:hidden;}
 #history-panel.active{display:grid;grid-template-columns:300px 1fr;gap:0;}
@@ -606,7 +650,9 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
 .kb-add-btn{margin-top:24px;padding:10px 0;width:100%;background:var(--accent);color:#000;border-radius:var(--r);font-size:13px;font-weight:700;transition:opacity .15s;}
 .kb-add-btn:hover{opacity:.85;}
 </style>
-</head>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#7b2fff">
+  </head>
 <body>
 <div id="app">
 <header>
@@ -619,6 +665,7 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
     <button class="nav-btn" data-tab="backup" onclick="showTab('backup')">Backup</button>
     <div id="ws-indicator"><div class="ws-dot" id="ws-dot"></div><span id="ws-label">WS 未接続</span></div>
     <button class="nav-btn" data-tab="profile" onclick="showTab('profile')">Profile</button>
+    <button class="nav-btn" data-tab="marketplace" onclick="showTab('marketplace')">🛒 Market</button>
     <button class="nav-btn" data-tab="session" onclick="showTab('session')">Session</button>
     <button class="nav-btn" data-tab="wildcard" onclick="showTab('wildcard')">Wildcard</button>
     <button class="nav-btn" data-tab="ai" onclick="showTab('ai')">AI</button>
@@ -798,6 +845,53 @@ main{display:grid;grid-template-columns:1fr 340px;overflow:hidden;}
 
 
 
+
+
+    <!-- v3.0 Marketplace Panel -->
+    <div id="marketplace-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <h2 style="margin:0;font-size:1.1rem">🛒 Plugin Marketplace</h2>
+        <button class="pf-btn pf-btn-secondary" style="width:auto;padding:5px 12px;font-size:12px"
+          onclick="mpLoadInstalled()">📦 インストール済み</button>
+      </div>
+      <div id="mp-stats" class="mp-stats-bar"></div>
+      <div class="mp-header">
+        <input id="mp-search" class="mp-search" placeholder="プラグイン名・説明・タグで検索..."
+          oninput="mpSearch()" />
+        <select id="mp-type-filter" class="mp-filter" onchange="mpSearch()">
+          <option value="">すべての種別</option>
+          <option value="dictionary">辞書</option>
+          <option value="rule">ルール</option>
+          <option value="template">テンプレート</option>
+          <option value="wildcard">Wildcard</option>
+          <option value="character">キャラクター</option>
+          <option value="preset">プリセット</option>
+        </select>
+        <button class="pf-btn pf-btn-primary" style="width:auto;padding:7px 14px"
+          onclick="mpSearch()">🔍 検索</button>
+      </div>
+      <div id="mp-grid" class="mp-grid">
+        <div style="color:var(--muted);font-size:13px">読み込み中...</div>
+      </div>
+      <!-- URL インストール -->
+      <div style="margin-top:20px;padding:14px;background:var(--bg-secondary);
+        border:1px solid var(--border);border-radius:8px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px">🔗 URL からインストール</div>
+        <div style="display:flex;gap:8px;">
+          <input id="mp-url-input" placeholder="https://... プラグインの JSON URL"
+            style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg);color:var(--text);font-size:12px;" />
+          <select id="mp-url-type" style="padding:7px 10px;border:1px solid var(--border);
+            border-radius:6px;background:var(--bg);color:var(--text);font-size:12px;">
+            <option value="dictionary">辞書</option>
+            <option value="wildcard">Wildcard</option>
+            <option value="rule">ルール</option>
+          </select>
+          <button class="pf-btn pf-btn-primary" style="width:auto;padding:7px 12px"
+            onclick="mpInstallUrl()">インストール</button>
+        </div>
+      </div>
+    </div>
 
     <!-- v2.8 Session Panel -->
     <div id="session-panel">
@@ -3697,6 +3791,122 @@ checkHealth();setInterval(checkHealth,15000);$('prompt-input').focus();
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(ensureTranslateBox, 1200);
   });
+
+  
+  // ══════════════════════════════════════════════════════════════
+  // v3.0 — マーケットプレイス
+  // ══════════════════════════════════════════════════════════════
+
+  let _mpPlugins = [];
+
+  async function mpSearch() {
+    const q    = document.getElementById('mp-search')?.value || '';
+    const type = document.getElementById('mp-type-filter')?.value || '';
+    const grid = document.getElementById('mp-grid');
+    if (grid) grid.innerHTML = '<div style="color:var(--muted)">検索中...</div>';
+    try {
+      const params = new URLSearchParams();
+      if (q)    params.set('q', q);
+      if (type) params.set('type', type);
+      params.set('limit', '24');
+      const res = await api('/marketplace?' + params.toString());
+      _mpPlugins = res.plugins || [];
+      mpRender(_mpPlugins);
+      const stats = res.stats || {};
+      const sb = document.getElementById('mp-stats');
+      if (sb) sb.innerHTML = `
+        <div class="mp-stat"><div class="mp-stat-num">${res.total}</div><div class="mp-stat-lbl">プラグイン</div></div>
+        <div class="mp-stat"><div class="mp-stat-num">${stats.installed_count||0}</div><div class="mp-stat-lbl">インストール済み</div></div>`;
+    } catch(e) {
+      if (grid) grid.innerHTML = `<div style="color:#e74c3c;font-size:13px">${escHtml(e.message)}</div>`;
+    }
+  }
+
+  function mpRender(plugins) {
+    const grid = document.getElementById('mp-grid');
+    if (!grid) return;
+    if (!plugins.length) {
+      grid.innerHTML = '<div style="color:var(--muted);font-size:13px">プラグインが見つかりません</div>';
+      return;
+    }
+    const typeColors = {
+      dictionary:'#3498db', rule:'#e67e22', template:'#9b59b6',
+      wildcard:'#1abc9c', character:'#e74c3c', preset:'#f39c12'
+    };
+    grid.innerHTML = plugins.map(p => `
+      <div class="mp-card">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="mp-card-type" style="border-color:${typeColors[p.type]||'var(--accent)'};
+            color:${typeColors[p.type]||'var(--accent)'};
+            background:color-mix(in srgb,${typeColors[p.type]||'var(--accent)'} 12%,transparent)">
+            ${escHtml(p.type)}</span>
+          ${p.installed ? '<span class="mp-card-installed">✅ 導入済み</span>' : ''}
+        </div>
+        <div class="mp-card-name">${escHtml(p.name)}</div>
+        <div class="mp-card-desc">${escHtml(p.description)}</div>
+        <div class="mp-card-meta">
+          <span>${escHtml(p.author)}</span>
+          <span>v${escHtml(p.version)}</span>
+          <span>${p.size_kb.toFixed(1)}KB</span>
+          <span class="mp-card-rating">⭐ ${p.rating.toFixed(1)}</span>
+          <span>⬇ ${p.download_count}</span>
+        </div>
+        <button class="mp-install-btn ${p.installed ? 'installed' : ''}"
+          ${p.installed ? 'disabled' : ''}
+          onclick="mpInstall('${escHtml(p.id)}', this)">
+          ${p.installed ? '✅ インストール済み' : '⬇ インストール'}</button>
+      </div>`).join('');
+  }
+
+  async function mpInstall(pluginId, btn) {
+    if (!confirm(`"${pluginId}" をインストールしますか？`)) return;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ インストール中...'; }
+    try {
+      const res = await api('/marketplace/install', {
+        method: 'POST', body: { plugin_id: pluginId }
+      });
+      toast(res.message || `✅ ${pluginId} をインストールしました`);
+      if (btn) { btn.textContent = '✅ インストール済み'; btn.className += ' installed'; }
+    } catch(e) {
+      toast('インストール失敗: ' + e.message, true);
+      if (btn) { btn.disabled = false; btn.textContent = '⬇ インストール'; }
+    }
+  }
+
+  async function mpInstallUrl() {
+    const url  = document.getElementById('mp-url-input')?.value.trim();
+    const type = document.getElementById('mp-url-type')?.value || 'dictionary';
+    if (!url) { toast('URL を入力してください', true); return; }
+    try {
+      const res = await api('/marketplace/install', {
+        method: 'POST', body: { url, plugin_type: type }
+      });
+      toast(res.message);
+      if (document.getElementById('mp-url-input')) document.getElementById('mp-url-input').value = '';
+    } catch(e) { toast('インストール失敗: ' + e.message, true); }
+  }
+
+  async function mpLoadInstalled() {
+    try {
+      const res = await api('/marketplace/installed');
+      mpRender(res.plugins || []);
+      toast(`インストール済み: ${res.total}件`);
+    } catch(e) { toast('取得失敗: ' + e.message, true); }
+  }
+
+  // showTab に marketplace 追加
+  const _origShowTabV30 = showTab;
+  function showTab(tab) {
+    _origShowTabV30(tab);
+    if (tab === 'marketplace') mpSearch();
+  }
+
+  // ── PWA Service Worker 登録 ──────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
 
   </script>
 </body>
