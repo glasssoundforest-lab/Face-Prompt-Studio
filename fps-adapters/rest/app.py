@@ -167,7 +167,7 @@ if _FASTAPI_AVAILABLE:
     app = FastAPI(
         title="Face Prompt Studio API",
         description="REST API for prompt compilation, optimization, and management",
-        version="2.6.0",
+        version="2.7.0",
     )
 
     # Web UI のスタティックファイルを配信（オプション）
@@ -216,7 +216,7 @@ if _FASTAPI_AVAILABLE:
         rule_stats = ctx.rule_manager.statistics()
         return HealthResponse(
             status="ok",
-            version="2.6.0",
+            version="2.7.0",
             dictionary_keys=dict_stats["total_keys"],
             rule_count=rule_stats["total_rules"],
         )
@@ -1217,7 +1217,7 @@ if _FASTAPI_AVAILABLE:
         recent = [e.input_prompt[:60] for e in history[:5]]
 
         return DashboardResponse(
-            version="2.6.0",
+            version="2.7.0",
             dictionary_keys=dict_stats.get("total_keys", 0),
             japanese_entries=jp_count,
             preset_count=preset_stats.get("total_presets", 0),
@@ -2089,7 +2089,7 @@ if _FASTAPI_AVAILABLE:
         stats   = upm.statistics()
         data = profile.to_dict()
         return ProfileExportResponse(
-            version="2.6.0",
+            version="2.7.0",
             exported_at=_dt.now().isoformat(),
             tag_frequency_count=stats.get("tag_frequency_count", 0),
             tag_weight_count=stats.get("tag_weight_count", 0),
