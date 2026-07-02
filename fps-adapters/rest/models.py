@@ -895,3 +895,51 @@ if _PYDANTIC_AVAILABLE:
         wildcard_count:    int
         dictionary_keys:   int
 
+    # ── v2.7 キャラクターシート ──────────────────────────────────
+
+    class CharacterFeatureItem(BaseModel):
+        tag:      str
+        weight:   float = 1.0
+        category: str   = ""
+        note:     str   = ""
+
+    class CharacterCreateRequest(BaseModel):
+        """POST /characters リクエスト"""
+        id:          str = Field(..., min_length=1, max_length=60,
+                                 pattern=r"^[a-zA-Z0-9_-]+$")
+        name:        str = Field(..., min_length=1)
+        description: str = ""
+        features:    list[CharacterFeatureItem] = []
+        neg_features: list[CharacterFeatureItem] = []
+        tags:        list[str] = []
+
+    class CharacterUpdateRequest(BaseModel):
+        """PUT /characters/{id} リクエスト"""
+        name:        str | None = None
+        description: str | None = None
+        features:    list[CharacterFeatureItem] | None = None
+        neg_features: list[CharacterFeatureItem] | None = None
+        tags:        list[str] | None = None
+
+    class CharacterResponse(BaseModel):
+        id:           str
+        name:         str
+        description:  str
+        features:     list[CharacterFeatureItem]
+        neg_features: list[CharacterFeatureItem]
+        tags:         list[str]
+        pos_prompt:   str
+        neg_prompt:   str
+        feature_count: int
+        created_at:   str
+        updated_at:   str
+
+    class CharacterListResponse(BaseModel):
+        characters: list[CharacterResponse]
+        total:      int
+        stats:      dict
+
+    class CharacterToPresetRequest(BaseModel):
+        """POST /characters/{id}/to-preset リクエスト"""
+        preset_id: str | None = None
+
